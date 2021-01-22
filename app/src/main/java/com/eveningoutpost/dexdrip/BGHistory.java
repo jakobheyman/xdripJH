@@ -148,13 +148,13 @@ public class BGHistory extends ActivityWithMenu {
 
         Calendar endDate = (GregorianCalendar) date1.clone();
         endDate.add(Calendar.DATE, noDays);
-        int numValues = noDays * (60 / 2) * 24; // LimiTTer sample rate 1 per 2 minutes
+        int numValues = noDays * (60) * 24; // LimiTTer sample rate 1 per 2 minutes // changed 60/2 to 60
         BgGraphBuilder bgGraphBuilder = new BgGraphBuilder(this, date1.getTimeInMillis(), endDate.getTimeInMillis(), numValues, false);
 
         chart = (LineChartView) findViewById(R.id.chart);
-        chart.setZoomType(ZoomType.HORIZONTAL);
+        chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
         previewChart = (PreviewLineChartView) findViewById(R.id.chart_preview);
-        previewChart.setZoomType(ZoomType.HORIZONTAL);
+        previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
 
         chart.setLineChartData(bgGraphBuilder.lineData());
         chart.setOnValueTouchListener(bgGraphBuilder.getOnValueSelectTooltipListener(this));
@@ -239,7 +239,7 @@ public class BGHistory extends ActivityWithMenu {
         public void onViewportChanged(Viewport newViewport) {
             if (!updatingPreviewViewport) {
                 updatingChartViewport = true;
-                previewChart.setZoomType(ZoomType.HORIZONTAL);
+                previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
                 previewChart.setCurrentViewport(newViewport);
                 updatingChartViewport = false;
             }
@@ -251,7 +251,7 @@ public class BGHistory extends ActivityWithMenu {
         public void onViewportChanged(Viewport newViewport) {
             if (!updatingChartViewport) {
                 updatingPreviewViewport = true;
-                chart.setZoomType(ZoomType.HORIZONTAL);
+                chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
                 chart.setCurrentViewport(newViewport);
                 updatingPreviewViewport = false;
             }

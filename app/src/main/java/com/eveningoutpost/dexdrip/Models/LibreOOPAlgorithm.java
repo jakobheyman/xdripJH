@@ -302,20 +302,34 @@ public class LibreOOPAlgorithm {
         libreAlarmObject.data.trend = new ArrayList<GlucoseData>();
 
         libreAlarmObject.data.raw_data = ble_data;
-        
-        // Add the first object, that is the current time
-        GlucoseData glucoseData = new GlucoseData();
-        glucoseData.sensorTime = sensorTime;
-        glucoseData.realDate = timestamp;
-        glucoseData.glucoseLevel = raw;
-        glucoseData.glucoseLevelRaw = raw;
-        
-        libreAlarmObject.data.trend.add(glucoseData);
+
         String SensorSN = LibreUtils.decodeSerialNumberKey(patchUid);
-        
-        // TODO: Add here data of last 10 minutes or whatever.
-        Log.e(TAG, "handleDecodedBleResult Created the following object " + libreAlarmObject.toString());
-        LibreAlarmReceiver.processReadingDataTransferObject(libreAlarmObject, timestamp, SensorSN, true /*=allowupload*/, patchUid, null/*=patchInfo*/);   
+
+        // only add data at least 15 min old from start of sensor
+        if (sensorTime >= 15) {
+            // Add the first object, that is the current time
+            GlucoseData glucoseData = new GlucoseData();
+            glucoseData.sensorTime = sensorTime;
+            glucoseData.realDate = timestamp;
+            glucoseData.sensorId = SensorSN;
+            glucoseData.glucoseLevel = raw;
+            glucoseData.glucoseLevelRaw = raw;
+            
+            libreAlarmObject.data.trend.add(glucoseData);
+
+            // Add raw data to Libre2RawValue
+            if (Libre2RawValue.is_new_data(timestamp)) {
+                Libre2RawValue rawValue = new Libre2RawValue();
+                rawValue.serial = SensorSN;
+                rawValue.timestamp = timestamp;
+                rawValue.glucose = (double) raw * Constants.LIBRE_MULTIPLIER / 1000;
+                rawValue.save();
+            }
+            
+            // TODO: Add here data of last 10 minutes or whatever.
+            Log.e(TAG, "handleDecodedBleResult Created the following object " + libreAlarmObject.toString());
+            LibreAlarmReceiver.processReadingDataTransferObject(libreAlarmObject, timestamp, SensorSN, true /*=allowupload*/, patchUid, null/*=patchInfo*/);
+        }
     }
     
     

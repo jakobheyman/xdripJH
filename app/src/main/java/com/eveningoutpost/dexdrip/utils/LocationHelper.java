@@ -51,21 +51,21 @@ public class LocationHelper {
 
         // Shamelessly borrowed from http://stackoverflow.com/a/10311877/868533
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(parent);
-        builder.setTitle(R.string.location_not_found_title);
-        builder.setMessage(R.string.location_not_found_message);
-        builder.setPositiveButton(R.string.location_yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialogInterface, int i) {
-                parent.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            }
-        });
-        builder.setNegativeButton(R.string.no, null);
-        try {
-            builder.create().show();
-        } catch (RuntimeException e) {
-            Looper.prepare();
-            builder.create().show();
-        }
+        //~ AlertDialog.Builder builder = new AlertDialog.Builder(parent);
+        //~ builder.setTitle(R.string.location_not_found_title);
+        //~ builder.setMessage(R.string.location_not_found_message);
+        //~ builder.setPositiveButton(R.string.location_yes, new DialogInterface.OnClickListener() {
+            //~ public void onClick(DialogInterface dialogInterface, int i) {
+                //~ parent.startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            //~ }
+        //~ });
+        //~ builder.setNegativeButton(R.string.no, null);
+        //~ try {
+            //~ builder.create().show();
+        //~ } catch (RuntimeException e) {
+            //~ Looper.prepare();
+            //~ builder.create().show();
+        //~ }
     }
 
 

@@ -56,6 +56,19 @@ public class Libre2RawValue extends PlusModel {
                 .execute();
     }
 
+    public static boolean is_new_data(long timestamp) {
+        Libre2RawValue libre2rawvalue = new Select()
+                .from(Libre2RawValue.class)
+                .where("ts >= ?", Math.max(timestamp - 30000, 0)) // 30 seconds padding
+                .where("ts <= ?", (timestamp + 30000))
+                .orderBy("ts desc")
+                .executeSingle();
+        if (libre2rawvalue != null && Math.abs(libre2rawvalue.timestamp - timestamp) <= 30000) {
+            return false;
+        }
+        return true;
+    }
+
     public static void updateDB() {
         fixUpTable(schema, false);
     }

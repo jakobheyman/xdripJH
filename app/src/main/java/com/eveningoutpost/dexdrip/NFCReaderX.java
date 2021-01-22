@@ -34,6 +34,7 @@ import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.Libre2SensorData;
 import com.eveningoutpost.dexdrip.Models.LibreBlock;
 import com.eveningoutpost.dexdrip.Models.LibreOOPAlgorithm;
+import com.eveningoutpost.dexdrip.Models.Libre2RawValue;
 import com.eveningoutpost.dexdrip.Models.ReadingData;
 import com.eveningoutpost.dexdrip.Models.SensorSanity;
 import com.eveningoutpost.dexdrip.Models.UserError.Log;
@@ -53,6 +54,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.eveningoutpost.dexdrip.xdrip.gs;
+import static com.eveningoutpost.dexdrip.UtilityModels.Constants.LIBRE_MULTIPLIER;
 
 // From LibreAlarm et al
 
@@ -140,7 +142,7 @@ public class NFCReaderX {
                 return;
 
             } else if (!mNfcAdapter.isEnabled()) {
-                JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
+                //JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
                 return;
             }
         } catch (NullPointerException e) {
@@ -781,15 +783,25 @@ public class NFCReaderX {
             // glucoseData.glucoseLevel =
             //       getGlucose(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
 
-            glucoseData.glucoseLevelRaw =
-                    getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
-
             int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
 
-            glucoseData.realDate = sensorStartTime + time * MINUTE;
-            glucoseData.sensorId = tagId;
-            glucoseData.sensorTime = time;
-            historyList.add(glucoseData);
+            // only add data at least 15 min old from start of sensor
+            if (time >= 15) {
+                glucoseData.glucoseLevelRaw =
+                        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+                glucoseData.realDate = sensorStartTime + time * MINUTE;
+                glucoseData.sensorId = tagId;
+                glucoseData.sensorTime = time;
+                historyList.add(glucoseData);
+                // Add raw data to Libre2RawValue
+                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                    Libre2RawValue rawValue = new Libre2RawValue();
+                    rawValue.serial = glucoseData.sensorId;
+                    rawValue.timestamp = glucoseData.realDate;
+                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
+                    rawValue.save();
+                }
+            }
         }
 
 
@@ -803,14 +815,25 @@ public class NFCReaderX {
             // glucoseData.glucoseLevel =
             //         getGlucose(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
 
-            glucoseData.glucoseLevelRaw =
-                    getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
             int time = Math.max(0, sensorTime - index);
 
-            glucoseData.realDate = sensorStartTime + time * MINUTE;
-            glucoseData.sensorId = tagId;
-            glucoseData.sensorTime = time;
-            trendList.add(glucoseData);
+            // only add data at least 15 min old from start of sensor
+            if (time >= 15) {
+                glucoseData.glucoseLevelRaw =
+                        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+                glucoseData.realDate = sensorStartTime + time * MINUTE;
+                glucoseData.sensorId = tagId;
+                glucoseData.sensorTime = time;
+                trendList.add(glucoseData);
+                // Add raw data to Libre2RawValue
+                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                    Libre2RawValue rawValue = new Libre2RawValue();
+                    rawValue.serial = glucoseData.sensorId;
+                    rawValue.timestamp = glucoseData.realDate;
+                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
+                    rawValue.save();
+                }
+            }
         }
 
 

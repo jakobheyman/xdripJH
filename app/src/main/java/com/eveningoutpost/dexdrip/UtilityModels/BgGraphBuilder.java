@@ -81,8 +81,8 @@ import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.X;
 import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
 
 public class BgGraphBuilder {
-    public static final int FUZZER = (1000 * 30 * 5); // 2.5 minutes
-    public final static long DEXCOM_PERIOD = 300_000; // 5 minutes
+    public static final int FUZZER = (1000 * 30); // 30 seconds
+    public final static long DEXCOM_PERIOD = 60_000; // 1 minute
     public final static double NOISE_TRIGGER = 10;
     public final static double NOISE_TRIGGER_ULTRASENSITIVE = 1;
     public final static double NOISE_TOO_HIGH_FOR_PREDICT = 60;
@@ -107,7 +107,7 @@ public class BgGraphBuilder {
 
 
     private final static double timeshift = 500_000;
-    private static final int NUM_VALUES = (60 / 5) * 24;
+    private static final int NUM_VALUES = (60) * 24; // 60/5 changed to 60
 
     // flag to indicate if readings data has been adjusted
     private static boolean plugin_adjusted = false;
@@ -208,8 +208,8 @@ public class BgGraphBuilder {
             loaded_start=start;
             loaded_end=end;
             bgReadings = BgReading.latestForGraph(numValues, start, end);
-            if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver)
-                Libre2RawValues = Libre2RawValue.latestForGraph(numValues * 5, start, end);
+            if ((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer))
+                Libre2RawValues = Libre2RawValue.latestForGraph(numValues, start, end);
             plugin_adjusted = false;
         } finally {
             readings_lock.unlock();
@@ -231,9 +231,9 @@ public class BgGraphBuilder {
         this.highMark = tolerantParseDouble(prefs.getString("highValue", "170"));
         this.lowMark = tolerantParseDouble(prefs.getString("lowValue", "70"));
         this.doMgdl = (prefs.getString("units", "mgdl").equals("mgdl"));
-        defaultMinY = unitized(40);
-        defaultMaxY = unitized(250);
-        pointSize = isXLargeTablet(context) ? 5 : 3;
+        defaultMinY = unitized(36);
+        defaultMaxY = unitized(190);
+        pointSize = isXLargeTablet(context) ? 5 : 2; // changed 3 to 2
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
         previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
         hoursPreviewStep = isXLargeTablet(context) ? 2 : 1;
@@ -1118,7 +1118,8 @@ public class BgGraphBuilder {
                 for (Calibration calibration : calibrations) {
                     if (calibration.timestamp < (start_time * FUZZER)) break;
                     if (calibration.slope_confidence != 0) {
-                        final long adjusted_timestamp = (calibration.timestamp + (AddCalibration.estimatedInterstitialLagSeconds * 1000));
+                        // final long adjusted_timestamp = (calibration.timestamp + (AddCalibration.estimatedInterstitialLagSeconds * 1000));
+                        final long adjusted_timestamp = calibration.timestamp;
                         final PointValueExtended this_point = new PointValueExtended((float) (adjusted_timestamp / FUZZER), (float) unitized(calibration.bg));
                         if (adjusted_timestamp >= close_to_side_time) {
                             predictivehours = Math.max(predictivehours, 1);
@@ -1234,22 +1235,22 @@ public class BgGraphBuilder {
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(plugin.getGlucoseFromBgReading(bgReading, cd))));
                 }
-                if (bgReading.calculated_value >= 400) {
-                    highValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(400)));
+                if (bgReading.calculated_value >= 1000) {
+                    highValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(1000)));
                 } else if (unitized(bgReading.calculated_value) >= highMark) {
                     highValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
                 } else if (unitized(bgReading.calculated_value) >= lowMark) {
                     inRangeValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
-                } else if (bgReading.calculated_value >= 40) {
+                } else if (bgReading.calculated_value >= 6) {
                     lowValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
-                } else if (bgReading.calculated_value > 13) {
-                    lowValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(40)));
+                } else if (bgReading.calculated_value > 0) {
+                    lowValues.add(new PointValue((float) (bgReading.timestamp / FUZZER), (float) unitized(0)));
                 }
 
-                if (illustrate_backfilled_data && bgReading.calculated_value > 13 && bgReading.calculated_value < 400 && bgReading.isBackfilled()) {
+                if (illustrate_backfilled_data && bgReading.calculated_value > 5 && bgReading.calculated_value < 1000 && bgReading.isBackfilled()) {
                     backfillValues.add(bgReadingToPoint(bgReading));
                 }
-                if (illustrate_remote_data && bgReading.calculated_value > 13 && bgReading.calculated_value < 400 && bgReading.isRemote()) {
+                if (illustrate_remote_data && bgReading.calculated_value > 5 && bgReading.calculated_value < 1000 && bgReading.isRemote()) {
                     remoteValues.add(bgReadingToPoint(bgReading));
                 }
 
@@ -1306,7 +1307,7 @@ public class BgGraphBuilder {
             }
 
             try {
-                if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver && prefs.getBoolean("Libre2_showRawGraph",false)) {
+                if (((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer)) && prefs.getBoolean("Libre2_showRawGraph",false)) {
                     for (final Libre2RawValue bgLibre : Libre2RawValues) {
                         if (bgLibre.glucose > 0) {
                             rawInterpretedValues.add(new PointValue((float) (bgLibre.timestamp / FUZZER), (float) unitized(bgLibre.glucose)));
@@ -2145,19 +2146,24 @@ public class BgGraphBuilder {
 
     public static String unitized_string(double value, boolean doMgdl) {
         final DecimalFormat df = new DecimalFormat("#");
-        if (value >= 400) {
+        if (value >= 1000) {
             return "HIGH";
-        } else if (value >= 40) {
+        } else if (value >= 6) {
             if (doMgdl) {
                 df.setMaximumFractionDigits(0);
                 return df.format(value);
             } else {
-                df.setMaximumFractionDigits(1);
+                // one digit if 10 or higher to keep bg on lock screen
+                if (mmolConvert(value) < 10) {
+                    df.setMaximumFractionDigits(2);
+                } else {
+                    df.setMaximumFractionDigits(1);
+                }
                 //next line ensures mmol/l value is XX.x always.  Required by PebbleWatchSync, and probably not a bad idea.
                 df.setMinimumFractionDigits(1);
                 return df.format(mmolConvert(value));
             }
-        } else if (value > 12) {
+        } else if (value > 0) {
             return "LOW";
         } else {
             switch ((int) value) {

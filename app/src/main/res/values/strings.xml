@@ -204,11 +204,11 @@
     <string name="general_settings">General Settings</string>
     <string name="high_value">High Value</string>
     <string name="low_value">Low Value</string>
-    <string name="end_user_license_agreement">End User License Agreement</string>
+    <string name="end_user_license_agreement">Info</string>
     <string name="save">Save</string>
     <string name="view_important_warning">View Important Warning</string>
     <string name="view_google_licenses">View Google Licenses</string>
-    <string name="not_for_medical_use">Not for medical use - research tool only</string>
+    <string name="not_for_medical_use">Use as you wish!</string>
     <string name="deel_settings_for_algs">Deep settings for algorithms</string>
     <string name="low_level_prediction_values">Low level prediction values</string>
     <string name="glucose_drop_for_one_unit">Glucose drop for 1 Unit</string>

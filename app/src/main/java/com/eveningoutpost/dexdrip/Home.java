@@ -1946,7 +1946,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             chart.setLayoutParams(params);
         }
         chart.setBackgroundColor(getCol(X.color_home_chart_background));
-        chart.setZoomType(ZoomType.HORIZONTAL);
+        chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
 
         chart.getChartData().setAxisXTop(null);
 /*
@@ -1998,7 +1998,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         chart.setOnValueTouchListener(bgGraphBuilder.getOnValueSelectTooltipListener(mActivity));
 
         previewChart.setBackgroundColor(getCol(X.color_home_chart_background));
-        previewChart.setZoomType(ZoomType.HORIZONTAL);
+        previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
         previewChart.setLineChartData(bgGraphBuilder.previewLineData(chart.getLineChartData()));
         previewChart.setViewportCalculationEnabled(true);
         previewChart.setViewportChangeListener(new ViewportListener());
@@ -2278,7 +2278,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (reset_viewport) {
             reset_viewport = false;
             holdViewport.set(0, 0, 0, 0);
-            if (chart != null) chart.setZoomType(ZoomType.HORIZONTAL);
+            if (chart != null) chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
         }
         setupCharts();
         initializeGraphicTrendArrow();
@@ -3278,7 +3278,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             }
 
         });
-        if (Treatments.byTimestamp(timestamp, (int) (2.5 * MINUTE_IN_MS)) != null) {
+        if (Treatments.byTimestamp(timestamp, (int) (0.5 * MINUTE_IN_MS)) != null) {
             dialogBuilder.setNeutralButton("Delete", (dialog, whichButton) -> {
                 // are you sure?
                 final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
@@ -3286,7 +3286,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 builder.setMessage(gs(R.string.are_you_sure_you_want_to_delete_this_treatment));
                 builder.setPositiveButton(gs(R.string.yes_delete), (dialog1, which) -> {
                     dialog1.dismiss();
-                    Treatments.delete_by_timestamp(timestamp, (int) (2.5 * MINUTE_IN_MS), true); // 2.5 min resolution
+                    Treatments.delete_by_timestamp(timestamp, (int) (0.5 * MINUTE_IN_MS), true); // 0.5 min resolution
                     staticRefreshBGCharts();
                     JoH.static_toast_short(gs(R.string.deleted));
                 });
@@ -3533,7 +3533,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         public synchronized void onViewportChanged(Viewport newViewport) {
             if (!updatingPreviewViewport) {
                 updatingChartViewport = true;
-                previewChart.setZoomType(ZoomType.HORIZONTAL);
+                previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
                 previewChart.setCurrentViewport(newViewport);
                 updatingChartViewport = false;
             }
@@ -3545,7 +3545,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         public synchronized void onViewportChanged(Viewport newViewport) {
             if (!updatingChartViewport) {
                 updatingPreviewViewport = true;
-                chart.setZoomType(ZoomType.HORIZONTAL);
+                chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
                 chart.setCurrentViewport(newViewport);
                 tempViewport = newViewport;
                 updatingPreviewViewport = false;

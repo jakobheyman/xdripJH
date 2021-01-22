@@ -58,19 +58,19 @@ public class Unitized {
 
     public static String unitized_string(double value, boolean doMgdl) {
         final DecimalFormat df = new DecimalFormat("#");
-        if (value >= 400) {
+        if (value >= 1000) {
             return "HIGH";
-        } else if (value >= 40) {
+        } else if (value >= 6) {
             if (doMgdl) {
                 df.setMaximumFractionDigits(0);
                 return df.format(value);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
                 //next line ensures mmol/l value is XX.x always.  Required by PebbleWatchSync, and probably not a bad idea.
                 df.setMinimumFractionDigits(1);
                 return df.format(mmolConvert(value));
             }
-        } else if (value > 12) {
+        } else if (value > 0) {
             return "LOW";
         } else {
             switch ((int) value) {

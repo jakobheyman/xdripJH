@@ -71,9 +71,9 @@ public class BgReading extends Model implements ShareUploadableBg {
     //TODO: Have these as adjustable settings!!
     public final static double BESTOFFSET = (60000 * 0); // Assume readings are about x minutes off from actual!
 
-    public static final int BG_READING_ERROR_VALUE = 38; // error marker
-    public static final int BG_READING_MINIMUM_VALUE = 39;
-    public static final int BG_READING_MAXIMUM_VALUE = 400;
+    public static final int BG_READING_ERROR_VALUE = 0; // error marker
+    public static final int BG_READING_MINIMUM_VALUE = 6;
+    public static final int BG_READING_MAXIMUM_VALUE = 1000;
 
     private static volatile long earliest_backfill = 0;
 
@@ -255,14 +255,14 @@ public class BgReading extends Model implements ShareUploadableBg {
         final String unit = Pref.getString("units", "mgdl");
         final DecimalFormat df = new DecimalFormat("#");
         final double this_value = getDg_mgdl();
-        if (this_value >= 400) {
+        if (this_value >= 1000) {
             return "HIGH";
-        } else if (this_value >= 40) {
+        } else if (this_value >= 6) {
             if (unit.equals("mgdl")) {
                 df.setMaximumFractionDigits(0);
                 return df.format(this_value);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
                 return df.format(mmolConvert(this_value));
             }
         } else {
@@ -460,10 +460,10 @@ public class BgReading extends Model implements ShareUploadableBg {
             BgReading bgReading = new Select()
                     .from(BgReading.class)
                     .where("Sensor = ? ", sensor.getId())
-                    .where("timestamp <= ?", (timestamp + (60 * 1000))) // 1 minute padding (should never be that far off, but why not)
+                    .where("timestamp <= ?", (timestamp + (30 * 1000))) // 0.5 minute padding (should never be that far off, but why not)
                     .orderBy("timestamp desc")
                     .executeSingle();
-            if (bgReading != null && Math.abs(bgReading.timestamp - timestamp) < (3 * 60 * 1000)) { //cool, so was it actually within 4 minutes of that bg reading?
+            if (bgReading != null && Math.abs(bgReading.timestamp - timestamp) < (30 * 1000)) { //cool, so was it actually within 0.5 minutes of that bg reading?
                 Log.i(TAG, "isNew; Old Reading");
                 return false;
             }
@@ -619,11 +619,13 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
         }
 
-        // LimiTTer can send 12 to indicate problem with NFC reading.
-        if ((!calibration.check_in) && (raw_data == 12) && (filtered_data == 12)) {
+        // LimiTTer can send 12 to indicate problem with NFC reading. LibreBluetooth can send 5 ???
+        if ((!calibration.check_in) && (raw_data == 5) && (filtered_data == 5)) {
             // store the raw value for sending special codes, note updateCalculatedValue would try to nix it
-            bgReading.calculated_value = raw_data;
-            bgReading.filtered_calculated_value = filtered_data;
+            //bgReading.calculated_value = raw_data;
+            //bgReading.filtered_calculated_value = filtered_data;
+            bgReading.calculated_value = 0;
+            bgReading.filtered_calculated_value = 0;
         }
         return  bgReading;
     }
