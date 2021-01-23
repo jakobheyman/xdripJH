@@ -1946,7 +1946,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             chart.setLayoutParams(params);
         }
         chart.setBackgroundColor(getCol(X.color_home_chart_background));
-        chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
+        chart.setZoomType(ZoomType.HORIZONTAL);
 
         chart.getChartData().setAxisXTop(null);
 /*
@@ -1998,7 +1998,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         chart.setOnValueTouchListener(bgGraphBuilder.getOnValueSelectTooltipListener(mActivity));
 
         previewChart.setBackgroundColor(getCol(X.color_home_chart_background));
-        previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
+        previewChart.setZoomType(ZoomType.VERTICAL);
         previewChart.setLineChartData(bgGraphBuilder.previewLineData(chart.getLineChartData()));
         previewChart.setViewportCalculationEnabled(true);
         previewChart.setViewportChangeListener(new ViewportListener());
@@ -2278,7 +2278,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (reset_viewport) {
             reset_viewport = false;
             holdViewport.set(0, 0, 0, 0);
-            if (chart != null) chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
+            if (chart != null) chart.setZoomType(ZoomType.HORIZONTAL);
         }
         setupCharts();
         initializeGraphicTrendArrow();
@@ -3533,7 +3533,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         public synchronized void onViewportChanged(Viewport newViewport) {
             if (!updatingPreviewViewport) {
                 updatingChartViewport = true;
-                previewChart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
+                previewChart.setZoomType(ZoomType.VERTICAL);
                 previewChart.setCurrentViewport(newViewport);
                 updatingChartViewport = false;
             }
@@ -3545,7 +3545,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         public synchronized void onViewportChanged(Viewport newViewport) {
             if (!updatingChartViewport) {
                 updatingPreviewViewport = true;
-                chart.setZoomType(ZoomType.HORIZONTAL_AND_VERTICAL);
+                chart.setZoomType(ZoomType.HORIZONTAL);
                 chart.setCurrentViewport(newViewport);
                 tempViewport = newViewport;
                 updatingPreviewViewport = false;

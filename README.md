@@ -9,4 +9,4 @@
 * Display raw data (Less common settings > Advanced settings for Libre 2 > show Raw values in Graph)
 * Extended potential min and max values
 * Display two digits mmol glucose values
-* Horizontal and vertical zoom
+* Horizontal zoom in main graph and vertical zoom in preview graph
