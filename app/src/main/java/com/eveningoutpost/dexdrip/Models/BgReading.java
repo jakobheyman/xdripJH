@@ -460,7 +460,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             BgReading bgReading = new Select()
                     .from(BgReading.class)
                     .where("Sensor = ? ", sensor.getId())
-                    .where("timestamp <= ?", (timestamp + (30 * 1000))) // 0.5 minute padding (should never be that far off, but why not)
+                    .where("timestamp <= ?", (timestamp + (45 * 1000))) // 45 seconds padding (should never be that far off, but why not)
                     .orderBy("timestamp desc")
                     .executeSingle();
             if (bgReading != null && Math.abs(bgReading.timestamp - timestamp) < (30 * 1000)) { //cool, so was it actually within 0.5 minutes of that bg reading?

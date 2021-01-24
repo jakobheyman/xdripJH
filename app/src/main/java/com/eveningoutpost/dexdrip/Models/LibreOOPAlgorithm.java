@@ -305,8 +305,8 @@ public class LibreOOPAlgorithm {
 
         String SensorSN = LibreUtils.decodeSerialNumberKey(patchUid);
 
-        // only add data at least 15 min old from start of sensor
-        if (sensorTime >= 15) {
+        // only add data at least 5 min old from start of sensor
+        if (sensorTime >= 5) {
             // Add the first object, that is the current time
             GlucoseData glucoseData = new GlucoseData();
             glucoseData.sensorTime = sensorTime;

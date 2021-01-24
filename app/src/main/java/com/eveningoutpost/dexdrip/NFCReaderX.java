@@ -785,8 +785,8 @@ public class NFCReaderX {
 
             int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
 
-            // only add data at least 15 min old from start of sensor
-            if (time >= 15) {
+            // only add data at least 5 min old from start of sensor
+            if (time >= 5) {
                 glucoseData.glucoseLevelRaw =
                         getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
                 glucoseData.realDate = sensorStartTime + time * MINUTE;
@@ -817,8 +817,8 @@ public class NFCReaderX {
 
             int time = Math.max(0, sensorTime - index);
 
-            // only add data at least 15 min old from start of sensor
-            if (time >= 15) {
+            // only add data at least 5 min old from start of sensor
+            if (time >= 5) {
                 glucoseData.glucoseLevelRaw =
                         getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
                 glucoseData.realDate = sensorStartTime + time * MINUTE;
