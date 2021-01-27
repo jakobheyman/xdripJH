@@ -9,5 +9,5 @@
 * Display raw data (Less common settings > Advanced settings for Libre 2 > show Raw values in Graph)
 * LIBRE_MULTIPLIER = 100 instead of 117.64705 to reduce high Libre-2 raw values
 * Extended potential min and max values
-* Display two digits mmol glucose values
+* Display mmol glucose values with two decimal digits
 * Horizontal zoom in main graph and vertical zoom in preview graph

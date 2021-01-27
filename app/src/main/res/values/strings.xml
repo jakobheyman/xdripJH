@@ -1469,7 +1469,7 @@
     <string name="top">Top</string>
     <string name="connect_device_usb_otg">Please connect your device via USB OTG cable.</string>
     <string name="connection_status">Connection Status:</string>
-    <string name="range_in_high_low">Range: (in/high/low)</string>
+    <string name="range_in_high_low">In/high/low:</string>
     <string name="absolute_s">Absolute #s:</string>
     <string name="median_bg">Median BG:</string>
     <string name="mean_bg">Mean BG:</string>
