@@ -1,7 +1,7 @@
 # xdripJH
 > Modified version of xDrip+
 
- Info page and APK download for source xDrip+: https://jamorham.github.io/#xdrip-plus
+ xDrip+ source: https://github.com/NightscoutFoundation/xDrip
 
 ## Major changes compared to original xDrip+
 * Modifications done primarily for Libre-2 OOP2 setup
