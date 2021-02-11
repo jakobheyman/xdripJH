@@ -83,6 +83,7 @@ import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Setter;
+import lombok.val;
 
 import static com.eveningoutpost.dexdrip.G5Model.BluetoothServices.getUUIDName;
 import static com.eveningoutpost.dexdrip.G5Model.CalibrationState.Ok;
@@ -600,6 +601,7 @@ public class Ob1G5CollectionService extends G5BaseService {
                     stateSubscription = new Subscription(bleDevice.observeConnectionStateChanges()
                             // .observeOn(AndroidSchedulers.mainThread())
                             .subscribeOn(Schedulers.io())
+                            .doFinally(this::releaseFloating)
                             .subscribe(this::onConnectionStateChange, throwable -> {
                                 UserError.Log.wtf(TAG, "Got Error from state subscription: " + throwable);
                             }));
@@ -1360,6 +1362,15 @@ public class Ob1G5CollectionService extends G5BaseService {
         }
     }
 
+    private void releaseFloating() {
+        val wl = floatingWakeLock;
+        if (wl != null) {
+            if (wl.isHeld()) {
+                JoH.releaseWakeLock(wl);
+            }
+        }
+    }
+
     public void connectionStateChange(String connection_state) {
         static_connection_state = connection_state;
         if (connection_state.equals(CLOSED_OK_TEXT)) {
@@ -1846,8 +1857,10 @@ public class Ob1G5CollectionService extends G5BaseService {
                     return Span.colorSpan("Starting Sensor", NOTICE.color());
                 } else if (lastSensorState.sensorStarted() && isPendingStop()) {
                     return Span.colorSpan("Stopping Sensor", NOTICE.color());
+                } else if (lastSensorState.needsCalibration() && pendingCalibration()) {
+                    return Span.colorSpan("Sending calibration", NOTICE.color());
                 } else {
-                    return Span.colorSpan(lastSensorState.getExtendedText(), lastSensorState == CalibrationState.WarmingUp ? NOTICE.color() : lastSensorState.sensorFailed() ? CRITICAL.color() : BAD.color());
+                    return Span.colorSpan(lastSensorState.getExtendedText(), lastSensorState.transitional() ? NOTICE.color() : lastSensorState.sensorFailed() ? CRITICAL.color() : BAD.color());
                 }
             } else {
                 return null;
