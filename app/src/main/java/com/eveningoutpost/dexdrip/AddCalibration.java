@@ -110,43 +110,43 @@ public class AddCalibration extends AppCompatActivity implements NavigationDrawe
                                             if (lastExternalCalibrationValue == 0) {
                                                 lastExternalCalibrationValue = PersistentStore.getDouble(LAST_EXTERNAL_CALIBRATION);
                                             }
-                                            if (calValue != lastExternalCalibrationValue) {
+                                            //if (calValue != lastExternalCalibrationValue) { // Allow identical calibration values following each other
 
-                                                if (!Home.get_follower()) {
-                                                    lastExternalCalibrationValue = calValue;
-                                                    PersistentStore.setDouble(LAST_EXTERNAL_CALIBRATION, calValue);
-                                                    UserError.Log.uel(TAG, "Creating auto calibration from: " + calValue + " requested: " + JoH.dateTimeText(timestamp) + " from source: " + cal_source);
+                                            if (!Home.get_follower()) {
+                                                lastExternalCalibrationValue = calValue;
+                                                PersistentStore.setDouble(LAST_EXTERNAL_CALIBRATION, calValue);
+                                                UserError.Log.uel(TAG, "Creating auto calibration from: " + calValue + " requested: " + JoH.dateTimeText(timestamp) + " from source: " + cal_source);
 
-                                                    // feed calibration to native pipe without trying to create an old style calibration record
-                                                    final Double convertedBg = Calibration.getConvertedBg(calValue);
-                                                    if (convertedBg != null) {
-                                                        final long calibration_timestamp = JoH.tsl() - (bgAgeNumber * 1000);
-                                                        NativeCalibrationPipe.addCalibration(convertedBg.intValue(), calibration_timestamp);
-                                                        UserError.Log.uel(TAG, "Sending native calibration pipe value: " + convertedBg.intValue() + " mg/dl taken at timestamp: " + JoH.dateTimeText(calibration_timestamp) + " source: " + cal_source);
-                                                    }
-
-                                                    final Calibration calibration = Calibration.create(calValue, bgAgeNumber, getApplicationContext(), (note_only.equals("true")), localEstimatedInterstitialLagSeconds);
-                                                    if ((calibration != null) && allow_undo.equals("true") && (JoH.msSince(calibration.timestamp) < Constants.HOUR_IN_MS)) {
-                                                        UndoRedo.addUndoCalibration(calibration.uuid);
-                                                    }
-                                                    if (calibration != null) {
-                                                        //Ob1G5StateMachine.addCalibration((int)calibration.bg, calibration.timestamp);
-                                                        NativeCalibrationPipe.addCalibration((int)calibration.bg, calibration.timestamp);
-                                                    }
-                                                    //startWatchUpdaterService(getApplicationContext(), WatchUpdaterService.ACTION_SYNC_CALIBRATION, TAG);
-                                                } else {
-                                                    // follower sends the calibration data onwards only if sourced from interactive request
-                                                    if (from_interactive.equals("true")) {
-                                                        Log.d(TAG, "Interactive calibration and we are follower so sending to master");
-                                                        sendFollowerCalibration(calValue, bgAgeNumber);
-                                                    } else {
-                                                        Log.d(TAG, "Not an interactive calibration so not sending to master");
-                                                    }
+                                                // feed calibration to native pipe without trying to create an old style calibration record
+                                                final Double convertedBg = Calibration.getConvertedBg(calValue);
+                                                if (convertedBg != null) {
+                                                    final long calibration_timestamp = JoH.tsl() - (bgAgeNumber * 1000);
+                                                    NativeCalibrationPipe.addCalibration(convertedBg.intValue(), calibration_timestamp);
+                                                    UserError.Log.uel(TAG, "Sending native calibration pipe value: " + convertedBg.intValue() + " mg/dl taken at timestamp: " + JoH.dateTimeText(calibration_timestamp) + " source: " + cal_source);
                                                 }
 
+                                                final Calibration calibration = Calibration.create(calValue, bgAgeNumber, getApplicationContext(), (note_only.equals("true")), localEstimatedInterstitialLagSeconds);
+                                                if ((calibration != null) && allow_undo.equals("true") && (JoH.msSince(calibration.timestamp) < Constants.HOUR_IN_MS)) {
+                                                    UndoRedo.addUndoCalibration(calibration.uuid);
+                                                }
+                                                if (calibration != null) {
+                                                    //Ob1G5StateMachine.addCalibration((int)calibration.bg, calibration.timestamp);
+                                                    NativeCalibrationPipe.addCalibration((int)calibration.bg, calibration.timestamp);
+                                                }
+                                                //startWatchUpdaterService(getApplicationContext(), WatchUpdaterService.ACTION_SYNC_CALIBRATION, TAG);
                                             } else {
-                                                UserError.Log.e(TAG, "Ignoring Remote calibration value as identical to last one: " + calValue);
+                                                // follower sends the calibration data onwards only if sourced from interactive request
+                                                if (from_interactive.equals("true")) {
+                                                    Log.d(TAG, "Interactive calibration and we are follower so sending to master");
+                                                    sendFollowerCalibration(calValue, bgAgeNumber);
+                                                } else {
+                                                    Log.d(TAG, "Not an interactive calibration so not sending to master");
+                                                }
                                             }
+
+                                            //} else { // Allow identical calibration values following each other
+                                            //    UserError.Log.e(TAG, "Ignoring Remote calibration value as identical to last one: " + calValue);
+                                            //}
 
                                             if (from_external.equals("true")) {
                                                 Log.d("jamorham calib", "Relaying tasker pushed calibration");
