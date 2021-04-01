@@ -110,7 +110,7 @@ public class AddCalibration extends AppCompatActivity implements NavigationDrawe
                                             if (lastExternalCalibrationValue == 0) {
                                                 lastExternalCalibrationValue = PersistentStore.getDouble(LAST_EXTERNAL_CALIBRATION);
                                             }
-                                            //if (calValue != lastExternalCalibrationValue) { // Allow identical calibration values following each other
+                                            //if (calValue != lastExternalCalibrationValue) { // Allow identical subsequent calibration values
 
                                             if (!Home.get_follower()) {
                                                 lastExternalCalibrationValue = calValue;
@@ -144,7 +144,7 @@ public class AddCalibration extends AppCompatActivity implements NavigationDrawe
                                                 }
                                             }
 
-                                            //} else { // Allow identical calibration values following each other
+                                            //} else { // Allow identical subsequent calibration values
                                             //    UserError.Log.e(TAG, "Ignoring Remote calibration value as identical to last one: " + calValue);
                                             //}
 
