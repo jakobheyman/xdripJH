@@ -15,8 +15,17 @@ public class Constants {
     public static final long WEEK_IN_MS = DAY_IN_MS * 7;
     public static final long MONTH_IN_MS = DAY_IN_MS * 30;
 
-    //public static final double LIBRE_MULTIPLIER = 117.64705; // to match (raw/8.5)*1000
-    public static final double LIBRE_MULTIPLIER = 92; // to reduce the high Libre-2 raw values
+    public static final double LIBRE_MULTIPLIER = 117.64705; // to match (raw/8.5)*1000
+    // modify Libre-2 raw values
+    //public static final double LIBRE_MULTIPLIER = 90;
+    //public static final double LIBRE_MULTIPLIER = 95;
+    //public static final double LIBRE_MULTIPLIER = 100;
+    //public static final double LIBRE_MULTIPLIER = 105;
+    //public static final double LIBRE_MULTIPLIER = 110;
+    //public static final double LIBRE_MULTIPLIER = 115;
+    //public static final double LIBRE_MULTIPLIER = 120;
+    //public static final double LIBRE_MULTIPLIER = 125;
+    //public static final double LIBRE_MULTIPLIER = 130;
 
     /* Configuration parameters */
 
