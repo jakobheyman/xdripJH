@@ -15,6 +15,7 @@ import com.eveningoutpost.dexdrip.UtilityModels.Intents;
 import com.eveningoutpost.dexdrip.UtilityModels.LibreUtils;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.UtilityModels.RawModification;
 import com.eveningoutpost.dexdrip.xdrip;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -293,7 +294,9 @@ public class LibreOOPAlgorithm {
     
     public static void handleDecodedBleResult(long timestamp, byte[] ble_data, byte []patchUid) {
 
-        int raw  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
+        //int raw  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
+        int raw1  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
+        int raw = RawModification.raw_mod(raw1);
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
         Log.e(TAG, "Creating BG time =  " + sensorTime + "raw = " + raw);
         

@@ -1352,6 +1352,18 @@
                     android:key="Libre2_showSensors"
                     android:summary="switch to On to show additional Information's in Status for Libre 2 Sensors"
                     android:title="show Sensors Infos in Status" />
+                <EditTextPreference
+                    android:key="raw_multiplier"
+                    android:title="Raw multiplier"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:defaultValue="1" />
+                <EditTextPreference
+                    android:key="raw_addition"
+                    android:title="Raw addition +/- (mmol or mgdl)"
+                    android:numeric="decimal"
+                    android:inputType="numberSigned|numberDecimal"
+                    android:defaultValue="0" />
             </PreferenceScreen>
 
             <CheckBoxPreference

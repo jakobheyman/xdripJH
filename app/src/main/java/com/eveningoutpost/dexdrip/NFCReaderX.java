@@ -42,6 +42,7 @@ import com.eveningoutpost.dexdrip.UtilityModels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.UtilityModels.LibreUtils;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.UtilityModels.RawModification;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 
 import com.eveningoutpost.dexdrip.Models.LibreOOPAlgorithm.SensorType;
@@ -787,8 +788,10 @@ public class NFCReaderX {
 
             // only add data at least 5 min old from start of sensor
             if (time >= 5) {
-                glucoseData.glucoseLevelRaw =
-                        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+                //glucoseData.glucoseLevelRaw =
+                //        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+                int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
                 glucoseData.realDate = sensorStartTime + time * MINUTE;
                 glucoseData.sensorId = tagId;
                 glucoseData.sensorTime = time;
@@ -819,8 +822,10 @@ public class NFCReaderX {
 
             // only add data at least 5 min old from start of sensor
             if (time >= 5) {
-                glucoseData.glucoseLevelRaw =
-                        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+                //glucoseData.glucoseLevelRaw =
+                //        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+                int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
                 glucoseData.realDate = sensorStartTime + time * MINUTE;
                 glucoseData.sensorId = tagId;
                 glucoseData.sensorTime = time;
