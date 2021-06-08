@@ -232,8 +232,9 @@ public class BgGraphBuilder {
         this.highMark = tolerantParseDouble(prefs.getString("highValue", "170"), 170);
         this.lowMark = tolerantParseDouble(prefs.getString("lowValue", "70"), 70);
         this.doMgdl = (prefs.getString("units", "mgdl").equals("mgdl"));
-        defaultMinY = unitized(36);
-        defaultMaxY = unitized(190);
+        // Graph min and max Y can be set under Display Settings > Graph Settings
+        defaultMinY = tolerantParseDouble(prefs.getString("graph_min_y", "2"), 2d);
+        defaultMaxY = tolerantParseDouble(prefs.getString("graph_max_y", "10.4"), 10.4d);
         pointSize = isXLargeTablet(context) ? 5 : 2; // changed 3 to 2
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
         previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
@@ -2089,6 +2090,9 @@ public class BgGraphBuilder {
     /////////VIEWPORT RELATED//////////////
     public Viewport advanceViewport(Chart chart, Chart previewChart, float hours) {
         viewport = new Viewport(previewChart.getMaximumViewport());
+        // keep viewport Y-range constant
+        viewport.top = (float) defaultMaxY;
+        viewport.bottom = (float) defaultMinY;
         viewport.inset((float) ((86400000 / hours) / FUZZER), 0);
         double distance_to_move = ((new Date().getTime()) / FUZZER) - viewport.left - (((viewport.right - viewport.left) / 2));
         viewport.offset((float) distance_to_move, 0);

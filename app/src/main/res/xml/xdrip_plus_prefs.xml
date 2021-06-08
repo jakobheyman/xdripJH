@@ -327,6 +327,18 @@
                 android:title="@string/title_xdrip_plus_graph_display_settings">
 
 
+                <EditTextPreference
+                    android:key="graph_min_y"
+                    android:title="Graph min Y"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:defaultValue="2" />
+                <EditTextPreference
+                    android:key="graph_max_y"
+                    android:title="Graph max Y"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:defaultValue="10.4" />
                 <CheckBoxPreference
                     android:defaultValue="true"
                     android:key="rewrite_history"
