@@ -2093,6 +2093,44 @@ public class BgGraphBuilder {
         // keep viewport Y-range constant
         viewport.top = (float) defaultMaxY;
         viewport.bottom = (float) defaultMinY;
+        // pick out max and min bg over the last 1 hours and use to move viewport up/down
+        long endtime = (long) (new Date().getTime());
+        long starttime = endtime - Constants.HOUR_IN_MS;
+        List<BgReading> bgReadings_2h = BgReading.latestForGraph(61, starttime, endtime);
+        if (bgReadings_2h != null && bgReadings_2h.size() > 0) {
+            int i = 0;
+            int max_i = 0;
+            int min_i = 0;
+            double Yheight = defaultMaxY - defaultMinY;
+            double present_bg = bgReadings_2h.get(i).calculated_value;
+            double max_1h_bg = present_bg;
+            double min_1h_bg = present_bg;
+            while (++i < bgReadings_2h.size()) {
+                if (bgReadings_2h.get(i).calculated_value > max_1h_bg) {
+                    max_1h_bg = bgReadings_2h.get(i).calculated_value;
+                    max_i = i;
+                }
+                if (bgReadings_2h.get(i).calculated_value < min_1h_bg) {
+                    min_1h_bg = bgReadings_2h.get(i).calculated_value;
+                    min_i = i;
+                }
+            }
+            if ((unitized(max_1h_bg) > defaultMaxY) && (unitized(min_1h_bg) >= defaultMinY)) {
+                viewport.top = (float) unitized(max_1h_bg);
+                viewport.bottom = (float) (unitized(max_1h_bg) - Yheight);
+            } else if ((unitized(min_1h_bg) < defaultMinY) && (unitized(max_1h_bg) <= defaultMaxY)) {
+                viewport.bottom = (float) (unitized(min_1h_bg));
+                viewport.top = (float) (unitized(min_1h_bg) + Yheight);
+            } else if ((unitized(max_1h_bg) > defaultMaxY) && (unitized(min_1h_bg) < defaultMinY)) {
+                if (max_i < min_i) {
+                    viewport.top = (float) unitized(max_1h_bg);
+                    viewport.bottom = (float) (unitized(max_1h_bg) - Yheight);
+                } else {
+                    viewport.bottom = (float) (unitized(min_1h_bg));
+                    viewport.top = (float) (unitized(min_1h_bg) + Yheight);
+                }
+            }
+        }
         viewport.inset((float) ((86400000 / hours) / FUZZER), 0);
         double distance_to_move = ((new Date().getTime()) / FUZZER) - viewport.left - (((viewport.right - viewport.left) / 2));
         viewport.offset((float) distance_to_move, 0);
