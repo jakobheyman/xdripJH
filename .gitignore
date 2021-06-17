@@ -24,6 +24,8 @@ app/src/test/java/com/eveningoutpost/dexdrip/spike/
 app/prod
 
 # Gradle files
+build.gradle
+gradle/
 .gradle/
 build/
 app/release

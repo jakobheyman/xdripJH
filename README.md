@@ -10,5 +10,5 @@
 * Optionally modify Libre-2 raw values with multipl and/or +/- (Advanced settings for Libre 2)
 * Extended potential min and max values
 * Display mmol glucose values with two decimal digits
-* Optionally modify min and max Y in graph and keep range constant in main graph
+* Optionally modify min and max Y in graph (Graph Settings) and keep range constant in main graph
 * Horizontal zoom in main graph and vertical zoom in preview graph
