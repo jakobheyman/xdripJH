@@ -7,7 +7,7 @@
 * Modifications done primarily for Libre-2 OOP2 setup
 * Display 1 min data instead of original 5 min
 * Display raw data (Less common settings > Advanced settings for Libre 2 > show Raw values in Graph)
-* Optionally modify Libre-2 raw values with multipl and/or +/- (Advanced settings for Libre 2)
+* Optionally modify Libre-2 raw values with multiplication and/or +/- (Advanced settings for Libre 2)
 * Extended potential min and max values
 * Display mmol glucose values with two decimal digits
 * Optionally modify min and max Y in graph (Graph Settings) and keep range constant in main graph
