@@ -1332,7 +1332,7 @@ public class BgGraphBuilder {
                 try {
                     if (d) Log.d(TAG, "noise Poly list size: " + noise_polyxList.size());
                     // TODO Impossible to satisfy noise evaluation size with only raw data do we want it with raw only??
-                    if (noise_polyxList.size() > 5) {
+                    if ((noise_polyxList.size() > 5) && !Pref.getBooleanDefaultFalse("hide_noise_line")) {
                         noisePoly = new PolyTrendLine(2);
                         final double[] noise_polyys = PolyTrendLine.toPrimitiveFromList(noise_polyyList);
                         final double[] noise_polyxs = PolyTrendLine.toPrimitiveFromList(noise_polyxList);

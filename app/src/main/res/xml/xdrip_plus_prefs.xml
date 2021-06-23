@@ -432,6 +432,10 @@
                     android:summary="Hide the graph on widgets (shows on next reading)"
                     android:title="Hide widget graph" />
                 <CheckBoxPreference
+                    android:key="hide_noise_line"
+                    android:summary="Hide the potential noise line"
+                    android:title="Hide noise line" />
+                <CheckBoxPreference
                     android:dependency="engineering_mode"
                     android:key="illustrate_remote_data"
                     android:summary="Show data received remotely (diagnostic only)"

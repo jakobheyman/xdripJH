@@ -12,3 +12,4 @@
 * Display mmol glucose values with two decimal digits
 * Optionally modify min and max Y in graph (Graph Settings) and keep range constant in main graph
 * Horizontal zoom in main graph and vertical zoom in preview graph
+* Optionally hide noise line (Graph Settings)
