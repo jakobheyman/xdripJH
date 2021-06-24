@@ -214,6 +214,10 @@ public class LibreOOPAlgorithm {
             Log.e(TAG, "HandleData cought exception ", e);
             return;
         }
+        // only add data at least 5 min old from start of sensor
+        if(oOPResults.currentTime < 5) {
+            return;
+        }
         boolean use_raw = Pref.getBooleanDefaultFalse("calibrate_external_libre_algorithm");
         ReadingData readingData = new ReadingData();
 
@@ -233,6 +237,14 @@ public class LibreOOPAlgorithm {
         glucoseData.glucoseLevel = (int)(oOPResults.currentBg * factor);
         glucoseData.glucoseLevelRaw = (int)(oOPResults.currentBg * factor);
 
+        // Add raw data to Libre2RawValue
+        if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+            Libre2RawValue rawValue = new Libre2RawValue();
+            rawValue.timestamp = glucoseData.realDate;
+            rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
+            rawValue.save();
+        }
+
         readingData.trend.add(glucoseData);
         
         // TODO: Add here data of last 10 minutes or whatever.
@@ -247,6 +259,14 @@ public class LibreOOPAlgorithm {
                 glucoseData.glucoseLevel = (int)(historicBg.bg * factor);
                 glucoseData.glucoseLevelRaw = (int)(historicBg.bg * factor);
                 readingData.history.add(glucoseData);
+
+                // Add raw data to Libre2RawValue
+                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                    Libre2RawValue rawValue = new Libre2RawValue();
+                    rawValue.timestamp = glucoseData.realDate;
+                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
+                    rawValue.save();
+                }
             }
         }
         
@@ -323,31 +343,31 @@ public class LibreOOPAlgorithm {
         
         ArrayList<GlucoseData> trendList = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
+            GlucoseData glucoseData = new GlucoseData();
+
             int relative_time = LIBRE2_SHIFT[i];
-            int sensorTime1 = sensorTime - relative_time;
-
             // only add data at least 5 min old from start of sensor
-            if (sensorTime1 >= 5) {
-                GlucoseData glucoseData = new GlucoseData();
-                
-                //glucoseData.glucoseLevelRaw = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
-                int raw1  = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
-                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-                glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, i * 4, 0xe, 0xc) << 2;
-                glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0x1a , 0x6);
-                glucoseData.source = GlucoseData.DataSource.BLE;
-                
-                glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
-                glucoseData.sensorTime = sensorTime - relative_time;
-                trendList.add(glucoseData);
+            if((sensorTime - relative_time) < 5) {
+                break;
+            }
 
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
+            //glucoseData.glucoseLevelRaw = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
+            int raw1  = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
+            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, i * 4, 0xe, 0xc) << 2;
+            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0x1a , 0x6);
+            glucoseData.source = GlucoseData.DataSource.BLE;
+
+            glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
+            glucoseData.sensorTime = sensorTime - relative_time;
+            trendList.add(glucoseData);
+
+            // Add raw data to Libre2RawValue
+            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                Libre2RawValue rawValue = new Libre2RawValue();
+                rawValue.timestamp = glucoseData.realDate;
+                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
+                rawValue.save();
             }
         }
         return trendList;
@@ -363,27 +383,32 @@ public class LibreOOPAlgorithm {
         ArrayList<GlucoseData> historyList = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
+            GlucoseData glucoseData = new GlucoseData();
+
             int relative_time = i*15;
             int final_time = sensorTimeModulo - relative_time;
             // only add data at least 5 min old from start of sensor
-            if (final_time >= 5) {
-                GlucoseData glucoseData = new GlucoseData();
+            if(final_time < 5) {
+                break;
+            }
 
-                //glucoseData.glucoseLevelRaw = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
-                int raw1  = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
-                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-                glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4, 0xe, 0xc) << 2;
-                glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4 , 0x1a , 0x6);
-                glucoseData.source = GlucoseData.DataSource.BLE;
+            //glucoseData.glucoseLevelRaw = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
+            int raw1  = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
+            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4, 0xe, 0xc) << 2;
+            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4 , 0x1a , 0x6);
+            glucoseData.source = GlucoseData.DataSource.BLE;
 
-                //int relative_time = i*15;
-                //int final_time = sensorTimeModulo - relative_time;
-                if(final_time < 0) {
-                    break;
-                }
-                glucoseData.realDate = captureDateTime  + (final_time - sensorTime) * Constants.MINUTE_IN_MS;
-                glucoseData.sensorTime = final_time;
-                historyList.add(glucoseData);
+            glucoseData.realDate = captureDateTime  + (final_time - sensorTime) * Constants.MINUTE_IN_MS;
+            glucoseData.sensorTime = final_time;
+            historyList.add(glucoseData);
+
+            // Add raw data to Libre2RawValue
+            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                Libre2RawValue rawValue = new Libre2RawValue();
+                rawValue.timestamp = glucoseData.realDate;
+                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
+                rawValue.save();
             }
         }
         return historyList;

@@ -788,26 +788,27 @@ public class NFCReaderX {
             //       getGlucose(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]});
 
             int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
-
             // only add data at least 5 min old from start of sensor
-            if (time >= 5) {
-                //glucoseData.glucoseLevelRaw =
-                //        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
-                int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
-                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-                glucoseData.flags = LibreOOPAlgorithm.readBits(data, i*6 + 124, 0xe , 0xc);
-                glucoseData.temp = LibreOOPAlgorithm.readBits(data, i*6 + 124, 0x1a , 0xc);
-                glucoseData.source = GlucoseData.DataSource.FRAM;
-                glucoseData.realDate = sensorStartTime + time * MINUTE;
-                glucoseData.sensorTime = time;
-                historyList.add(glucoseData);
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
+            if(time < 5) {
+                break;
+            }
+
+            //glucoseData.glucoseLevelRaw =
+            //        getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+            int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 125)], data[(i * 6 + 124)]}, thirteen_bit_mask);
+            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
+            glucoseData.flags = LibreOOPAlgorithm.readBits(data, i*6 + 124, 0xe , 0xc);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(data, i*6 + 124, 0x1a , 0xc);
+            glucoseData.source = GlucoseData.DataSource.FRAM;
+            glucoseData.realDate = sensorStartTime + time * MINUTE;
+            glucoseData.sensorTime = time;
+            historyList.add(glucoseData);
+            // Add raw data to Libre2RawValue
+            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                Libre2RawValue rawValue = new Libre2RawValue();
+                rawValue.timestamp = glucoseData.realDate;
+                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
+                rawValue.save();
             }
         }
 
@@ -823,26 +824,27 @@ public class NFCReaderX {
             //         getGlucose(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]});
 
             int time = Math.max(0, sensorTime - index);
-
             // only add data at least 5 min old from start of sensor
-            if (time >= 5) {
-                //glucoseData.glucoseLevelRaw =
-                //        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
-                int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
-                glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-                glucoseData.flags = LibreOOPAlgorithm.readBits(data, i*6 + 28, 0xe , 0xc);
-                glucoseData.temp = LibreOOPAlgorithm.readBits(data, i*6 + 28, 0x1a , 0xc);
-                glucoseData.source = GlucoseData.DataSource.FRAM;
-                glucoseData.realDate = sensorStartTime + time * MINUTE;
-                glucoseData.sensorTime = time;
-                trendList.add(glucoseData);
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
+            if(time < 5) {
+                break;
+            }
+
+            //glucoseData.glucoseLevelRaw =
+            //        getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+            int raw1 = getGlucoseRaw(new byte[]{data[(i * 6 + 29)], data[(i * 6 + 28)]}, thirteen_bit_mask);
+            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
+            glucoseData.flags = LibreOOPAlgorithm.readBits(data, i*6 + 28, 0xe , 0xc);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(data, i*6 + 28, 0x1a , 0xc);
+            glucoseData.source = GlucoseData.DataSource.FRAM;
+            glucoseData.realDate = sensorStartTime + time * MINUTE;
+            glucoseData.sensorTime = time;
+            trendList.add(glucoseData);
+            // Add raw data to Libre2RawValue
+            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                Libre2RawValue rawValue = new Libre2RawValue();
+                rawValue.timestamp = glucoseData.realDate;
+                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
+                rawValue.save();
             }
         }
 
