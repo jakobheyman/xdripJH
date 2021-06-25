@@ -1357,12 +1357,14 @@
                     android:title="Raw multiplier"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
+                    android:summary=""
                     android:defaultValue="1" />
                 <EditTextPreference
                     android:key="raw_addition"
                     android:title="Raw addition +/- (mmol or mgdl)"
                     android:numeric="decimal"
                     android:inputType="numberSigned|numberDecimal"
+                    android:summary=""
                     android:defaultValue="0" />
             </PreferenceScreen>
 

@@ -1462,6 +1462,11 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("low_predict_alarm_level"));
             Profile.validateTargetRange();
             bindPreferenceSummaryToValue(findPreference("plus_target_range"));
+            bindPreferenceSummaryToValue(findPreference("graph_min_y"));
+            bindPreferenceSummaryToValue(findPreference("graph_max_y"));
+            bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
+            bindPreferenceSummaryToValue(findPreference("raw_addition"));
+            
 
             useCustomSyncKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override

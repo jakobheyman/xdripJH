@@ -330,12 +330,14 @@
                     android:title="Graph min Y"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
+                    android:summary=""
                     android:defaultValue="2" />
                 <EditTextPreference
                     android:key="graph_max_y"
                     android:title="Graph max Y"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
+                    android:summary=""
                     android:defaultValue="10.4" />
                 <CheckBoxPreference
                     android:defaultValue="true"
