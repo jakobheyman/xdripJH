@@ -1466,7 +1466,6 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("graph_max_y"));
             bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
             bindPreferenceSummaryToValue(findPreference("raw_addition"));
-            
 
             useCustomSyncKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
