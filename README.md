@@ -13,3 +13,4 @@
 * Keep Y range constant in main graph and optionally modify min and max Y (Graph Settings)
 * Horizontal zoom in main graph and vertical zoom in preview graph
 * Optionally hide noise line (Graph Settings)
+* Calibration Graph uses the same unit (mg/dl or mmol/l) for raw and calibrated values
