@@ -2665,6 +2665,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             final Double lowVal = Double.parseDouble(preferences.getString("lowValue", "0"));
             final Double default_insulin_sensitivity = Double.parseDouble(preferences.getString("profile_insulin_sensitivity_default", "54"));
             final Double default_target_glucose = Double.parseDouble(preferences.getString("plus_target_range", "100"));
+            final Double graphminY = Double.parseDouble(preferences.getString("graph_min_y", "0"));
+            final Double graphmaxY = Double.parseDouble(preferences.getString("graph_max_y", "0"));
 
 
             static_units = newValue.toString();
@@ -2674,13 +2676,15 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("highValue", Long.toString(Math.round(highVal * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", Long.toString(Math.round(default_insulin_sensitivity * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("plus_target_range", Long.toString(Math.round(default_target_glucose * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("graph_max_y", Long.toString(Math.round(graphmaxY * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
-                if (lowVal < 36) {
+                if (lowVal < 9) {
                     ProfileEditor.convertData(Constants.MMOLL_TO_MGDL);
                     preferences.edit().putString("lowValue", Long.toString(Math.round(lowVal * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", Long.toString(Math.round(default_insulin_sensitivity * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("plus_target_range", Long.toString(Math.round(default_target_glucose * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("graph_min_y", Long.toString(Math.round(graphminY * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
 
@@ -2690,13 +2694,15 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("highValue", JoH.qs(highVal * Constants.MGDL_TO_MMOLL, 1)).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", JoH.qs(default_insulin_sensitivity * Constants.MGDL_TO_MMOLL, 2)).apply();
                     preferences.edit().putString("plus_target_range", JoH.qs(default_target_glucose * Constants.MGDL_TO_MMOLL,1)).apply();
+                    preferences.edit().putString("graph_max_y", JoH.qs(graphmaxY * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
-                if (lowVal > 35) {
+                if (lowVal > 8) {
                     ProfileEditor.convertData(Constants.MGDL_TO_MMOLL);
                     preferences.edit().putString("lowValue", JoH.qs(lowVal * Constants.MGDL_TO_MMOLL, 1)).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", JoH.qs(default_insulin_sensitivity * Constants.MGDL_TO_MMOLL, 2)).apply();
                     preferences.edit().putString("plus_target_range", JoH.qs(default_target_glucose * Constants.MGDL_TO_MMOLL,1)).apply();
+                    preferences.edit().putString("graph_min_y", JoH.qs(graphminY * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
             }
