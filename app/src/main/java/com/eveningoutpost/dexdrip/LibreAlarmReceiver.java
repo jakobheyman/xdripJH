@@ -300,16 +300,13 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                         final long endTime = mHistory.get(mHistory.size() - 1).realDate;
     
                         for (long ptime = startTime; ptime <= endTime; ptime += 300000) {
-                            // only add data for times > 46 min before present
-                            if (ptime < (JoH.tsl() - (46 * Constants.MINUTE_IN_MS))) {
-                                if (d)
-                                    Log.d(TAG, "Spline: " + JoH.dateTimeText((long) ptime) + " value: " + (int) polySplineF.value(ptime));
-                                if (use_raw) {
-                                    // Here we do not use smoothed data, since data is already smoothed for the history
-                                    createBGfromGD(new GlucoseData((int) polySplineF.value(ptime), ptime), false, true);
-                                } else {
-                                    BgReading.bgReadingInsertFromInt((int) polySplineF.value(ptime), ptime, false);
-                                }
+                            if (d)
+                                Log.d(TAG, "Spline: " + JoH.dateTimeText((long) ptime) + " value: " + (int) polySplineF.value(ptime));
+                            if (use_raw) {
+                                // Here we do not use smoothed data, since data is already smoothed for the history
+                                createBGfromGD(new GlucoseData((int) polySplineF.value(ptime), ptime), false, true);
+                            } else {
+                                BgReading.bgReadingInsertFromInt((int) polySplineF.value(ptime), ptime, false);
                             }
                         }
                     } catch (org.apache.commons.math3.exception.NonMonotonicSequenceException e) {
