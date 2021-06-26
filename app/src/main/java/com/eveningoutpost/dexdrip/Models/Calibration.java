@@ -531,7 +531,7 @@ public class Calibration extends Model {
         if (unit.compareTo("mgdl") != 0) {
             bg = bg * Constants.MMOLL_TO_MGDL;
         }
-        if ((bg < 40) || (bg > 400)) {
+        if ((bg < 10) || (bg > 1000)) {
             return null;
         }
         return bg;
