@@ -2667,6 +2667,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             final Double default_target_glucose = Double.parseDouble(preferences.getString("plus_target_range", "100"));
             final Double graphminY = Double.parseDouble(preferences.getString("graph_min_y", "0"));
             final Double graphmaxY = Double.parseDouble(preferences.getString("graph_max_y", "0"));
+            final Double rawaddition = Double.parseDouble(preferences.getString("raw_addition", "0"));
 
 
             static_units = newValue.toString();
@@ -2677,6 +2678,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("profile_insulin_sensitivity_default", Long.toString(Math.round(default_insulin_sensitivity * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("plus_target_range", Long.toString(Math.round(default_target_glucose * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("graph_max_y", Long.toString(Math.round(graphmaxY * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("raw_addition", Long.toString(Math.round(rawaddition * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
                 if (lowVal < 9) {
@@ -2695,6 +2697,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("profile_insulin_sensitivity_default", JoH.qs(default_insulin_sensitivity * Constants.MGDL_TO_MMOLL, 2)).apply();
                     preferences.edit().putString("plus_target_range", JoH.qs(default_target_glucose * Constants.MGDL_TO_MMOLL,1)).apply();
                     preferences.edit().putString("graph_max_y", JoH.qs(graphmaxY * Constants.MGDL_TO_MMOLL, 1)).apply();
+                    preferences.edit().putString("raw_addition", JoH.qs(rawaddition * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
                 if (lowVal > 8) {
