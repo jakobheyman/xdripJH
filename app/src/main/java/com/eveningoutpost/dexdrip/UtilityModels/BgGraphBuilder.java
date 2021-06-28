@@ -259,7 +259,7 @@ public class BgGraphBuilder {
         // Graph min and max Y can be set under Display Settings > Graph Settings
         defaultMinY = tolerantParseDouble(prefs.getString("graph_min_y", "2"), 2d);
         defaultMaxY = tolerantParseDouble(prefs.getString("graph_max_y", "10.4"), 10.4d);
-        pointSize = isXLargeTablet(context) ? 5 : 2; // changed 3 to 2
+        pointSize = isXLargeTablet(context) ? 5 : 3;
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
         previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
         hoursPreviewStep = isXLargeTablet(context) ? 2 : 1;
@@ -888,7 +888,7 @@ public class BgGraphBuilder {
     public Line rawInterpretedLine() {
         Line line = new Line(rawInterpretedValues);
         line.setHasLines(false);
-        line.setPointRadius(1);
+        line.setPointRadius(2);
         line.setHasPoints(true);
         return line;
     }
