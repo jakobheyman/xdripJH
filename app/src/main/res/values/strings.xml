@@ -489,6 +489,7 @@
     <string name="low_glucose_values">Low Glucose Values</string>
     <string name="revert_to_default">Revert to Default</string>
     <string name="filtered_values">Filtered Values</string>
+    <string name="raw_values">Raw Values</string>
     <string name="treatment_color">Treatment Color</string>
     <string name="treatment_color_dark">Treatment Color Dark</string>
     <string name="predictive_color">Predictive Color</string>

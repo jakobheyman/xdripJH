@@ -887,6 +887,7 @@ public class BgGraphBuilder {
 
     public Line rawInterpretedLine() {
         Line line = new Line(rawInterpretedValues);
+        line.setColor(getCol(X.color_raw_values));
         line.setHasLines(false);
         line.setPointRadius(2);
         line.setHasPoints(true);
