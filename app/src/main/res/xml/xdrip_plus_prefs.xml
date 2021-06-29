@@ -988,7 +988,7 @@
         <SwitchPreference
             android:defaultValue="true"
             android:key="auto_update_download"
-            android:summaryOff="New releases often have bugs fixed. It is recommended to switch on update notifications!"
+            android:summaryOff="This will check for updates of the original xDrip+ version"
             android:summaryOn="@string/get_notified_of_new_apk_releases"
             android:switchTextOff="@string/short_off_text_for_switches"
             android:switchTextOn="@string/short_on_text_for_switches"

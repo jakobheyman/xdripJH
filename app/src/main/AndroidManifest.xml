@@ -618,7 +618,7 @@
         <activity android:name=".HelpActivity" />
         <activity
             android:name=".Agreement"
-            android:label="Nightscout xDrip+" />
+            android:label="xdripJH" />
         <activity
             android:name=".WearVoiceActivity"
             android:label="Simulation handheld">

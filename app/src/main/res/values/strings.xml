@@ -399,7 +399,7 @@
     <string name="settings_on_external_storage">Settings on external storage</string>
     <string name="get_notified_of_new_apk_releases">Get notified of new apk releases</string>
     <string name="choose_stable_beta_or_alpha_releases">Choose Stable, Beta or Alpha releases</string>
-    <string name="web_feedback_form_for_sending_messages">Web feedback form for sending messages and ratings of xDrip+ to the developers</string>
+    <string name="web_feedback_form_for_sending_messages">Web feedback form for sending messages and ratings of original xDrip+ to the developers</string>
     <string name="be_master_for_followers">Be master for followers</string>
     <string name="this_device_will_send_data_to_followers">This device will send data to followers</string>
     <string name="send_parakeet_map_location_to_followers">Send Parakeet map location to followers</string>
@@ -408,7 +408,7 @@
     <string name="temporary_work_around_disable_all_sync_detail">Temporary work-around option, completely stops all synchronization. May need reboot after being re-enabled. Use with care!</string>
     <string name="automatic_updates_crash_reports_and_feedback">Automatic Updates, crash reports and Feedback to Developer</string>
     <string name="crowd_sourced_translation">Crowd-sourced translation</string>
-    <string name="please_enter_your_question_or_comments_here">Please enter your question or comments here.\n\nIf you supply an email address you may get a response.\n\n</string>
+    <string name="please_enter_your_question_or_comments_here">Please enter your question or comments here.\n\nIf you supply an email address you may get a response.\n\nNOTE!\nYou are using xdripJH which is a modified version of xDrip+\n\n</string>
     <string name="optional_contact_info_here_eg_email">Optional contact info here, e.g. email</string>
     <string name="send_message">Send Message</string>
     <string name="please_indicate_what_you_think_of_the_app_generally">Please indicate what you think of the app generally</string>
