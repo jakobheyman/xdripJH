@@ -48,7 +48,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
     private static final String TAG = "jamorham librereceiver";
     private static final boolean debug = false;
     private static final boolean d = true;
-    private static final long segmentation_timeslice = (long)(Constants.MINUTE_IN_MS * 0.25);
+    private static final long segmentation_timeslice = (long)(Constants.MINUTE_IN_MS * 0.75);
     private static SharedPreferences prefs;
     private static long oldest = -1;
     private static long newest = -1;
