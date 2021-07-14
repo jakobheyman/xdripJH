@@ -80,7 +80,8 @@ public class CalibrationGraph extends ActivityWithMenu {
         //calibration values
         List<Calibration> calibrations = Calibration.allForSensor();
         List<Line> greyLines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
-        calibrations = Calibration.allForSensorInLastFourDays();
+        //calibrations = Calibration.allForSensorInLastFourDays();
+        calibrations = Calibration.allForSensorWithPositiveWeight();
         List<Line> blueLines = getCalibrationsLine(calibrations, ChartUtils.COLOR_BLUE);
 
         Calibration calibration = Calibration.lastValid();

@@ -1466,6 +1466,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("graph_max_y"));
             bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
             bindPreferenceSummaryToValue(findPreference("raw_addition"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_initial_days"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_initial_days_duration"));
 
             useCustomSyncKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override

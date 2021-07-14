@@ -686,14 +686,16 @@ public class Calibration extends Model {
 
             final SlopeParameters sParams = getSlopeParameters();
             ActiveAndroid.clearCache();
-            List<Calibration> calibrations = allForSensorInLastFourDays(); //5 days was a bit much, dropped this to 4
-
+            //List<Calibration> calibrations = allForSensorInLastFourDays(); //5 days was a bit much, dropped this to 4
+            List<Calibration> calibrations = allForSensorWithPositiveWeight();
+            
             if (calibrations == null) {
                 Log.e(TAG, "Somehow ended up with null calibration list!");
                 Home.toaststatic("Somehow ended up with null calibration list!");
                 return;
             }
 
+            /*
             // less than 5 calibrations in last 4 days? cast the net wider if in extended mode
             final int ccount = calibrations.size();
             if ((ccount < 5) && extended) {
@@ -703,6 +705,7 @@ public class Calibration extends Model {
                     Home.toaststaticnext("Calibrated using data beyond last 4 days");
                 }
             }
+            */
             ActiveAndroid.clearCache();
             if (calibrations.size() <= 1) {
                 final Calibration calibration = Calibration.last();
@@ -722,6 +725,7 @@ public class Calibration extends Model {
                     q += (w * calibration.estimate_raw_at_time_of_calibration * calibration.bg);
                 }
 
+                /*
                 final Calibration last_calibration = Calibration.last();
                 if (last_calibration != null) {
                     ActiveAndroid.clearCache();
@@ -732,6 +736,7 @@ public class Calibration extends Model {
                     p += (w * last_calibration.bg);
                     q += (w * last_calibration.estimate_raw_at_time_of_calibration * last_calibration.bg);
                 }
+                */
 
                 double d = (l * n) - (m * m);
                 final Calibration calibration = Calibration.last();
@@ -876,14 +881,23 @@ public class Calibration extends Model {
     }
 
     private double calculateWeight() {
+        // calibration weight decreases linearly with time before last calibration
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+        double calib_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
+        double calib_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days", "1"), 1d);
+        double calib_days_init_dur = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days_duration", "2"), 2d);
+        double calib_timespan = 60000 * 60 * 24 * calib_days - Math.max(60000 * 60 * 24 * (calib_days - calib_days_init) - (60000 * 60 * 24 * (calib_days - calib_days_init) * sensor_age_at_time_of_estimation / calib_days_init_dur), 0);
+        double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
+        return Math.max(1 - ((lastTimeCalibrated - sensor_age_at_time_of_estimation) / calib_timespan), 0);
+        /*
         double firstTimeStarted = Calibration.first().sensor_age_at_time_of_estimation;
         double lastTimeStarted = Calibration.last().sensor_age_at_time_of_estimation;
         double time_percentage = Math.min(((sensor_age_at_time_of_estimation - firstTimeStarted) / (lastTimeStarted - firstTimeStarted)) / (.85), 1);
         time_percentage = (time_percentage + .01);
         Log.i(TAG, "CALIBRATIONS TIME PERCENTAGE WEIGHT: " + time_percentage);
         return Math.max((((((slope_confidence + sensor_confidence) * (time_percentage))) / 2) * 100), 1);
+        */
     }
-
 
     public static void adjustRecentBgReadings(int adjustCount) {
         //TODO: add some handling around calibration overrides as they come out looking a bit funky
@@ -1280,6 +1294,37 @@ public class Calibration extends Model {
                 .where("timestamp > ?", (new Date().getTime() - (60000 * 60 * 24 * 4)))
                 .orderBy("timestamp desc")
                 .execute();
+    }
+
+    public static List<Calibration> allForSensorWithPositiveWeight() {
+        Sensor sensor = Sensor.currentSensor();
+        if (sensor == null) {
+            return null;
+        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+        double calib_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
+        double calib_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days", "1"), 1d);
+        double calib_days_init_dur = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days_duration", "2"), 2d);
+        double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
+        // pick out all calibrations younger than calib_days
+        List<Calibration> cal1 = new Select()
+                .from(Calibration.class)
+                .where("Sensor = ? ", sensor.getId())
+                .where("slope_confidence != 0")
+                .where("sensor_confidence != 0")
+                .where("sensor_age_at_time_of_estimation > ?", (lastTimeCalibrated - (60000 * 60 * 24 * calib_days)))
+                .orderBy("timestamp desc")
+                .execute();
+        // filter out potential calibrations from initial sensor time with shorter calibration time
+        List<Calibration> cal2 = new ArrayList<Calibration>();
+        for (Calibration cal : cal1) {
+            double calib_timespan = 60000 * 60 * 24 * calib_days - Math.max(60000 * 60 * 24 * (calib_days - calib_days_init) - (60000 * 60 * 24 * (calib_days - calib_days_init) * cal.sensor_age_at_time_of_estimation / calib_days_init_dur), 0);
+            double calib_weight = Math.max(1 - ((lastTimeCalibrated - cal.sensor_age_at_time_of_estimation) / calib_timespan), 0);
+            if (calib_weight > 0) {
+                cal2.add(cal);
+            }
+        }
+        return cal2;
     }
 
     public static List<Calibration> allForSensorLimited(int limit) {

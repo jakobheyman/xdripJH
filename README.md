@@ -7,6 +7,7 @@
 * Modifications done primarily for Libre-2 OOP2 setup
 * Display 1 min data instead of original 5 min
 * Display raw data (Less common settings > Advanced settings for Libre 2 > show Raw values in Graph)
+* Default calibration modified (weighting control: Less common settings > Advanced Calibration)
 * Optionally modify Libre-2 raw values with multiplication and/or +/- (Advanced settings for Libre 2)
 * Display mmol glucose values with two decimal digits
 * Extended potential min and max blood glucose values

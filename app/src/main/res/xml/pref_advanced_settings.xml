@@ -1216,8 +1216,27 @@
                     android:key="bypass_calibration_quality_check"
                     android:summary="@string/summary_Allow_initial_calibration_no_good_enough_data"
                     android:title="@string/title_Bypass_quality_check" />
-
-
+                <EditTextPreference
+                    android:key="calibration_weight_days"
+                    android:title="Calibration weight days"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="6" />
+                <EditTextPreference
+                    android:key="calibration_weight_initial_days"
+                    android:title="Calibration weight initial days"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="1" />
+                <EditTextPreference
+                    android:key="calibration_weight_initial_days_duration"
+                    android:title="Calibration weight initial days duration"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="2" />
             </PreferenceScreen>
 
             <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
