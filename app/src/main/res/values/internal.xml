@@ -2,7 +2,22 @@
 <resources>
 
     <string name="pref_I_understand_title"> OK</string>
-    <string name="pref_I_understand_summery" translatable="false">USE AS YOU WISH! (at your own risk)</string>
+    <string name="pref_I_understand_summery" translatable="false">
+        USE AS YOU WISH! (at your own risk)\n\n
+        This is a modified version of xDrip+\n\n
+        Major changes (Libre-2 OOP2 setup):\n
+        * Display 1 min data\n
+        * Display raw data\n
+        * Default calibration modified\n
+        * Optionally modify Libre-2 raw values\n
+        * Display mmol values with two decimals\n
+        * Extended potential min and max bg values\n
+        * Increased X (time) resolution in graph\n
+        * Keep Y range constant in main graph\n
+        * Optionally hide noise line \n
+        * Modified zoom in main/preview graph\n
+        * Modified calibration graph\n
+    </string>
     <string name="import_db_warning">
         WARNING: Restoring a database might cause SEVERE DATA LOSS. If you don\'t know why you want to use the restore, don\'t use it.
         In regular operation of xDrip it is not needed. Just use it in case of previous data loss.
