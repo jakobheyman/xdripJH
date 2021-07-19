@@ -159,6 +159,14 @@ def getLocalProperty(String propertyName) {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('/home/jakob/JH/git/android_key/xdrip_key.jks')
+            storePassword 'xdripjh'
+            keyPassword 'xdripjh'
+            keyAlias 'xdripjh'
+        }
+    }
     compileSdkVersion 29
 
     dexOptions {

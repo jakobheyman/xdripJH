@@ -419,7 +419,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
         };
     }
 
-    @Override
+/*    @Override
     public void onStop() { // Everything here runs when xDrip is minimized or stopped.
         super.onStop();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -435,7 +435,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             //
         }
     }
-
+*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
