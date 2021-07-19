@@ -205,8 +205,9 @@ public class BgGraphBuilder {
     public BgGraphBuilder(Context context, long start, long end) {
         this(context, start, end, NUM_VALUES, true);
     }
+
     public BgGraphBuilder(Context context, long start, long end, int numValues, boolean show_prediction) {
-        this(context,start,end,numValues,show_prediction,false);
+        this(context, start, end, numValues, show_prediction, false);
     }
 
     public BgGraphBuilder(Context context, long start, long end, int numValues, boolean show_prediction, final boolean useArchive) {
@@ -229,9 +230,9 @@ public class BgGraphBuilder {
         readings_lock.lock();
         try {
             // store the initialization values used for this instance
-            loaded_numValues=numValues;
-            loaded_start=start;
-            loaded_end=end;
+            loaded_numValues = numValues;
+            loaded_start = start;
+            loaded_end = end;
             bgReadings = BgReading.latestForGraph(numValues, start, end);
             if ((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer))
                 Libre2RawValues = Libre2RawValue.latestForGraph(numValues, start, end);
@@ -277,7 +278,7 @@ public class BgGraphBuilder {
     static public boolean isXLargeTablet(Context context) {
         return (context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
-    
+
     static public boolean isLargeTablet(Context context) {
         return (context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }
@@ -290,7 +291,8 @@ public class BgGraphBuilder {
         if (thisnoise > NOISE_HIGH) return "Extreme";
         if (thisnoise > NOISE_TOO_HIGH_FOR_PREDICT) return "Very High";
         if (thisnoise > NOISE_TRIGGER) return "High";
-        if (thisnoise > NOISE_TRIGGER_ULTRASENSITIVE && Pref.getBooleanDefaultFalse("engineering_mode") && Pref.getBooleanDefaultFalse("bg_compensate_noise_ultrasensitive")) return "Some";
+        if (thisnoise > NOISE_TRIGGER_ULTRASENSITIVE && Pref.getBooleanDefaultFalse("engineering_mode") && Pref.getBooleanDefaultFalse("bg_compensate_noise_ultrasensitive"))
+            return "Some";
         return "Low";
     }
 
@@ -299,7 +301,7 @@ public class BgGraphBuilder {
             points.remove(1); // replace last
         }
         points.add(new PointValue(x, y));
-        Log.d(TAG,"Extend line size: "+points.size());
+        Log.d(TAG, "Extend line size: " + points.size());
     }
 
     private List<Line> predictiveLines() {
@@ -338,8 +340,6 @@ public class BgGraphBuilder {
 
         return lines;
     }
-
-
 
 
     private List<Line> basalLines() {
@@ -500,14 +500,15 @@ public class BgGraphBuilder {
             if (d) Log.d(TAG, "heartrate before size: " + heartRates.size());
             if (d) Log.d(TAG, "heartrate after c size: " + condensedHeartRateList.size());
             //final float yscale = doMgdl ? (float) Constants.MMOLL_TO_MGDL : 1f;
-            final float yscale = doMgdl ?  10f : 1f;
+            final float yscale = doMgdl ? 10f : 1f;
             float ypos; //
 
             final List<PointValue> new_points = new ArrayList<>();
             if (d) UserError.Log.d("HEARTRATE", "Size " + condensedHeartRateList.size());
 
             for (HeartRate pm : condensedHeartRateList) {
-                if (d) UserError.Log.d("HEARTRATE: ", JoH.dateTimeText(pm.timestamp) + " \tHR: " + pm.bpm);
+                if (d)
+                    UserError.Log.d("HEARTRATE: ", JoH.dateTimeText(pm.timestamp) + " \tHR: " + pm.bpm);
 
                 ypos = (pm.bpm * yscale) / 10;
                 final PointValue this_point = new PointValue(timestampToFuzzedGraphPos(pm.timestamp), ypos);
@@ -532,13 +533,13 @@ public class BgGraphBuilder {
         final ArrayList<ActivityRecognizedService.motionData> motion_datas = ActivityRecognizedService.getForGraph(graphPosToTimestamp(start_time), graphPosToTimestamp(end_time));
         List<PointValue> linePoints = new ArrayList<>();
 
-        final float ypos = (float)highMark;
+        final float ypos = (float) highMark;
         int last_type = -9999;
 
 
         final ArrayList<Line> line_array = new ArrayList<>();
 
-        Log.d(TAG,"Motion datas size: "+motion_datas.size());
+        Log.d(TAG, "Motion datas size: " + motion_datas.size());
         if (motion_datas.size() > 0) {
             motion_datas.add(new ActivityRecognizedService.motionData(graphPosToTimestamp(end_time), DetectedActivity.UNKNOWN)); // terminator
 
@@ -581,14 +582,14 @@ public class BgGraphBuilder {
             }
 
         }
-        Log.d(TAG,"Motion array size: "+line_array.size());
-            return line_array;
+        Log.d(TAG, "Motion array size: " + line_array.size());
+        return line_array;
     }
 
 
     public LineChartData lineData() {
-       // if (d) Log.d(TAG, "START lineData from: " + JoH.backTrace());
-       JoH.benchmark(null);
+        // if (d) Log.d(TAG, "START lineData from: " + JoH.backTrace());
+        JoH.benchmark(null);
         LineChartData lineData = new LineChartData(defaultLines(false));
         JoH.benchmark("Default lines create - bggraph builder");
         lineData.setAxisYLeft(yAxis());
@@ -604,7 +605,7 @@ public class BgGraphBuilder {
         } else {
             JoH.benchmark(null);
             Cloner cloner = new Cloner();
-           // cloner.setDumpClonedClasses(true);
+            // cloner.setDumpClonedClasses(true);
             cloner.dontClone(
                     lecho.lib.hellocharts.model.PointValue.class,
                     lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter.class,
@@ -612,7 +613,7 @@ public class BgGraphBuilder {
                     android.graphics.DashPathEffect.class);
             previewLineData = cloner.deepClone(hint);
             JoH.benchmark("Clone preview data");
-            if (d) Log.d(TAG,"Cloned preview chart data");
+            if (d) Log.d(TAG, "Cloned preview chart data");
         }
 
         previewLineData.setAxisYLeft(yAxis());
@@ -626,7 +627,7 @@ public class BgGraphBuilder {
         }
         for (Line lline : previewLineData.getLines()) {
             if (((lline.getPointRadius() == pluginSize) && (lline.getPointColor() == getCol(X.color_secondary_glucose_value)))
-                    || ((lline.getColor() == getCol(X.color_step_counter1) || (lline.getColor() == getCol(X.color_step_counter2) || (lline.getColor()== getCol(X.color_heart_rate1)))))) {
+                    || ((lline.getColor() == getCol(X.color_step_counter1) || (lline.getColor() == getCol(X.color_step_counter2) || (lline.getColor() == getCol(X.color_heart_rate1)))))) {
                 removeItems.add(lline); // remove plugin or step counter plot from preview graph
             }
 
@@ -716,7 +717,7 @@ public class BgGraphBuilder {
 
             if (prefs.getBoolean("show_filtered_curve", true)) {
                 // use autosplit here too
-               final ArrayList<Line> filtered_lines = filteredLines();
+                final ArrayList<Line> filtered_lines = filteredLines();
 
                 for (Line thisline : filtered_lines) {
                     lines.add(thisline);
@@ -749,7 +750,6 @@ public class BgGraphBuilder {
             lines.add(calib[1]); // red dot of calib in foreground
             lines.add(treatments[1]); // blue dot in centre // has annotation
             lines.add(treatments[4]); // annotations
-
 
 
         } catch (Exception e) {
@@ -806,7 +806,7 @@ public class BgGraphBuilder {
         line.setHasPoints(true);
         return line;
     }
-    
+
     public void debugPrintPoints(List<PointValue> mypoints) {
         for (PointValue thispoint : mypoints) {
             UserError.Log.i(TAG, "Debug Points: " + thispoint.toString());
@@ -815,7 +815,7 @@ public class BgGraphBuilder {
 
     // auto split a line - jump thresh in minutes
     public ArrayList<Line> autoSplitLine(Line macroline, final float jumpthresh) {
-       // if (d) Log.d(TAG, "Enter autoSplit Line");
+        // if (d) Log.d(TAG, "Enter autoSplit Line");
         ArrayList<Line> linearray = new ArrayList<Line>();
         float lastx = -999999;
 
@@ -844,9 +844,10 @@ public class BgGraphBuilder {
                 thesepoints.add(thispoint); // grow current line list
             }
         }
-     //   if (d) Log.d(TAG, "Exit autoSplit Line");
+        //   if (d) Log.d(TAG, "Exit autoSplit Line");
         return linearray;
     }
+
     // Produce an array of cubic lines, split as needed
     public ArrayList<Line> filteredLines() {
         ArrayList<Line> linearray = new ArrayList<Line>();
@@ -894,8 +895,7 @@ public class BgGraphBuilder {
         return line;
     }
 
-    public List<Line> extraLines()
-    {
+    public List<Line> extraLines() {
         final List<Line> lines = new ArrayList<>();
         Line line = new Line(pluginValues);
         line.setHasLines(false);
@@ -1074,7 +1074,7 @@ public class BgGraphBuilder {
             lowValues.clear();
             inRangeValues.clear();
             backfillValues.clear();
-           remoteValues.clear();
+            remoteValues.clear();
             calibrationValues.clear();
             bloodTestValues.clear();
             pluginValues.clear();
@@ -1330,7 +1330,7 @@ public class BgGraphBuilder {
             }
 
             try {
-                if (((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer)) && prefs.getBoolean("Libre2_showRawGraph",false)) {
+                if (((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer)) && prefs.getBoolean("Libre2_showRawGraph", false)) {
                     for (final Libre2RawValue bgLibre : Libre2RawValues) {
                         if (bgLibre.glucose > 0) {
                             rawInterpretedValues.add(new PointValue((float) timeStampToGraphPos((double)bgLibre.timestamp), (float) unitized(bgLibre.glucose)));
@@ -1839,7 +1839,7 @@ public class BgGraphBuilder {
                 // new only the last hour worth of data for this
                 (new BgGraphBuilder(xdrip.getAppContext(), System.currentTimeMillis() - 60 * 60 * 1000, System.currentTimeMillis() + 5 * 60 * 1000, 24, true)).addBgReadingValues(false);
             } else {
-                Log.d(TAG, "Cached current low timestamp ok: " +  JoH.dateTimeText((long) low_occurs_at_processed_till_timestamp) + " vs " + JoH.dateTimeText(last_bg_reading_timestamp));
+                Log.d(TAG, "Cached current low timestamp ok: " + JoH.dateTimeText((long) low_occurs_at_processed_till_timestamp) + " vs " + JoH.dateTimeText(last_bg_reading_timestamp));
             }
         } catch (Exception e) {
             Log.e(TAG, "Got exception in getCurrentLowOccursAt() " + e);
@@ -1871,6 +1871,7 @@ public class BgGraphBuilder {
         myLine.setAreaTransparency(50);
         return myLine;
     }
+
     public Line avg2Line() {
         List<PointValue> myLineValues = new ArrayList<PointValue>();
         myLineValues.add(new PointValue((float) start_time, (float) unitized(avg2value)));
@@ -1887,7 +1888,7 @@ public class BgGraphBuilder {
     public Line idealLine() {
         // if profile has more than 1 target bg value then we need to iterate those and plot them for completeness
         List<PointValue> myLineValues = new ArrayList<PointValue>();
-        myLineValues.add(new PointValue((float) start_time, (float)  Profile.getTargetRangeInUnits(start_time)));
+        myLineValues.add(new PointValue((float) start_time, (float) Profile.getTargetRangeInUnits(start_time)));
         myLineValues.add(new PointValue((float) predictive_end_time, (float) Profile.getTargetRangeInUnits(predictive_end_time)));
         Line myLine = new Line(myLineValues);
         myLine.setHasPoints(false);
@@ -1974,7 +1975,7 @@ public class BgGraphBuilder {
         line.setCubic(false);
         line.setStrokeWidth(2);
         line.setPointRadius(1);
-        line.setColor(Color.argb(240,25,206,244)); // temporary pending preference
+        line.setColor(Color.argb(240, 25, 206, 244)); // temporary pending preference
         return line;
     }
 
@@ -2004,7 +2005,7 @@ public class BgGraphBuilder {
         line.setHasPoints(true);
         line.setHasLines(false);
         line.setPointRadius(5);
-        line.setPointColor(ColorUtil.blendColor(Color.BLACK,Color.TRANSPARENT, 0.99f));
+        line.setPointColor(ColorUtil.blendColor(Color.BLACK, Color.TRANSPARENT, 0.99f));
         line.setBitmapScale(1f);
         line.setBitmapLabels(true);
         line.setBitmapLabelShadowColor(Color.WHITE);
@@ -2029,11 +2030,11 @@ public class BgGraphBuilder {
             }
         }
         yAxis.setValues(axisValues);
-       // yAxis.setHasLines(true);
+        // yAxis.setHasLines(true);
         yAxis.setMaxLabelChars(5);
         yAxis.setInside(true);
         yAxis.setTextSize(axisTextSize);
-        yAxis.setHasLines(prefs.getBoolean("show_graph_grid_glucose",true));
+        yAxis.setHasLines(prefs.getBoolean("show_graph_grid_glucose", true));
         return yAxis;
     }
 
@@ -2046,16 +2047,16 @@ public class BgGraphBuilder {
         //GregorianCalendar today = new GregorianCalendar(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
         final java.text.DateFormat timeFormat = hourFormat();
         timeFormat.setTimeZone(TimeZone.getDefault());
-       // double start_hour_block = today.getTime().getTime();
+        // double start_hour_block = today.getTime().getTime();
         //double timeNow = new Date().getTime();
         //for (int l = 0; l <= 24; l++) {
         //    if ((start_hour_block + (60000 * 60 * (l))) < timeNow) {
         //        if ((start_hour_block + (60000 * 60 * (l + 1))) >= timeNow) {
         //            endHour = start_hour_block + (60000 * 60 * (l));
         //            l = 25;
-       //         }
+        //         }
         //    }
-       // }
+        // }
 
 
         GregorianCalendar calendar = new GregorianCalendar();
@@ -2063,10 +2064,10 @@ public class BgGraphBuilder {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
-        if (calendar.getTimeInMillis()<graphPosToTimestamp(start_time)){
+        if (calendar.getTimeInMillis() < graphPosToTimestamp(start_time)){
             calendar.add(Calendar.HOUR, 1);
         }
-        while (calendar.getTimeInMillis()< ( graphPosToTimestamp(end_time) + (predictivehours * 60 * 60 * 1000))) {
+        while (calendar.getTimeInMillis() < (graphPosToTimestamp(end_time) + (predictivehours * 60 * 60 * 1000))) {
             xAxisValues.add(new AxisValue(timestampToFuzzedGraphPos(calendar.getTimeInMillis()), (timeFormat.format(calendar.getTimeInMillis())).toCharArray()));
             calendar.add(Calendar.HOUR, 1);
         }
@@ -2074,7 +2075,7 @@ public class BgGraphBuilder {
         //for (int l = 0; l <= (24 + predictivehours); l++) {
         //    double timestamp = (endHour + ((predictivehours) * 60 * 1000 * 60) - (60000 * 60 * l));
         //    xAxisValues.add(new AxisValue((long) (timestamp / FUZZER), (timeFormat.format(timestamp)).toCharArray()));
-       // }
+        // }
         xAxis.setValues(xAxisValues);
         return xAxis;
     }
@@ -2086,7 +2087,7 @@ public class BgGraphBuilder {
         return xAxis;
     }
 
-    public Axis previewXAxis(){
+    public Axis previewXAxis() {
         Axis previewXaxis = xAxis();
         previewXaxis.setTextSize(previewAxisTextSize);
         previewXaxis.setHasLines(true);
@@ -2097,21 +2098,21 @@ public class BgGraphBuilder {
         return new SimpleDateFormat(DateFormat.is24HourFormat(context) ? "HH" : "h a");
     }
 
-  /*  public Axis previewXAxis() {
-        List<AxisValue> previewXaxisValues = new ArrayList<AxisValue>();
-        final java.text.DateFormat timeFormat = hourFormat();
-        timeFormat.setTimeZone(TimeZone.getDefault());
-        for (int l = 0; l <= (24 + predictivehours); l += hoursPreviewStep) {
-            double timestamp = (endHour + (predictivehours * 60 * 1000 * 60) - (60000 * 60 * l));
-            previewXaxisValues.add(new AxisValue((long) (timestamp / FUZZER), (timeFormat.format(timestamp)).toCharArray()));
-        }
-        Axis previewXaxis = new Axis();
-        previewXaxis.setValues(previewXaxisValues);
-        previewXaxis.setHasLines(true);
-        previewXaxis.setTextSize(previewAxisTextSize);
-        return previewXaxis;
-    }
-*/
+    /*  public Axis previewXAxis() {
+          List<AxisValue> previewXaxisValues = new ArrayList<AxisValue>();
+          final java.text.DateFormat timeFormat = hourFormat();
+          timeFormat.setTimeZone(TimeZone.getDefault());
+          for (int l = 0; l <= (24 + predictivehours); l += hoursPreviewStep) {
+              double timestamp = (endHour + (predictivehours * 60 * 1000 * 60) - (60000 * 60 * l));
+              previewXaxisValues.add(new AxisValue((long) (timestamp / FUZZER), (timeFormat.format(timestamp)).toCharArray()));
+          }
+          Axis previewXaxis = new Axis();
+          previewXaxis.setValues(previewXaxisValues);
+          previewXaxis.setHasLines(true);
+          previewXaxis.setTextSize(previewAxisTextSize);
+          return previewXaxis;
+      }
+  */
     /////////VIEWPORT RELATED//////////////
     public Viewport advanceViewport(Chart chart, Chart previewChart, float hours) {
         viewport = new Viewport(previewChart.getMaximumViewport());
@@ -2188,12 +2189,12 @@ public class BgGraphBuilder {
 
     public static String unitized_string_with_units_static(double value) {
         final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
-        return unitized_string(value, domgdl)+" "+(domgdl ? "mg/dl" : "mmol/l");
+        return unitized_string(value, domgdl) + " " + (domgdl ? "mg/dl" : "mmol/l");
     }
 
     public static String unitized_string_with_units_static_short(double value) {
         final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
-        return unitized_string(value, domgdl)+" "+(domgdl ? "mgdl" : "mmol");
+        return unitized_string(value, domgdl) + " " + (domgdl ? "mgdl" : "mmol");
     }
 
     public static String unitized_string_static_no_interpretation_short(double value) {
@@ -2253,7 +2254,7 @@ public class BgGraphBuilder {
     }
 
     public String unitizedDeltaString(boolean showUnit, boolean highGranularity) {
-    return unitizedDeltaString( showUnit, highGranularity,Home.get_follower());
+        return unitizedDeltaString(showUnit, highGranularity, Home.get_follower());
     }
 
     public String unitizedDeltaString(boolean showUnit, boolean highGranularity, boolean is_follower) {
@@ -2262,7 +2263,7 @@ public class BgGraphBuilder {
 
     public static String unitizedDeltaString(boolean showUnit, boolean highGranularity, boolean is_follower, boolean doMgdl) {
 
-        List<BgReading> last2 = BgReading.latest(2,is_follower);
+        List<BgReading> last2 = BgReading.latest(2, is_follower);
         if (last2.size() < 2 || last2.get(0).timestamp - last2.get(1).timestamp > 20 * 60 * 1000) {
             // don't show delta if there are not enough values or the values are more than 20 mintes apart
             return "???";
@@ -2270,14 +2271,14 @@ public class BgGraphBuilder {
 
         double value = BgReading.currentSlope(is_follower) * 5 * 60 * 1000;
 
-       return unitizedDeltaStringRaw(showUnit, highGranularity, value, doMgdl);
+        return unitizedDeltaStringRaw(showUnit, highGranularity, value, doMgdl);
     }
 
     public String unitizedDeltaStringRaw(boolean showUnit, boolean highGranularity, double value) {
         return unitizedDeltaStringRaw(showUnit, highGranularity, value, doMgdl);
     }
 
-    public static String unitizedDeltaStringRaw(boolean showUnit, boolean highGranularity,double value, boolean doMgdl) {
+    public static String unitizedDeltaStringRaw(boolean showUnit, boolean highGranularity, double value, boolean doMgdl) {
 
 
         if (Math.abs(value) > 100) {
@@ -2299,7 +2300,7 @@ public class BgGraphBuilder {
                 df.setMaximumFractionDigits(0);
             }
 
-            return delta_sign + df.format(unitized(value,doMgdl)) + (showUnit ? " mg/dl" : "");
+            return delta_sign + df.format(unitized(value, doMgdl)) + (showUnit ? " mg/dl" : "");
         } else {
             // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l
             if (highGranularity && (Math.abs(value) < (Constants.MMOLL_TO_MGDL * 0.1))) {
@@ -2310,7 +2311,7 @@ public class BgGraphBuilder {
 
             df.setMinimumFractionDigits(1);
             df.setMinimumIntegerDigits(1);
-            return delta_sign + df.format(unitized(value,doMgdl)) + (showUnit ? " mmol/l" : "");
+            return delta_sign + df.format(unitized(value, doMgdl)) + (showUnit ? " mmol/l" : "");
         }
     }
 
