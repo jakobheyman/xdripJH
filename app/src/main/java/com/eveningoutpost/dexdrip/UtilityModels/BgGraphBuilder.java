@@ -2203,7 +2203,7 @@ public class BgGraphBuilder {
         if (domgdl) {
             df.setMaximumFractionDigits(0);
         } else {
-            df.setMaximumFractionDigits(1);
+            df.setMaximumFractionDigits(2);
         }
         return df.format(unitized(value, domgdl)) + " " + (domgdl ? "mgdl" : "mmol");
     }
@@ -2302,11 +2302,11 @@ public class BgGraphBuilder {
 
             return delta_sign + df.format(unitized(value, doMgdl)) + (showUnit ? " mg/dl" : "");
         } else {
-            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l
+            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l  // always show 2 decimals (1 -> 2 under else)
             if (highGranularity && (Math.abs(value) < (Constants.MMOLL_TO_MGDL * 0.1))) {
                 df.setMaximumFractionDigits(2);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
             }
 
             df.setMinimumFractionDigits(1);

@@ -322,7 +322,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             df.setMaximumFractionDigits(0);
             df.setMinimumFractionDigits(0);
         } else {
-            df.setMaximumFractionDigits(1);
+            df.setMaximumFractionDigits(2);
             df.setMinimumFractionDigits(1);
         }
 
