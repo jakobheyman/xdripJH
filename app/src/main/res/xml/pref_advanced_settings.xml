@@ -1224,15 +1224,15 @@
                     android:summary=""
                     android:defaultValue="6" />
                 <EditTextPreference
-                    android:key="calibration_weight_initial_days"
-                    android:title="Calibration weight initial days"
+                    android:key="calibration_weight_days_initial"
+                    android:title="Calibration weight days initial"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
                     android:summary=""
                     android:defaultValue="1" />
                 <EditTextPreference
-                    android:key="calibration_weight_initial_days_duration"
-                    android:title="Calibration weight initial days duration"
+                    android:key="calibration_weight_days_initial_transition"
+                    android:title="Calibration weight days initial transition"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
                     android:summary=""

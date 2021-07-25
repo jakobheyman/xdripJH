@@ -883,10 +883,10 @@ public class Calibration extends Model {
     private double calculateWeight() {
         // calibration weight decreases linearly with time before last calibration
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
-        double calib_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
-        double calib_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days", "1"), 1d);
-        double calib_days_init_dur = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days_duration", "2"), 2d);
-        double calib_timespan = 60000 * 60 * 24 * calib_days - Math.max(60000 * 60 * 24 * (calib_days - calib_days_init) - (60000 * 60 * 24 * (calib_days - calib_days_init) * sensor_age_at_time_of_estimation / calib_days_init_dur), 0);
+        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
+        double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
+        double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
+        double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
         double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
         return Math.max(1 - ((lastTimeCalibrated - sensor_age_at_time_of_estimation) / calib_timespan), 0);
         /*
@@ -1302,23 +1302,23 @@ public class Calibration extends Model {
             return null;
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
-        double calib_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
-        double calib_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days", "1"), 1d);
-        double calib_days_init_dur = JoH.tolerantParseDouble(prefs.getString("calibration_weight_initial_days_duration", "2"), 2d);
+        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
+        double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
+        double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
         double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
-        // pick out all calibrations younger than calib_days
+        // pick out all calibrations younger than calibw_days
         List<Calibration> cal1 = new Select()
                 .from(Calibration.class)
                 .where("Sensor = ? ", sensor.getId())
                 .where("slope_confidence != 0")
                 .where("sensor_confidence != 0")
-                .where("sensor_age_at_time_of_estimation > ?", (lastTimeCalibrated - (60000 * 60 * 24 * calib_days)))
+                .where("sensor_age_at_time_of_estimation > ?", (lastTimeCalibrated - (60000 * 60 * 24 * calibw_days)))
                 .orderBy("timestamp desc")
                 .execute();
         // filter out potential calibrations from initial sensor time with shorter calibration time
         List<Calibration> cal2 = new ArrayList<Calibration>();
         for (Calibration cal : cal1) {
-            double calib_timespan = 60000 * 60 * 24 * calib_days - Math.max(60000 * 60 * 24 * (calib_days - calib_days_init) - (60000 * 60 * 24 * (calib_days - calib_days_init) * cal.sensor_age_at_time_of_estimation / calib_days_init_dur), 0);
+            double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * cal.sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
             double calib_weight = Math.max(1 - ((lastTimeCalibrated - cal.sensor_age_at_time_of_estimation) / calib_timespan), 0);
             if (calib_weight > 0) {
                 cal2.add(cal);

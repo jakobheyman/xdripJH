@@ -1482,8 +1482,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
             bindPreferenceSummaryToValue(findPreference("raw_addition"));
             bindPreferenceSummaryToValue(findPreference("calibration_weight_days"));
-            bindPreferenceSummaryToValue(findPreference("calibration_weight_initial_days"));
-            bindPreferenceSummaryToValue(findPreference("calibration_weight_initial_days_duration"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days_initial"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days_initial_transition"));
 
             useCustomSyncKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
