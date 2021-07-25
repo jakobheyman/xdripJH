@@ -7,8 +7,8 @@
         This is a modified version of xDrip+\n\n
         Major changes (Libre-2 OOP2 setup):\n
         * Display 1 min data\n
-        * Display raw data\n
         * Default calibration modified\n
+        * Display raw data\n
         * Optionally modify Libre-2 raw values\n
         * Display mmol values with two decimals\n
         * Extended potential min and max bg values\n
