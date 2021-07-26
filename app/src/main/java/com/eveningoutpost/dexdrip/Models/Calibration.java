@@ -687,7 +687,7 @@ public class Calibration extends Model {
             final SlopeParameters sParams = getSlopeParameters();
             ActiveAndroid.clearCache();
             //List<Calibration> calibrations = allForSensorInLastFourDays(); //5 days was a bit much, dropped this to 4
-            List<Calibration> calibrations = allForSensorWithPositiveWeight();
+            List<Calibration> calibrations = allForSensorWithWeightX(0, 1);
             
             if (calibrations == null) {
                 Log.e(TAG, "Somehow ended up with null calibration list!");
@@ -1296,7 +1296,7 @@ public class Calibration extends Model {
                 .execute();
     }
 
-    public static List<Calibration> allForSensorWithPositiveWeight() {
+    public static List<Calibration> allForSensorWithWeightX(double min_weight, double max_weight) {
         Sensor sensor = Sensor.currentSensor();
         if (sensor == null) {
             return null;
@@ -1320,7 +1320,7 @@ public class Calibration extends Model {
         for (Calibration cal : cal1) {
             double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * cal.sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
             double calib_weight = Math.max(1 - ((lastTimeCalibrated - cal.sensor_age_at_time_of_estimation) / calib_timespan), 0);
-            if (calib_weight > 0) {
+            if (calib_weight > min_weight && calib_weight <= max_weight) {
                 cal2.add(cal);
             }
         }

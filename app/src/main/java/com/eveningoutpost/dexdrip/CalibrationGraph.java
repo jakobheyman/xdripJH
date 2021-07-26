@@ -77,12 +77,56 @@ public class CalibrationGraph extends ActivityWithMenu {
         chart = (LineChartView) findViewById(R.id.chart);
         List<Line> lines = new ArrayList<Line>();
 
-        //calibration values
+        /* //calibration values
         List<Calibration> calibrations = Calibration.allForSensor();
         List<Line> greyLines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
-        //calibrations = Calibration.allForSensorInLastFourDays();
-        calibrations = Calibration.allForSensorWithPositiveWeight();
+        calibrations = Calibration.allForSensorInLastFourDays();
         List<Line> blueLines = getCalibrationsLine(calibrations, ChartUtils.COLOR_BLUE);
+        */
+
+        // colors based on weight values: grey-blue - yellow - red
+        List<Calibration> calibrations = Calibration.allForSensorWithWeightX(-1, 0);
+        List<Line> col0_Lines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
+        calibrations = Calibration.allForSensorWithWeightX(0, 0.05);
+        List<Line> col5_Lines = getCalibrationsLine(calibrations, Color.parseColor("#AEC5FF"));
+        calibrations = Calibration.allForSensorWithWeightX(0.05, 0.1);
+        List<Line> col10_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B3C8E5"));
+        calibrations = Calibration.allForSensorWithWeightX(0.1, 0.15);
+        List<Line> col15_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B9CBCC"));
+        calibrations = Calibration.allForSensorWithWeightX(0.15, 0.2);
+        List<Line> col20_Lines = getCalibrationsLine(calibrations, Color.parseColor("#BFCFB2"));
+        calibrations = Calibration.allForSensorWithWeightX(0.2, 0.25);
+        List<Line> col25_Lines = getCalibrationsLine(calibrations, Color.parseColor("#C4D299"));
+        calibrations = Calibration.allForSensorWithWeightX(0.25, 0.3);
+        List<Line> col30_Lines = getCalibrationsLine(calibrations, Color.parseColor("#CAD67F"));
+        calibrations = Calibration.allForSensorWithWeightX(0.3, 0.35);
+        List<Line> col35_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D0D966"));
+        calibrations = Calibration.allForSensorWithWeightX(0.35, 0.4);
+        List<Line> col40_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D5DC4C"));
+        calibrations = Calibration.allForSensorWithWeightX(0.4, 0.45);
+        List<Line> col45_Lines = getCalibrationsLine(calibrations, Color.parseColor("#DBE033"));
+        calibrations = Calibration.allForSensorWithWeightX(0.45, 0.5);
+        List<Line> col50_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E1E319"));
+        calibrations = Calibration.allForSensorWithWeightX(0.5, 0.55);
+        List<Line> col55_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E7E700"));
+        calibrations = Calibration.allForSensorWithWeightX(0.55, 0.6);
+        List<Line> col60_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E1CD00"));
+        calibrations = Calibration.allForSensorWithWeightX(0.6, 0.65);
+        List<Line> col65_Lines = getCalibrationsLine(calibrations, Color.parseColor("#DBB300"));
+        calibrations = Calibration.allForSensorWithWeightX(0.65, 0.7);
+        List<Line> col70_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D69A00"));
+        calibrations = Calibration.allForSensorWithWeightX(0.7, 0.75);
+        List<Line> col75_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D08000"));
+        calibrations = Calibration.allForSensorWithWeightX(0.75, 0.8);
+        List<Line> col80_Lines = getCalibrationsLine(calibrations, Color.parseColor("#CA6600"));
+        calibrations = Calibration.allForSensorWithWeightX(0.8, 0.85);
+        List<Line> col85_Lines = getCalibrationsLine(calibrations, Color.parseColor("#C54D00"));
+        calibrations = Calibration.allForSensorWithWeightX(0.85, 0.9);
+        List<Line> col90_Lines = getCalibrationsLine(calibrations, Color.parseColor("#BF3300"));
+        calibrations = Calibration.allForSensorWithWeightX(0.9, 0.95);
+        List<Line> col95_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B91900"));
+        calibrations = Calibration.allForSensorWithWeightX(0.95, 1);
+        List<Line> col100_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B40000"));
 
         Calibration calibration = Calibration.lastValid();
         if (calibration != null) {
@@ -148,11 +192,76 @@ public class CalibrationGraph extends ActivityWithMenu {
             }
 
             //add lines in order
+            /*
             for (Line greyLine : greyLines) {
                 lines.add(greyLine);
             }
             for (Line blueLine : blueLines) {
                 lines.add(blueLine);
+            }
+            */
+            for (Line col0_Line : col0_Lines) {
+                lines.add(col0_Line);
+            }
+            for (Line col5_Line : col5_Lines) {
+                lines.add(col5_Line);
+            }
+            for (Line col10_Line : col10_Lines) {
+                lines.add(col10_Line);
+            }
+            for (Line col15_Line : col15_Lines) {
+                lines.add(col15_Line);
+            }
+            for (Line col20_Line : col20_Lines) {
+                lines.add(col20_Line);
+            }
+            for (Line col25_Line : col25_Lines) {
+                lines.add(col25_Line);
+            }
+            for (Line col30_Line : col30_Lines) {
+                lines.add(col30_Line);
+            }
+            for (Line col35_Line : col35_Lines) {
+                lines.add(col35_Line);
+            }
+            for (Line col40_Line : col40_Lines) {
+                lines.add(col40_Line);
+            }
+            for (Line col45_Line : col45_Lines) {
+                lines.add(col45_Line);
+            }
+            for (Line col50_Line : col50_Lines) {
+                lines.add(col50_Line);
+            }
+            for (Line col55_Line : col55_Lines) {
+                lines.add(col55_Line);
+            }
+            for (Line col60_Line : col60_Lines) {
+                lines.add(col60_Line);
+            }
+            for (Line col65_Line : col65_Lines) {
+                lines.add(col65_Line);
+            }
+            for (Line col70_Line : col70_Lines) {
+                lines.add(col70_Line);
+            }
+            for (Line col75_Line : col75_Lines) {
+                lines.add(col75_Line);
+            }
+            for (Line col80_Line : col80_Lines) {
+                lines.add(col80_Line);
+            }
+            for (Line col85_Line : col85_Lines) {
+                lines.add(col85_Line);
+            }
+            for (Line col90_Line : col90_Lines) {
+                lines.add(col90_Line);
+            }
+            for (Line col95_Line : col95_Lines) {
+                lines.add(col95_Line);
+            }
+            for (Line col100_Line : col100_Lines) {
+                lines.add(col100_Line);
             }
 
         }
