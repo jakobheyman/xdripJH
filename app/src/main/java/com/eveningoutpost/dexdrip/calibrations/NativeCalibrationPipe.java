@@ -38,7 +38,7 @@ public class NativeCalibrationPipe {
             UserError.Log.wtf(TAG, msg);
             return;
         }
-        if ((glucose < 40 || glucose > 400)) {
+        if ((glucose < 10 || glucose > 1000)) {
             final String msg = "Calibration glucose value out of range: " + glucose;
             JoH.static_toast_long(msg);
             UserError.Log.wtf(TAG, msg);
