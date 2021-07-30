@@ -1301,25 +1301,18 @@ public class Calibration extends Model {
         if (sensor == null) {
             return null;
         }
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
-        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
-        double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
-        double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
-        double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
-        // pick out all calibrations younger than calibw_days
+        // pick out all valid calibrations from sensor
         List<Calibration> cal1 = new Select()
                 .from(Calibration.class)
                 .where("Sensor = ? ", sensor.getId())
                 .where("slope_confidence != 0")
                 .where("sensor_confidence != 0")
-                .where("sensor_age_at_time_of_estimation > ?", (lastTimeCalibrated - (60000 * 60 * 24 * calibw_days)))
                 .orderBy("timestamp desc")
                 .execute();
-        // filter out potential calibrations from initial sensor time with shorter calibration time
+        // pick out calibrations based on min_weight and max_weight
         List<Calibration> cal2 = new ArrayList<Calibration>();
         for (Calibration cal : cal1) {
-            double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * cal.sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
-            double calib_weight = Math.max(1 - ((lastTimeCalibrated - cal.sensor_age_at_time_of_estimation) / calib_timespan), 0);
+            double calib_weight = cal.calculateWeight();
             if (calib_weight > min_weight && calib_weight <= max_weight) {
                 cal2.add(cal);
             }
