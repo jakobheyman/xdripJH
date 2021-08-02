@@ -2148,7 +2148,7 @@ public class BgGraphBuilder {
                     } else if (unitized(min_1h_bg) < defaultMinY) {
                         viewport.top = (float) (unitized(min_1h_bg) + Yheight);
                     }
-                } else if (max_i < min_i) {
+                } else if (max_i > min_i) {
                     viewport.top = (float) Math.min(unitized(max_1h_bg), (unitized(present_bg) + Yheight));
                 } else {
                     viewport.top = (float) Math.max(unitized(min_1h_bg), (unitized(present_bg) - Yheight));
