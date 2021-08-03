@@ -635,6 +635,10 @@ public class BgGraphBuilder {
 
                 lline.setPointRadius(3); // preserve size for treatments
                 lline.setPointColor(Color.parseColor("#FFFFFF"));
+            } else if (lline.getPointColor() == getCol(X.color_calibration_dot_background)) {
+                lline.setPointRadius(3);
+            } else if (lline.getPointRadius() == 3) {
+                lline.setPointRadius(2);
             } else if (lline.getPointRadius() > 0) {
                 lline.setPointRadius(unlabledLinesSize);
             }
@@ -928,7 +932,8 @@ public class BgGraphBuilder {
         lines[0] = new Line(calibrationValues);
         lines[0].setColor(getCol(X.color_calibration_dot_background));
         lines[0].setHasLines(false);
-        lines[0].setPointRadius(pointSize * 3 / 2);
+        //lines[0].setPointRadius(pointSize * 3 / 2);
+        lines[0].setPointRadius(pointSize + 2);
         lines[0].setHasPoints(true);
         lines[1] = new Line(calibrationValues);
         lines[1].setColor(getCol(X.color_calibration_dot_foreground));
