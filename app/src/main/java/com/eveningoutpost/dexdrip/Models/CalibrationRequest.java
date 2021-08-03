@@ -61,7 +61,9 @@ public class CalibrationRequest extends Model {
                 .where("requestIfAbove < ?", bgReading.calculated_value)
                 .where("requestIfBelow > ?", bgReading.calculated_value)
                 .executeSingle();
-        return (calibrationRequest != null && isSlopeFlatEnough(bgReading, 1));
+        // Allow calibrations with any slope
+        //return (calibrationRequest != null && isSlopeFlatEnough(bgReading, 1));
+        return (calibrationRequest != null);
     }
 
     public static boolean isSlopeFlatEnough() {

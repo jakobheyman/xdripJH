@@ -810,7 +810,9 @@ public class BluetoothGlucoseMeter extends Service {
                                                 Home.staticRefreshBGCharts();
                                                 // requires offset in past
 
-                                                if ((Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto") && isSlopeFlatEnough())) {
+                                                // Allow calibrations with any slope
+                                                //if ((Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto") && isSlopeFlatEnough())) {
+                                                if (Pref.getBooleanDefaultFalse("bluetooth_meter_for_calibrations_auto")) {
                                                     Log.d(TAG, "Slope flat enough for auto calibration");
                                                     if (!delay_calibration) {
                                                         Home.startHomeWithExtra(xdrip.getAppContext(),

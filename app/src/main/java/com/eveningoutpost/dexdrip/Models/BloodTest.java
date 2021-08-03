@@ -462,10 +462,13 @@ public class BloodTest extends Model {
                 highest_timestamp = bt.timestamp;
             }
 
+            // Allow calibrations with any slope
+            /*
             if (!CalibrationRequest.isSlopeFlatEnough(bgReading)) {
                 Log.d(TAG, "opportunistic: Slope is not flat enough at: " + JoH.dateTimeText(bgReading.timestamp));
                 return;
             }
+            */
 
             // TODO store evaluation failure for this record in cache for future optimization
 
