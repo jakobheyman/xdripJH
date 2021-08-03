@@ -1932,10 +1932,10 @@ public class BgGraphBuilder {
         lowLineValues.add(new PointValue((float) end_time, (float) lowMark));
         Line lowLine = new Line(lowLineValues);
         lowLine.setHasPoints(false);
-        lowLine.setAreaTransparency(50);
+        //lowLine.setAreaTransparency(50);
         lowLine.setColor(getCol(X.color_low_values));
         lowLine.setStrokeWidth(1);
-        lowLine.setFilled(true);
+        //lowLine.setFilled(true);
         return lowLine;
     }
 
@@ -1945,10 +1945,10 @@ public class BgGraphBuilder {
         lowLineValues.add(new PointValue((float) predictive_end_time, (float) lowMark));
         Line lowLine = new Line(lowLineValues);
         lowLine.setHasPoints(false);
-        lowLine.setAreaTransparency(40);
+        //lowLine.setAreaTransparency(40);
         lowLine.setColor(ChartUtils.darkenColor(ChartUtils.darkenColor(ChartUtils.darkenColor(getCol(X.color_low_values)))));
         lowLine.setStrokeWidth(1);
-        lowLine.setFilled(true);
+        //lowLine.setFilled(true);
         return lowLine;
     }
 
