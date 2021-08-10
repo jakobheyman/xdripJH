@@ -13,10 +13,11 @@ public class RawModification {
     private static SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
 
     private static double bgScale() {
-        if (prefs.getString("units", "mgdl").equals("mmol"))
+        if (prefs.getString("units", "mgdl").equals("mmol")) {
             return Constants.MMOLL_TO_MGDL;
-        else
+        } else {
             return 1;
+        }
     }
 
     public static double rawmult() {
@@ -30,8 +31,12 @@ public class RawModification {
     }
 
     public static int raw_mod(int raw_in) {
-        double rawd = (double) raw_in * rawmult() + rawadd();
-        int raw_out = (int) rawd;
-        return raw_out;
+        if (raw_in > 0) {
+            double rawd = (double) raw_in * rawmult() + rawadd();
+            int raw_out = (int) rawd;
+            return raw_out;
+        } else {
+            return raw_in;
+        }
     }
 }
