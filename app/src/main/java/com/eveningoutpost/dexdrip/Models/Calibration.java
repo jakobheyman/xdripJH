@@ -591,7 +591,10 @@ public class Calibration extends Model {
                     calibration.adjusted_raw_value = bgReading.age_adjusted_raw_value;
                     calibration.sensor_uuid = sensor.uuid;
                     calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0), 1);
+                    calibration.raw_timestamp = bgReading.timestamp;
+                    calibration.estimate_raw_at_time_of_calibration = bgReading.age_adjusted_raw_value;
 
+                    /*  // always use the raw value closest to time of calibration - commented out 2021-08-11
                     double estimated_raw_bg = BgReading.estimated_raw_bg(new Date().getTime());
                     calibration.raw_timestamp = bgReading.timestamp;
                     if (Math.abs(estimated_raw_bg - bgReading.age_adjusted_raw_value) > 20) {
@@ -599,6 +602,7 @@ public class Calibration extends Model {
                     } else {
                         calibration.estimate_raw_at_time_of_calibration = estimated_raw_bg;
                     }
+                    */
                     calibration.distance_from_estimate = Math.abs(calibration.bg - bgReading.calculated_value);
                     if (!note_only) {
                         calibration.sensor_confidence = Math.max(((-0.0018 * bg * bg) + (0.6657 * bg) + 36.7505) / 100, 0);

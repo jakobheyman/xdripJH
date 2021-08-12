@@ -412,8 +412,8 @@ public class BloodTest extends Model {
                 Log.d(TAG, "opportunistic: No blood tests");
                 return;
             }
-            if (JoH.msSince(bt.timestamp) > (Constants.HOUR_IN_MS * 8)) {
-                Log.d(TAG, "opportunistic: Blood test older than 8 hours ago");
+            if (JoH.msSince(bt.timestamp) > (Constants.HOUR_IN_MS * 24)) {
+                Log.d(TAG, "opportunistic: Blood test older than 24 hours ago");
                 return;
             }
 
@@ -434,18 +434,21 @@ public class BloodTest extends Model {
                 return;
             }
 
+            // Allow calibrations to be close together in time
+            /*
             if (JoH.msSince(calibration.timestamp) < Constants.HOUR_IN_MS) {
                 Log.d(TAG, "opportunistic: Last calibration less than 1 hour ago");
                 return;
             }
+            */
 
             if (bt.timestamp <= calibration.timestamp) {
                 Log.d(TAG, "opportunistic: Blood test isn't more recent than last calibration");
                 return;
             }
 
-            // get closest bgreading - must be within dexcom period and locked to sensor
-            final BgReading bgReading = BgReading.getForPreciseTimestamp(bt.timestamp + (AddCalibration.estimatedInterstitialLagSeconds * 1000), BgGraphBuilder.DEXCOM_PERIOD);
+            // get closest bgreading - must be within dexcom period * 2 and locked to sensor
+            final BgReading bgReading = BgReading.getForPreciseTimestamp(bt.timestamp + (AddCalibration.estimatedInterstitialLagSeconds * 1000), (BgGraphBuilder.DEXCOM_PERIOD * 2));
             if (bgReading == null) {
                 Log.d(TAG, "opportunistic: No matching bg reading");
                 return;

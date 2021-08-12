@@ -134,7 +134,7 @@ public class AddCalibration extends AppCompatActivity implements NavigationDrawe
                                                 }
 
                                                 final Calibration calibration = Calibration.create(calValue, bgAgeNumber, getApplicationContext(), (note_only.equals("true")), localEstimatedInterstitialLagSeconds);
-                                                if ((calibration != null) && allow_undo.equals("true") && (JoH.msSince(calibration.timestamp) < Constants.HOUR_IN_MS)) {
+                                                if ((calibration != null) && allow_undo.equals("true") && (JoH.msSince(calibration.timestamp) < (Constants.HOUR_IN_MS * 24))) {
                                                     UndoRedo.addUndoCalibration(calibration.uuid);
                                                 }
                                                 if (calibration != null) {

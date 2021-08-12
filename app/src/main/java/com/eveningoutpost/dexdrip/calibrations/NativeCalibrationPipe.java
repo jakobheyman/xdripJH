@@ -32,8 +32,8 @@ public class NativeCalibrationPipe {
             UserError.Log.wtf(TAG, msg);
             return;
         }
-        if (since > HOUR_IN_MS) {
-            final String msg = "Cannot send calibration older than 1 hour to transmitter: " + glucose + " @ " + JoH.dateTimeText(timestamp);
+        if (since > HOUR_IN_MS * 24) {
+            final String msg = "Cannot send calibration older than 24 hours to transmitter: " + glucose + " @ " + JoH.dateTimeText(timestamp);
             JoH.static_toast_long(msg);
             UserError.Log.wtf(TAG, msg);
             return;
