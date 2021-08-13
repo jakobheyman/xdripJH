@@ -269,23 +269,24 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
             if ((mHistory != null) && (mHistory.size() > 1)) {
                 Collections.sort(mHistory);
                 //applyTimeShift(mTrend, shiftx);
-                final List<Double> polyxList = new ArrayList<Double>();
-                final List<Double> polyyList = new ArrayList<Double>();
+                //final List<Double> polyxList = new ArrayList<Double>();  // NO INTERPOLATED VALUES ADDED
+                //final List<Double> polyyList = new ArrayList<Double>();  // NO INTERPOLATED VALUES ADDED
                 for (GlucoseData gd : mHistory) {
                     if (d)
                         Log.d(TAG, "history : " + JoH.dateTimeText(gd.realDate) + " " + gd.glucose(false));
-                    polyxList.add((double) gd.realDate);
+                    //polyxList.add((double) gd.realDate);  // NO INTERPOLATED VALUES ADDED
                     if (use_raw) {
-                        polyyList.add((double) gd.glucoseLevelRaw);
+                        //polyyList.add((double) gd.glucoseLevelRaw);  // NO INTERPOLATED VALUES ADDED
                         // For history, data is already averaged, no need for us to use smoothed data
                         createBGfromGD(gd, false, true);
                     } else {
-                        polyyList.add((double) gd.glucoseLevel);
+                        //polyyList.add((double) gd.glucoseLevel);  // NO INTERPOLATED VALUES ADDED
                         // add in the actual value
                         BgReading.bgReadingInsertFromInt(gd.glucoseLevel, gd.realDate, false);
                     }
                 }
 
+                /*  // NO INTERPOLATED VALUES ADDED
                 //ConstrainedSplineInterpolator splineInterp = new ConstrainedSplineInterpolator();
                 final SplineInterpolator splineInterp = new SplineInterpolator();
 
@@ -313,6 +314,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                         Log.e(TAG, "NonMonotonicSequenceException: " + e);
                     }
                 }
+                */
 
             } else {
                 Log.e(TAG, "no librealarm history data");
