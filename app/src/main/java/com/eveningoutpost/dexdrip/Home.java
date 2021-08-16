@@ -2535,6 +2535,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             return;
         }
 
+        /*  // Don't display please wait info at the start of a new sensor
         final long now = System.currentTimeMillis();
         if (Sensor.currentSensor().started_at + 60000 * 60 * 2 >= now) {
             double waitTime = (Sensor.currentSensor().started_at + 60000 * 60 * 2 - now) / 60000.0;
@@ -2542,6 +2543,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             showUncalibratedSlope();
             return;
         }
+        */
         if (DexCollectionType.isLibreOOPAlgorithm(collector)) {
             // Rest of this function deals with initial calibration. Since we currently don't have a way to calibrate,
             // And even once we will have, there is probably no need to force a calibration at start of sensor use.
