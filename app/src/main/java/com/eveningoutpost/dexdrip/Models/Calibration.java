@@ -887,7 +887,7 @@ public class Calibration extends Model {
     private double calculateWeight() {
         // calibration weight decreases linearly with time before last calibration
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
-        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "6"), 6d);
+        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "5"), 5d);
         double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
         double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
         double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
