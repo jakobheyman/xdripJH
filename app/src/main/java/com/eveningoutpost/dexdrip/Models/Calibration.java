@@ -540,7 +540,6 @@ public class Calibration extends Model {
     // without timeoffset
     public static Calibration create(double bg, Context context) {
         return create(bg, 0, context);
-
     }
 
     public static Calibration create(double bg, long timeoffset, Context context) {
@@ -885,14 +884,20 @@ public class Calibration extends Model {
     }
 
     private double calculateWeight() {
-        // calibration weight decreases linearly with time before last calibration
+        return calculateWeight(Calibration.last().sensor_age_at_time_of_estimation);
+    }
+    
+    private double calculateWeight(double calib_point_in_time) {
+        // calibration weight decreases linearly with time from calibration point
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
         double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "5"), 5d);
         double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
         double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
-        double calib_timespan = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
-        double lastTimeCalibrated = Calibration.last().sensor_age_at_time_of_estimation;
-        return Math.max(1 - ((lastTimeCalibrated - sensor_age_at_time_of_estimation) / calib_timespan), 0);
+        // calib_timespan1 and calib_timespan2 used to enable historical re-calculations with subsequent calibration points added
+        double calib_timespan1 = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * calib_point_in_time / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
+        double calib_timespan2 = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
+        double calib_timespan = Math.min(calib_timespan1, calib_timespan2);
+        return Math.max(1 - (Math.abs(calib_point_in_time - sensor_age_at_time_of_estimation) / calib_timespan), 0);
         /*
         double firstTimeStarted = Calibration.first().sensor_age_at_time_of_estimation;
         double lastTimeStarted = Calibration.last().sensor_age_at_time_of_estimation;
