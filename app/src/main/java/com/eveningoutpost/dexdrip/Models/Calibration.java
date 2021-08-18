@@ -714,7 +714,9 @@ public class Calibration extends Model {
                 final Calibration calibration = Calibration.last();
                 ActiveAndroid.clearCache();
                 calibration.slope = 1;
-                calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.raw_value * calibration.slope));
+                // no limit for intercept
+                //calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.raw_value * calibration.slope));
+                calibration.intercept = calibration.bg - (calibration.raw_value * calibration.slope);
                 calibration.save();
                 CalibrationRequest.createOffset(calibration.bg, 25);
                 newFingerStickData();
@@ -744,7 +746,9 @@ public class Calibration extends Model {
                 double d = (l * n) - (m * m);
                 final Calibration calibration = Calibration.last();
                 ActiveAndroid.clearCache();
-                calibration.intercept = sParams.restrictIntercept(((n * p) - (m * q)) / d);
+                // no limit for intercept
+                //calibration.intercept = sParams.restrictIntercept(((n * p) - (m * q)) / d);
+                calibration.intercept = ((n * p) - (m * q)) / d;
                 calibration.slope = ((l * q) - (m * p)) / d;
                 Log.d(TAG, "Calibration slope debug: slope:" + calibration.slope + " q:" + q + " m:" + m + " p:" + p + " d:" + d);
                 if ((calibrations.size() == 2 && calibration.slope < sParams.getLowSlope1()) || (calibration.slope < sParams.getLowSlope2())) { // I have not seen a case where a value below 7.5 proved to be accurate but we should keep an eye on this
@@ -754,7 +758,9 @@ public class Calibration extends Model {
                     if (calibrations.size() > 2) {
                         calibration.possible_bad = true;
                     }
-                    calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
+                    // no limit for intercept
+                    //calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
+                    calibration.intercept = calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope);
                     CalibrationRequest.createOffset(calibration.bg, 25);
                 }
                 if ((calibrations.size() == 2 && calibration.slope > sParams.getHighSlope1()) || (calibration.slope > sParams.getHighSlope2())) {
@@ -764,7 +770,9 @@ public class Calibration extends Model {
                     if (calibrations.size() > 2) {
                         calibration.possible_bad = true;
                     }
-                    calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
+                    // no limit for intercept
+                    //calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
+                    calibration.intercept = calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope);
                     CalibrationRequest.createOffset(calibration.bg, 25);
                 }
                 Log.d(TAG, "Calculated Calibration Slope: " + calibration.slope);
@@ -788,19 +796,20 @@ public class Calibration extends Model {
                     Home.toaststaticnext("Got invalid zero slope calibration!");
                     calibration.save(); // Save nulled record, lastValid should protect from bad calibrations
                     newFingerStickData();
+                /*  // no limit for intercept
                 } else if (calibration.intercept > CalibrationAbstract.getHighestSaneIntercept()) {
-                 /*
+                 /
                     calibration.sensor_confidence = 0;
                     calibration.slope_confidence = 0;
                     final String msg = "Got invalid non-sane intercept calibration! ";
                     Home.toaststaticnext(msg);
                     UserError.Log.wtf(TAG, msg + calibration.toS());
-                */
+                *
                     // Just log the error but store the calibration so we can use it in a plugin situation. lastValid() will filter it from calculations.
                     UserError.Log.e(TAG, "Got invalid intercept value in xDrip classic algorithm: " + calibration.intercept);
                     calibration.save(); // save record, lastValid should protect from bad calibrations
                     newFingerStickData();
-
+                */
                 } else {
                     calibration.save();
                     newFingerStickData();
@@ -1158,7 +1167,8 @@ public class Calibration extends Model {
                 .where("slope_confidence != 0")
                 .where("sensor_confidence != 0")
                 .where("slope != 0")
-                .where("intercept <= ?", CalibrationAbstract.getHighestSaneIntercept())
+                // no limit for intercept
+                //.where("intercept <= ?", CalibrationAbstract.getHighestSaneIntercept())
                 .orderBy("timestamp desc")
                 .executeSingle();
     }
