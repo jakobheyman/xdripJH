@@ -554,7 +554,7 @@
     <string name="xbridge_battery">xBridge Battery</string>
     <string name="limitter_battery">Libre Battery</string>
     <string name="parakeet_battery">Parakeet Battery</string>
-    <string name="after_calibration_rewrite_history">After calibration, adjust recent raw graph to smooth to the new calibration</string>
+    <string name="after_calibration_rewrite_history">After calibration, recalculate all bg values affected by the new calibration</string>
     <string name="rewrite_history">Rewrite History</string>
     <string name="grid_time_lines_visible">Grid time lines visible</string>
     <string name="grid_glucose_lines_visible">Grid glucose lines visible</string>
@@ -900,7 +900,7 @@
     <string name="bluetooth_scan">Bluetooth Scan</string>
     <string name="level_alerts">Level Alerts</string>
     <string name="override_calibration">Override Calibration</string>
-    <string name="only_stop_your_sensor_when_you_actually_plan">Only stop your sensor when you actually plan to remove it, otherwise leave it running!</string>
+    <string name="only_stop_your_sensor_when_you_actually_plan">Only stop your sensor when you actually plan to remove it, otherwise leave it running! If resetting all calibrations with Rewrite History checked (Graph Settings) raw values will be used for all bg values of the present sensor</string>
     <string name="restart_collector">Restart Collector</string>
     <string name="forget_device">Forget Device</string>
     <string name="other_notes">Other Notes:</string>

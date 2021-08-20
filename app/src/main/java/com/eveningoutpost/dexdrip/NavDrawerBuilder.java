@@ -70,7 +70,11 @@ public class NavDrawerBuilder {
         } else {
 
             if (is_active_sensor) {
-                if (!CollectionServiceStarter.isBTShare(context)) {
+                if (DexCollectionType.hasLibre()) {
+                    // Don't use initial calibration
+                    this.nav_drawer_options.add(context.getString(R.string.add_calibration));
+                    this.nav_drawer_intents.add(new Intent(context, AddCalibration.class));
+                } else if (!CollectionServiceStarter.isBTShare(context)) {
                     if (last_two_bgReadings.size() > 1 || Ob1G5CollectionService.isG5WantingCalibration()) {
                         if ((last_two_calibrations.size() > 1) && !Ob1G5CollectionService.isG5WantingInitialCalibration()) { //After two successful initial calibrations
                             // TODO tighten this time limit

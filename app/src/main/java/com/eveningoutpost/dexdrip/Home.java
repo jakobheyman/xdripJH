@@ -2553,8 +2553,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             return;
         }
 
+        if (DexCollectionType.hasLibre()) {
+            // Don't use initial calibration
+            displayCurrentInfo();
+            if (screen_forced_on) dontKeepScreenOn();
         // TODO this logic needed a rework even a year ago, now its a lot more confused with the additional complexity of native mode
-        if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
+        } else if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
             // TODO use format string
             notificationText.setText((Ob1G5StateMachine.usingG6() ? "G6" : "G5") + " State isn't currently known. Next connection will update this");
             showUncalibratedSlope();
