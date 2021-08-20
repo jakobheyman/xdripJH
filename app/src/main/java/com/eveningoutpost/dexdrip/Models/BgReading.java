@@ -491,7 +491,7 @@ public class BgReading extends Model implements ShareUploadableBg {
 
         Calibration calibration = Calibration.lastValid();
         if (calibration == null) {
-            Log.d(TAG, "create: No calibration yet");
+            Log.d(TAG, "create: No calibration yet - using raw values");
             bgReading.sensor = sensor;
             bgReading.sensor_uuid = sensor.uuid;
             bgReading.raw_data = (raw_data / 1000);
@@ -503,9 +503,12 @@ public class BgReading extends Model implements ShareUploadableBg {
 
             bgReading.calculateAgeAdjustedRawValue();
 
+            bgReading.calculated_value = bgReading.age_adjusted_raw_value;
+            bgReading.filtered_calculated_value = bgReading.ageAdjustedFiltered();
             bgReading.save();
             bgReading.perform_calculations();
-            BgSendQueue.sendToPhone(context);
+            bgReading.postProcess(quick);
+            //BgSendQueue.sendToPhone(context);
         } else {
             Log.d(TAG, "Calibrations, so doing everything: " + calibration.uuid);
             bgReading = createFromRawNoSave(sensor, calibration, raw_data, filtered_data, timestamp);
