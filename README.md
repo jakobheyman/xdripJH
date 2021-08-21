@@ -17,13 +17,13 @@
 * Horizontal zoom in main graph and vertical zoom in preview graph
 * Optionally hide noise line (Graph Settings)
 * Calibration Graph uses the same unit (mg/dl or mmol/l) for raw and calibrated values
--------------
+----
 ### Calibration notes
 * Slope and intercept calculated with weights decreasing linearly with time from calibration point
 * The weighting can be controlled with these three parameters (Advanced Calibration)
- * Calibration weight days - time over which the weight decreases from 1 to 0
- * Calibration weight days initial - weight time used at the start of a new sensor
- * Calibration weight days initial transition - transition time from initial to standard weight days
+   - Calibration weight days - time over which the weight decreases from 1 to 0
+   - Calibration weight days initial - weight time used at the start of a new sensor
+   - Calibration weight days initial transition - transition time from initial to standard weight days
 * Use raw data as blood glucose values if there is no calibration available
 * No specific initial calibration used (slope = 1 after the first calibration)
 * Optionally recalculate all affected calibrations and glucose values at calibration (Graph Settings)
