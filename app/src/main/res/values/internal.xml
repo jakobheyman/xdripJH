@@ -16,7 +16,11 @@
         * Keep Y range constant in main graph\n
         * Optionally hide noise line \n
         * Modified zoom in main/preview graph\n
-        * Modified calibration graph\n
+        * Modified calibration graph\n\n
+        Calibration notes:\n
+        * Control weights (Advanced Calibration)\n
+        * If no calibration, use raw as glucose\n
+        * Optionally recalculate all affected bg\n
     </string>
     <string name="import_db_warning">
         WARNING: Restoring a database might cause SEVERE DATA LOSS. If you don\'t know why you want to use the restore, don\'t use it.
