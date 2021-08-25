@@ -1536,8 +1536,9 @@ public class JoH {
         try {
 
             if (isAirplaneModeEnabled(context)) {
-                UserError.Log.e(TAG, "Not setting bluetooth to state: " + state + " due to airplane mode being enabled");
-                return;
+                UserError.Log.e(TAG, "Airplane mode is enabled - trying to enable bluetooth");
+                //UserError.Log.e(TAG, "Not setting bluetooth to state: " + state + " due to airplane mode being enabled");
+                //return;
             }
 
             if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
