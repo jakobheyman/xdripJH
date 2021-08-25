@@ -2357,7 +2357,7 @@ public class BgGraphBuilder {
                 PointValueExtended pve = (PointValueExtended) pointValue;
                 type = pve.type;
                 if (pve.calculatedFilteredValue != -1) {
-                    filtered = " (" + Math.round(pve.calculatedFilteredValue * 10) / 10d + ")";
+                    filtered = " (" + Math.round(pve.calculatedFilteredValue * 100) / 100d + ")";
                 }
                 if (pve.note != null) {
                     alternate = pve.note;
@@ -2381,7 +2381,7 @@ public class BgGraphBuilder {
             if (alternate.length() > 0) {
                 message = timeFormat.format(time) + "    " + alternate;
             } else {
-                message = timeFormat.format(time) + "      " + (Math.round(pointValue.getY() * 10) / 10d) + " " + unit() + filtered;
+                message = timeFormat.format(time) + "      " + (Math.round(pointValue.getY() * 100) / 100d) + " " + unit() + filtered;
             }
 
             switch (type) {
