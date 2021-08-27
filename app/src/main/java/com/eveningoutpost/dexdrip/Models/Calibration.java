@@ -624,7 +624,7 @@ public class Calibration extends Model {
                             calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
                         } else {
                             calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
-                            Log.e(TAG, "Calibrated 1 new point");
+                            Log.e(TAG, "Calibrated 1 point");
                         }
                         CalibrationSendQueue.addToQueue(calibration, context);
                         BgReading.pushBgReadingSyncToWatch(bgReading, false);
@@ -672,12 +672,10 @@ public class Calibration extends Model {
         for (Calibration calibration : calibrations) {
             calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
         }
-        if (calibrations.size() > 2) {
-            Log.e(TAG, "Calibrated 1 new point and recalibrated " + (calibrations.size() - 1) + " points");
-        } else if (calibrations.size() == 2) {
-            Log.e(TAG, "Calibrated 1 new point and recalibrated 1 point");
+        if (calibrations.size() > 1) {
+            Log.e(TAG, "Calibrated " + calibrations.size() + " points");
         } else if (calibrations.size() == 1) {
-            Log.e(TAG, "Calibrated 1 new point");
+            Log.e(TAG, "Calibrated 1 point");
         }
     }
 
@@ -879,6 +877,26 @@ public class Calibration extends Model {
         return bgReadings.size();
     }
 
+    public synchronized static void reenable(Calibration calibration) {
+        // first calculate slope_confidence and sensor_confidence to include the calibration point in allForSensorWithWeightX
+        BgReading bgReading = null;
+        bgReading = BgReading.getForPreciseTimestamp(calibration.timestamp, (15 * 60 * 1000));
+        calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0), 1);
+        calibration.sensor_confidence = Math.max(((-0.0018 * calibration.bg * calibration.bg) + (0.6657 * calibration.bg) + 36.7505) / 100, 0);
+        calibration.save();
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+        if (prefs.getBoolean("rewrite_history", false)) {
+            // recalibrate calibration points
+            calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+            // recalculate bg data
+            adjustBgReadings(calibration.sensor_age_at_time_of_estimation, calibration.timestamp);
+        } else {
+            // recalibrate calibration point
+            calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
+            Log.e(TAG, "Calibrated 1 point");
+        }
+    }
+
     public static void adjustRecentBgReadings(int adjustCount) {
         //TODO: add some handling around calibration overrides as they come out looking a bit funky
         final List<Calibration> calibrations = Calibration.latest(3);
@@ -999,6 +1017,7 @@ public class Calibration extends Model {
             // recalculate bg data
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
             if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
                 adjustBgReadings(calibration.sensor_age_at_time_of_estimation, calibration.timestamp);
             }
         }
@@ -1015,6 +1034,7 @@ public class Calibration extends Model {
             // recalculate bg data
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
             if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
                 adjustBgReadings(calibration.sensor_age_at_time_of_estimation, calibration.timestamp);
             }
         } else {
@@ -1062,6 +1082,7 @@ public class Calibration extends Model {
             // recalculate bg data
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
             if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
                 adjustBgReadings(calibration.sensor_age_at_time_of_estimation, calibration.timestamp);
             }
         }

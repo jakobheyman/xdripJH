@@ -120,8 +120,13 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    calibration.clear_byuuid(calibration.uuid, false);
-                                    notifyDataSetChanged();
+                                    if (calibration.isValid()) {
+                                        calibration.clear_byuuid(calibration.uuid, false);
+                                        notifyDataSetChanged();
+                                    } else if (!calibration.isNote()) {
+                                        Calibration.reenable(calibration);
+                                        notifyDataSetChanged();
+                                    }
                                     break;
 
                                 case DialogInterface.BUTTON_NEGATIVE:
@@ -131,8 +136,13 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
                     };
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setMessage("Disable this calibration?\nFlagged calibrations will no longer have an effect.").setPositiveButton(gs(R.string.yes), dialogClickListener)
-                            .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    if (calibration.isValid()) {
+                        builder.setMessage("Disable this calibration?\nFlagged calibrations will no longer have an effect.").setPositiveButton(gs(R.string.yes), dialogClickListener)
+                                .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    } else if (!calibration.isNote()) {
+                        builder.setMessage("Re-enable this calibration?").setPositiveButton(gs(R.string.yes), dialogClickListener)
+                                .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    }
                     return true;
                 }
             });
