@@ -590,12 +590,12 @@ public class Calibration extends Model {
                     calibration.raw_value = bgReading.raw_data;
                     calibration.adjusted_raw_value = bgReading.age_adjusted_raw_value;
                     calibration.sensor_uuid = sensor.uuid;
-                    calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0), 1);
+                    calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0.01), 1);
                     calibration.raw_timestamp = bgReading.timestamp;
                     calibration.estimate_raw_at_time_of_calibration = bgReading.age_adjusted_raw_value;
                     calibration.distance_from_estimate = Math.abs(calibration.bg - bgReading.calculated_value);
                     if (!note_only) {
-                        calibration.sensor_confidence = Math.max(((-0.0018 * bg * bg) + (0.6657 * bg) + 36.7505) / 100, 0);
+                        calibration.sensor_confidence = Math.max(((-0.0018 * bg * bg) + (0.6657 * bg) + 36.7505) / 100, 0.01);
                     } else {
                         calibration.sensor_confidence = 0; // exclude from calibrations but show on graph
                         calibration.slope_confidence = note_only_marker; // this is a bit ugly
@@ -881,8 +881,8 @@ public class Calibration extends Model {
         // first calculate slope_confidence and sensor_confidence to include the calibration point in allForSensorWithWeightX
         BgReading bgReading = null;
         bgReading = BgReading.getForPreciseTimestamp(calibration.timestamp, (15 * 60 * 1000));
-        calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0), 1);
-        calibration.sensor_confidence = Math.max(((-0.0018 * calibration.bg * calibration.bg) + (0.6657 * calibration.bg) + 36.7505) / 100, 0);
+        calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0.01), 1);
+        calibration.sensor_confidence = Math.max(((-0.0018 * calibration.bg * calibration.bg) + (0.6657 * calibration.bg) + 36.7505) / 100, 0.01);
         calibration.save();
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
         if (prefs.getBoolean("rewrite_history", false)) {
