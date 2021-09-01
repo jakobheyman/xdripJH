@@ -48,6 +48,9 @@ public class CalibrationGraph extends ActivityWithMenu {
     private final boolean show_days_since = true; // could make this switchable if desired
     private final double start_x = 2 * Constants.MMOLL_TO_MGDL; // raw range
     private double end_x = 11 * Constants.MMOLL_TO_MGDL; //  raw range
+    private final float multY = (float) 1.65; // factor to make the graph match a typical rectangular screen
+    private final String[] POINT_COLOR = {"#AEC5FF", "#B3C8E5", "#B9CBCC", "#BFCFB2", "#C4D299", "#CAD67F", "#D0D966", "#D5DC4C", "#DBE033", "#E1E319", "#E7E700", "#E1CD00", "#DBB300", "#D69A00", "#D08000", "#CA6600", "#C54D00", "#BF3300", "#B91900", "#B40000"};
+    private final double[] MAX_WEIGHT = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1};
 
     TextView GraphHeader;
     TextView PluginHeader;
@@ -83,50 +86,6 @@ public class CalibrationGraph extends ActivityWithMenu {
         calibrations = Calibration.allForSensorInLastFourDays();
         List<Line> blueLines = getCalibrationsLine(calibrations, ChartUtils.COLOR_BLUE);
         */
-
-        // colors based on weight values: grey-blue - yellow - red
-        List<Calibration> calibrations = Calibration.allForSensorWithWeightX(-1, 0);
-        List<Line> col0_Lines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
-        calibrations = Calibration.allForSensorWithWeightX(0, 0.05);
-        List<Line> col5_Lines = getCalibrationsLine(calibrations, Color.parseColor("#AEC5FF"));
-        calibrations = Calibration.allForSensorWithWeightX(0.05, 0.1);
-        List<Line> col10_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B3C8E5"));
-        calibrations = Calibration.allForSensorWithWeightX(0.1, 0.15);
-        List<Line> col15_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B9CBCC"));
-        calibrations = Calibration.allForSensorWithWeightX(0.15, 0.2);
-        List<Line> col20_Lines = getCalibrationsLine(calibrations, Color.parseColor("#BFCFB2"));
-        calibrations = Calibration.allForSensorWithWeightX(0.2, 0.25);
-        List<Line> col25_Lines = getCalibrationsLine(calibrations, Color.parseColor("#C4D299"));
-        calibrations = Calibration.allForSensorWithWeightX(0.25, 0.3);
-        List<Line> col30_Lines = getCalibrationsLine(calibrations, Color.parseColor("#CAD67F"));
-        calibrations = Calibration.allForSensorWithWeightX(0.3, 0.35);
-        List<Line> col35_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D0D966"));
-        calibrations = Calibration.allForSensorWithWeightX(0.35, 0.4);
-        List<Line> col40_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D5DC4C"));
-        calibrations = Calibration.allForSensorWithWeightX(0.4, 0.45);
-        List<Line> col45_Lines = getCalibrationsLine(calibrations, Color.parseColor("#DBE033"));
-        calibrations = Calibration.allForSensorWithWeightX(0.45, 0.5);
-        List<Line> col50_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E1E319"));
-        calibrations = Calibration.allForSensorWithWeightX(0.5, 0.55);
-        List<Line> col55_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E7E700"));
-        calibrations = Calibration.allForSensorWithWeightX(0.55, 0.6);
-        List<Line> col60_Lines = getCalibrationsLine(calibrations, Color.parseColor("#E1CD00"));
-        calibrations = Calibration.allForSensorWithWeightX(0.6, 0.65);
-        List<Line> col65_Lines = getCalibrationsLine(calibrations, Color.parseColor("#DBB300"));
-        calibrations = Calibration.allForSensorWithWeightX(0.65, 0.7);
-        List<Line> col70_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D69A00"));
-        calibrations = Calibration.allForSensorWithWeightX(0.7, 0.75);
-        List<Line> col75_Lines = getCalibrationsLine(calibrations, Color.parseColor("#D08000"));
-        calibrations = Calibration.allForSensorWithWeightX(0.75, 0.8);
-        List<Line> col80_Lines = getCalibrationsLine(calibrations, Color.parseColor("#CA6600"));
-        calibrations = Calibration.allForSensorWithWeightX(0.8, 0.85);
-        List<Line> col85_Lines = getCalibrationsLine(calibrations, Color.parseColor("#C54D00"));
-        calibrations = Calibration.allForSensorWithWeightX(0.85, 0.9);
-        List<Line> col90_Lines = getCalibrationsLine(calibrations, Color.parseColor("#BF3300"));
-        calibrations = Calibration.allForSensorWithWeightX(0.9, 0.95);
-        List<Line> col95_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B91900"));
-        calibrations = Calibration.allForSensorWithWeightX(0.95, 1);
-        List<Line> col100_Lines = getCalibrationsLine(calibrations, Color.parseColor("#B40000"));
 
         Calibration calibration = Calibration.lastValid();
         if (calibration != null) {
@@ -164,7 +123,6 @@ public class CalibrationGraph extends ActivityWithMenu {
 
             // add invisible points to extend Y axis (made to make the X and Y scales match better in a typical rectangular smartphone graph)
             List<PointValue> extendY = new ArrayList<PointValue>();
-            final float multY = (float) 1.65;
             extendY.add(new PointValue(conversion_factor * (float) start_x, conversion_factor * (float) start_x));
             extendY.add(new PointValue(conversion_factor * (float) end_x, conversion_factor * (float) end_x * multY));
             Line extendY_disp = new Line(extendY);
@@ -191,6 +149,27 @@ public class CalibrationGraph extends ActivityWithMenu {
                 PluginHeader.setTextColor(Color.parseColor(plugin_color));
             }
 
+            // colors based on weight values: grey-blue - yellow - red
+            List<Calibration> calibrations = Calibration.allForSensorWithWeightX(-1, 0);
+            List<Line> col_Lines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
+            for (Line col_Line : col_Lines) {
+                lines.add(col_Line);
+            }
+            Line leg_line = getLegendLine(0, Color.parseColor("#66FFFFFF"));
+            lines.add(leg_line);
+            
+            for (int i = 0; i < 20; i++) {
+                // add calibration points
+                calibrations = Calibration.allForSensorWithWeightX((MAX_WEIGHT[i] - 0.05), MAX_WEIGHT[i]);
+                col_Lines = getCalibrationsLine(calibrations, Color.parseColor(POINT_COLOR[i]));
+                for (Line col_Line : col_Lines) {
+                    lines.add(col_Line);
+                }
+                // add legend points
+                leg_line = getLegendLine(MAX_WEIGHT[i], Color.parseColor(POINT_COLOR[i]));
+                lines.add(leg_line);
+            }
+
             //add lines in order
             /*
             for (Line greyLine : greyLines) {
@@ -200,70 +179,6 @@ public class CalibrationGraph extends ActivityWithMenu {
                 lines.add(blueLine);
             }
             */
-            for (Line col0_Line : col0_Lines) {
-                lines.add(col0_Line);
-            }
-            for (Line col5_Line : col5_Lines) {
-                lines.add(col5_Line);
-            }
-            for (Line col10_Line : col10_Lines) {
-                lines.add(col10_Line);
-            }
-            for (Line col15_Line : col15_Lines) {
-                lines.add(col15_Line);
-            }
-            for (Line col20_Line : col20_Lines) {
-                lines.add(col20_Line);
-            }
-            for (Line col25_Line : col25_Lines) {
-                lines.add(col25_Line);
-            }
-            for (Line col30_Line : col30_Lines) {
-                lines.add(col30_Line);
-            }
-            for (Line col35_Line : col35_Lines) {
-                lines.add(col35_Line);
-            }
-            for (Line col40_Line : col40_Lines) {
-                lines.add(col40_Line);
-            }
-            for (Line col45_Line : col45_Lines) {
-                lines.add(col45_Line);
-            }
-            for (Line col50_Line : col50_Lines) {
-                lines.add(col50_Line);
-            }
-            for (Line col55_Line : col55_Lines) {
-                lines.add(col55_Line);
-            }
-            for (Line col60_Line : col60_Lines) {
-                lines.add(col60_Line);
-            }
-            for (Line col65_Line : col65_Lines) {
-                lines.add(col65_Line);
-            }
-            for (Line col70_Line : col70_Lines) {
-                lines.add(col70_Line);
-            }
-            for (Line col75_Line : col75_Lines) {
-                lines.add(col75_Line);
-            }
-            for (Line col80_Line : col80_Lines) {
-                lines.add(col80_Line);
-            }
-            for (Line col85_Line : col85_Lines) {
-                lines.add(col85_Line);
-            }
-            for (Line col90_Line : col90_Lines) {
-                lines.add(col90_Line);
-            }
-            for (Line col95_Line : col95_Lines) {
-                lines.add(col95_Line);
-            }
-            for (Line col100_Line : col100_Lines) {
-                lines.add(col100_Line);
-            }
-
         }
 
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
@@ -363,6 +278,29 @@ public class CalibrationGraph extends ActivityWithMenu {
             lines.add(linec);
         }
         return lines;
+    }
+
+    @NonNull
+    public Line getLegendLine(double max_weight, int color) {
+        // conversion_factor for mg-mmol
+        final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
+        final float start_x_legend = (float) (start_x + ((end_x - start_x) / 7));
+        final float end_x_legend = (float) (end_x - ((end_x - start_x) / 5));
+        PointValue point = new PointValue(conversion_factor * (start_x_legend + ((float) max_weight * (end_x_legend - start_x_legend))), conversion_factor * (float) (16 * Constants.MMOLL_TO_MGDL));
+        List<PointValue> values = new ArrayList<PointValue>();
+        values.add(point);
+        Line line = new Line(values);
+        line.setColor(color);
+        line.setHasLines(false);
+        line.setPointRadius(4);
+        line.setHasPoints(true);
+        if (max_weight == 0 || max_weight == 0.2 || max_weight == 0.4 || max_weight == 0.6 || max_weight == 0.8 || max_weight == 1) {
+            point.setLabel(JoH.qs0(max_weight,1));
+            line.setHasLabels(true);
+        } else {
+            line.setHasLabels(false);
+        }
+        return line;
     }
 
 
