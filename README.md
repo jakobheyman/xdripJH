@@ -24,6 +24,6 @@
   - Calibration weight days - time over which the weight decreases from 1 to 0
   - Calibration weight days initial - weight time used at the start of a new sensor
   - Calibration weight days initial transition - transition time from initial to standard weight days
-* Use raw data as blood glucose values if there is no calibration available
+* Use raw data as blood glucose if there is no calibration available (no initial warm up period)
 * No specific initial calibration used (slope = 1 after the first calibration)
 * Optionally recalculate all affected calibrations and glucose values at calibration (Graph Settings)
