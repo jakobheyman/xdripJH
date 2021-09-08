@@ -49,7 +49,7 @@ public class CalibrationGraph extends ActivityWithMenu {
     private final double start_x = 2 * Constants.MMOLL_TO_MGDL; // raw range
     private double end_x = 11 * Constants.MMOLL_TO_MGDL; //  raw range
     private final float multY = (float) 1.65; // factor to make the graph match a typical rectangular screen
-    private final String[] POINT_COLOR = {"#AEC5FF", "#B3C8E5", "#B9CBCC", "#BFCFB2", "#C4D299", "#CAD67F", "#D0D966", "#D5DC4C", "#DBE033", "#E1E319", "#E7E700", "#E1CD00", "#DBB300", "#D69A00", "#D08000", "#CA6600", "#C54D00", "#BF3300", "#B91900", "#B40000"};
+    private final String[] POINT_COLOR = {"#A0A0A0", "#A7A790", "#AEAE80", "#B5B570", "#BCBC60", "#C3C350", "#CACA40", "#D1D130", "#D8D820", "#DFDF10", "#E7E700", "#E1CD00", "#DBB300", "#D69A00", "#D08000", "#CA6600", "#C54D00", "#BF3300", "#B91900", "#B40000"};
     private final double[] MAX_WEIGHT = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1};
 
     TextView GraphHeader;
@@ -149,7 +149,7 @@ public class CalibrationGraph extends ActivityWithMenu {
                 PluginHeader.setTextColor(Color.parseColor(plugin_color));
             }
 
-            // colors based on weight values: grey-blue - yellow - red
+            // colors based on weight values: grey - yellow - red
             List<Calibration> calibrations = Calibration.allForSensorWithWeightX(-1, 0);
             List<Line> col_Lines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
             for (Line col_Line : col_Lines) {
