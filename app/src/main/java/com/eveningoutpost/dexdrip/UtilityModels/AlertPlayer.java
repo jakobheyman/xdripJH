@@ -12,6 +12,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
@@ -510,6 +511,11 @@ public class AlertPlayer {
             }
         }
 
+        // if using custom vibration...
+        if (alert.vibration_pattern.length() > 0) {
+            customVibration(context, alert.vibration_pattern);
+        }
+
         // We use timeFromStartPlaying as a way to force vibrating/ non vibrating...
         if (profile != ALERT_PROFILE_ASCENDING) {
             // We start from the non ascending part...
@@ -562,7 +568,7 @@ public class AlertPlayer {
         } else {
             // In order to still show on all android wear watches, either a sound or a vibrate pattern
             // seems to be needed. This pattern basically does not vibrate:
-            builder.setVibrate(new long[]{1, 0});
+            //builder.setVibrate(new long[]{1, 0}); // commented out to enable custom vibration patterns
         }
         Log.ueh("Alerting", content);
         final NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -625,5 +631,22 @@ public class AlertPlayer {
         }
         // unknown mode, not sure let's play just in any case.
         return true;
+    }
+
+    private static void customVibration(Context ctx, String vibration_pattern) {
+        // fix vibrator first
+        final Vibrator vibrator = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+        if ((vibrator == null) || (!vibrator.hasVibrator())) {
+            return;
+        }
+        vibrator.cancel();
+        // convert string vibration_pattern to long array vibPatternLong
+        String[] stringarray = vibration_pattern.split(",");
+        long[] vibPatternLong = new long[stringarray.length];
+        for (int i = 0; i < stringarray.length; i++) {
+            vibPatternLong[i] = Long.parseLong(stringarray[i]);
+        }
+        final int indexInPatternToRepeat = -1;
+        vibrator.vibrate(vibPatternLong, indexInPatternToRepeat);
     }
 }

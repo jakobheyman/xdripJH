@@ -69,6 +69,7 @@ public class EditAlertActivity extends ActivityWithMenu {
     private EditText alertMp3File;
     private EditText editSnooze;
     private EditText reraise;
+    private EditText customVibText;
 
     private Button buttonalertMp3;
 
@@ -158,6 +159,7 @@ public class EditAlertActivity extends ActivityWithMenu {
 
         checkboxAllDay = (CheckBox) findViewById(R.id.check_alert_time);
         checkboxVibrate = (CheckBox) findViewById(R.id.check_vibrate);
+        customVibText = (EditText) findViewById(R.id.edit_vibration_text);
         checkboxDisabled = (CheckBox) findViewById(R.id.view_alert_check_disable);
 
         layoutTimeBetween = (LinearLayout) findViewById(R.id.time_between);
@@ -192,6 +194,7 @@ public class EditAlertActivity extends ActivityWithMenu {
 
             checkboxAllDay.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             checkboxVibrate.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            customVibText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             checkboxDisabled.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
 
             viewTimeStart.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
@@ -206,6 +209,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             ((TextView) findViewById(R.id.view_alert_mp3_file)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_time)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_time_between)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            ((TextView) findViewById(R.id.view_alert_custom_vibration)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_disable)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
 
         }
@@ -260,6 +264,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             alertThreshold.setText(unitsConvert2Disp(doMgdl, alertType.threshold));
             checkboxAllDay.setChecked(alertType.all_day);
             checkboxVibrate.setChecked(alertType.vibrate);
+            customVibText.setText(alertType.vibration_pattern);
             checkboxDisabled.setChecked(!alertType.active);
             checkboxOverrideSilent.setChecked(alertType.override_silent_mode);
             checkboxForceSpeaker.setChecked(alertType.force_speaker);
@@ -285,6 +290,7 @@ public class EditAlertActivity extends ActivityWithMenu {
                 buttonalertMp3.setEnabled(false);
                 checkboxAllDay.setEnabled(false);
                 checkboxVibrate.setEnabled(false);
+                customVibText.setKeyListener(null);
                 checkboxOverrideSilent.setEnabled(false);
                 checkboxForceSpeaker.setEnabled(false);
                 reraise.setEnabled(false);
@@ -368,6 +374,7 @@ public class EditAlertActivity extends ActivityWithMenu {
     	textViews.add((TextView) findViewById(R.id.view_alert_time));
     	textViews.add((TextView) findViewById(R.id.view_alert_override_silent));
     	textViews.add((TextView) findViewById(R.id.view_alert_vibrate));
+        textViews.add((TextView) findViewById(R.id.view_alert_custom_vibration));
     	
     	for (TextView tv : textViews) {
     		if(disabled) {
@@ -542,15 +549,19 @@ public class EditAlertActivity extends ActivityWithMenu {
                     return;
                 }
                 boolean vibrate = checkboxVibrate.isChecked();
+                String vibPattern = control_and_fix_vibPattern(customVibText.getText().toString());
+                if (vibPattern.length() > 0) {
+                    vibrate = false;
+                }
                 
                 boolean overrideSilentMode = checkboxOverrideSilent.isChecked();
                 boolean forceSpeaker = checkboxForceSpeaker.isChecked();
 
                 String mp3_file = audioPath;
                 if (uuid != null) {
-                    AlertType.update_alert(uuid, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
+                    AlertType.update_alert(uuid, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, vibPattern, !disabled);
                 }  else {
-                    AlertType.add_alert(null, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, !disabled);
+                    AlertType.add_alert(null, alertText.getText().toString(), above, threshold, allDay, alertReraise, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, vibPattern, !disabled);
                 }
 
                 startWatchUpdaterService(mContext, WatchUpdaterService.ACTION_SYNC_ALERTTYPE, TAG);
@@ -876,6 +887,22 @@ public class EditAlertActivity extends ActivityWithMenu {
 
     }
 
+    private String control_and_fix_vibPattern(String vibPattern) {
+        if (vibPattern.length() == 0) {
+            return "";
+        }
+        vibPattern = vibPattern.replaceAll("[^0-9,]", "");
+        String[] stringarray = vibPattern.split(",");
+        long[] vibPatLong = new long[stringarray.length];
+        for (int i = 0; i < stringarray.length; i++) {
+            if (stringarray[i].length() == 0) {
+                Toast.makeText(getApplicationContext(), "Input error in Custom vib!", Toast.LENGTH_LONG).show();
+                return "";
+            }
+        }
+        return vibPattern;
+    }
+
     private boolean checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -929,6 +956,10 @@ public class EditAlertActivity extends ActivityWithMenu {
             return;
         }
         boolean vibrate = checkboxVibrate.isChecked();
+        String vibPattern = control_and_fix_vibPattern(customVibText.getText().toString());
+        if (vibPattern.length() > 0) {
+            vibrate = false;
+        }
         boolean overrideSilentMode = checkboxOverrideSilent.isChecked();
         boolean forceSpeaker = checkboxForceSpeaker.isChecked();
         String mp3_file = audioPath;
@@ -943,7 +974,7 @@ public class EditAlertActivity extends ActivityWithMenu {
                 JoH.static_toast_long("Volume Profile is set to silent!");
             }
 
-            AlertType.testAlert(alertText.getText().toString(), above, threshold, allDay, 1, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, mContext);
+            AlertType.testAlert(alertText.getText().toString(), above, threshold, allDay, 1, mp3_file, timeStart, timeEnd, overrideSilentMode, forceSpeaker, defaultSnooze, vibrate, vibPattern, mContext);
         } catch (NullPointerException e) {
             JoH.static_toast_long("Snooze value is not a number - cannot test");
         }

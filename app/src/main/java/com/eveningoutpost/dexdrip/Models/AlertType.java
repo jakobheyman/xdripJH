@@ -54,6 +54,10 @@ public class AlertType extends Model {
     public boolean vibrate;
 
     @Expose
+    @Column(name = "vibration_pattern")
+    public String vibration_pattern;
+
+    @Expose
     @Column(name = "light")
     public boolean light;
 
@@ -129,7 +133,8 @@ public class AlertType extends Model {
                 "ALTER TABLE AlertType ADD COLUMN predictive INTEGER;",
                 "ALTER TABLE AlertType ADD COLUMN text TEXT;",
                 "ALTER TABLE AlertType ADD COLUMN force_speaker INTEGER;",
-                "ALTER TABLE AlertType ADD COLUMN time_until_threshold_crossed REAL;"
+                "ALTER TABLE AlertType ADD COLUMN time_until_threshold_crossed REAL;",
+                "ALTER TABLE AlertType ADD COLUMN vibration_pattern TEXT;"
               };
 
         for (String patch : patchup) {
@@ -300,6 +305,7 @@ public class AlertType extends Model {
             boolean force_speaker,
             int snooze,
             boolean vibrate,
+            String vibration_pattern,
             boolean active) {
         AlertType at = new AlertType();
         at.name = name;
@@ -316,6 +322,7 @@ public class AlertType extends Model {
         at.force_speaker = force_speaker;
         at.default_snooze = snooze;
         at.vibrate = vibrate;
+        at.vibration_pattern = vibration_pattern;
         at.save();
     }
 
@@ -333,6 +340,7 @@ public class AlertType extends Model {
             boolean force_speaker,
             int snooze,
             boolean vibrate,
+            String vibration_pattern,
             boolean active) {
 
         fixUpTable();
@@ -356,6 +364,7 @@ public class AlertType extends Model {
         at.force_speaker = force_speaker;
         at.default_snooze = snooze;
         at.vibrate = vibrate;
+        at.vibration_pattern = vibration_pattern;
         at.save();
     }
     public static void remove_alert(String uuid) {
@@ -451,16 +460,16 @@ public class AlertType extends Model {
     // This alert will not be editable/removable.
     public static void CreateStaticAlerts() {
         if(get_alert(LOW_ALERT_55) == null) {
-            add_alert(LOW_ALERT_55, "low alert ", false, 55, true, 1, null, 0, 0, true, true, 20, true, true);
+            add_alert(LOW_ALERT_55, "low alert ", false, 55, true, 1, null, 0, 0, true, true, 20, true, "", true);
         }
     }
 
 
     public static void testAll(Context context) {
         remove_all();
-        add_alert(null, "high alert 1", true, 180, true, 10, null, 0, 0, true, true, 20, true, true);
-        add_alert(null, "high alert 2", true, 200, true, 10, null, 0, 0, true, true,20, true, true);
-        add_alert(null, "high alert 3", true, 220, true, 10, null, 0, 0, true, true,20, true, true);
+        add_alert(null, "high alert 1", true, 180, true, 10, null, 0, 0, true, true, 20, true, "", true);
+        add_alert(null, "high alert 2", true, 200, true, 10, null, 0, 0, true, true,20, true, "", true);
+        add_alert(null, "high alert 3", true, 220, true, 10, null, 0, 0, true, true,20, true, "", true);
         print_all();
         AlertType a1 = get_highest_active_alert(context, 190);
         Log.d(TAG, "a1 = " + a1.toString());
@@ -471,8 +480,8 @@ public class AlertType extends Model {
         AlertType a3 = get_alert(a1.uuid);
         Log.d(TAG, "a1 == a3 ? need to see true " + (a1==a3) + a1 + " " + a3);
 
-        add_alert(null, "low alert 1", false, 80, true, 10, null, 0, 0, true, true,20, true, true);
-        add_alert(null, "low alert 2", false, 60, true, 10, null, 0, 0, true, true,20, true, true);
+        add_alert(null, "low alert 1", false, 80, true, 10, null, 0, 0, true, true,20, true, "", true);
+        add_alert(null, "low alert 2", false, 60, true, 10, null, 0, 0, true, true,20, true, "", true);
 
         AlertType al1 = get_highest_active_alert(context, 90);
         Log.d(TAG, "al1 should be null  " + al1);
@@ -568,6 +577,7 @@ public class AlertType extends Model {
         boolean force_speaker,
         int snooze,
         boolean vibrate,
+        String vibration_pattern,
         Context context) {
             AlertType at = new AlertType();
             at.name = name;
@@ -584,6 +594,7 @@ public class AlertType extends Model {
             at.force_speaker = force_speaker;
             at.default_snooze = snooze;
             at.vibrate = vibrate;
+            at.vibration_pattern = vibration_pattern;
             AlertPlayer.getPlayer().startAlert(context, false, at, "TEST", false);
     }
 

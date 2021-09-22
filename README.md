@@ -15,6 +15,7 @@
 * Increased X (time) resolution in graph
 * Keep Y range constant in main graph and optionally modify min and max Y (Graph Settings)
 * Horizontal zoom in main graph and vertical zoom in preview graph
+* Optionally set custom vibration pattern for low/high alerts (example: 0,150,70,150,70,500)
 * Optionally hide noise line (Graph Settings)
 * Calibration Graph uses the same unit (mg/dl or mmol/l) for raw and calibrated values
 

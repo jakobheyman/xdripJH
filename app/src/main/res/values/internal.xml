@@ -14,6 +14,7 @@
         * Extended potential min and max bg values\n
         * Increased X (time) resolution in graph\n
         * Keep Y range constant in main graph\n
+        * Optionally set custom vibration pattern\n
         * Optionally hide noise line \n
         * Modified zoom in main/preview graph\n
         * Modified calibration graph\n\n
