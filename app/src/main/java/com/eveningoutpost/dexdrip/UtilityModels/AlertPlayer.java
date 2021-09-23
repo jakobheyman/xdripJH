@@ -511,11 +511,6 @@ public class AlertPlayer {
             }
         }
 
-        // if using custom vibration...
-        if (alert.vibration_pattern.length() > 0) {
-            customVibration(context, alert.vibration_pattern);
-        }
-
         // We use timeFromStartPlaying as a way to force vibrating/ non vibrating...
         if (profile != ALERT_PROFILE_ASCENDING) {
             // We start from the non ascending part...
@@ -561,14 +556,20 @@ public class AlertPlayer {
         }
         if (profile != ALERT_PROFILE_SILENT && alert.vibrate) {
             if (notSilencedDueToCall()) {
-                builder.setVibrate(Notifications.vibratePattern);
+                // if using custom vibration...
+                if (alert.vibration_pattern.length() > 0) {
+                    customVibration(context, alert.vibration_pattern);
+                } else {
+                    builder.setVibrate(Notifications.vibratePattern);
+                }
             } else {
                 Log.i(TAG, "Vibration silenced due to ongoing call");
             }
         } else {
             // In order to still show on all android wear watches, either a sound or a vibrate pattern
             // seems to be needed. This pattern basically does not vibrate:
-            //builder.setVibrate(new long[]{1, 0}); // commented out to enable custom vibration patterns
+            //builder.setVibrate(new long[]{1, 0}); // changed to use customVibration as it appears to trigger the default notification vibration
+            customVibration(context, "1,0");
         }
         Log.ueh("Alerting", content);
         final NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

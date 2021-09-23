@@ -550,9 +550,6 @@ public class EditAlertActivity extends ActivityWithMenu {
                 }
                 boolean vibrate = checkboxVibrate.isChecked();
                 String vibPattern = control_and_fix_vibPattern(customVibText.getText().toString());
-                if (vibPattern.length() > 0) {
-                    vibrate = false;
-                }
                 
                 boolean overrideSilentMode = checkboxOverrideSilent.isChecked();
                 boolean forceSpeaker = checkboxForceSpeaker.isChecked();
@@ -957,9 +954,6 @@ public class EditAlertActivity extends ActivityWithMenu {
         }
         boolean vibrate = checkboxVibrate.isChecked();
         String vibPattern = control_and_fix_vibPattern(customVibText.getText().toString());
-        if (vibPattern.length() > 0) {
-            vibrate = false;
-        }
         boolean overrideSilentMode = checkboxOverrideSilent.isChecked();
         boolean forceSpeaker = checkboxForceSpeaker.isChecked();
         String mp3_file = audioPath;
