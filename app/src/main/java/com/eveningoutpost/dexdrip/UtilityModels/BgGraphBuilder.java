@@ -148,6 +148,8 @@ public class BgGraphBuilder {
     public double lowMark;
     public double defaultMinY;
     public double defaultMaxY;
+    public double landscapeYMult;
+    public double landscapeTimeMult;
     public boolean doMgdl;
     public Viewport viewport;
     public static double capturePercentage = -1;
@@ -260,6 +262,8 @@ public class BgGraphBuilder {
         // Graph min and max Y can be set under Display Settings > Graph Settings
         defaultMinY = tolerantParseDouble(prefs.getString("graph_min_y", "2"), 2d);
         defaultMaxY = tolerantParseDouble(prefs.getString("graph_max_y", "10.4"), 10.4d);
+        landscapeYMult = tolerantParseDouble(prefs.getString("y_landscape_mult", "0.65"), 0.65d);
+        landscapeTimeMult = tolerantParseDouble(prefs.getString("time_landscape_mult", "3"), 3d);
         pointSize = isXLargeTablet(context) ? 5 : 3;
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
         previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
@@ -2121,6 +2125,14 @@ public class BgGraphBuilder {
     /////////VIEWPORT RELATED//////////////
     public Viewport advanceViewport(Chart chart, Chart previewChart, float hours) {
         viewport = new Viewport(previewChart.getMaximumViewport());
+        // if in landscape view: change Y and X view based on landscapeYMult and landscapeTimeMult
+        int orientation = context.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            double Yrange = defaultMaxY - defaultMinY;
+            defaultMaxY = defaultMaxY - ((Yrange - (Yrange * landscapeYMult)) * 0.8);
+            defaultMinY = defaultMinY + ((Yrange - (Yrange * landscapeYMult)) * 0.2);
+            hours = hours * (float) landscapeTimeMult;
+        }
         // keep viewport Y-range constant
         viewport.top = (float) defaultMaxY;
         viewport.bottom = (float) defaultMinY;

@@ -14,6 +14,7 @@
 * Extended potential min and max blood glucose values
 * Increased X (time) resolution in graph
 * Keep Y range constant in main graph and optionally modify min and max Y (Graph Settings)
+* Modify X/Y display when switching between portrait/landscape (Graph Settings)
 * Horizontal zoom in main graph and vertical zoom in preview graph
 * Optionally set custom vibration pattern for low/high alerts (example: 0,150,70,150,70,500)
 * Optionally hide noise line (Graph Settings)

@@ -344,6 +344,20 @@
                     android:inputType="numberDecimal"
                     android:summary=""
                     android:defaultValue="10.4" />
+                <EditTextPreference
+                    android:key="y_landscape_mult"
+                    android:title="Landscape-view Y multiplication"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="0.65" />
+                <EditTextPreference
+                    android:key="time_landscape_mult"
+                    android:title="Landscape-view time multiplication"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="3" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="rewrite_history"
