@@ -172,6 +172,7 @@ public class BgGraphBuilder {
     private final List<PointValue> remoteValues = new ArrayList<>();
     private final List<PointValue> highValues = new ArrayList<>();
     private final List<PointValue> lowValues = new ArrayList<>();
+    private final List<PointValue> badValues = new ArrayList<>();
     private final List<PointValue> pluginValues = new ArrayList<PointValue>();
     private final List<PointValue> rawInterpretedValues = new ArrayList<PointValue>();
     private final List<PointValue> filteredValues = new ArrayList<PointValue>();
@@ -735,6 +736,7 @@ public class BgGraphBuilder {
 
             lines.add(remoteValuesLine()); // TODO conditional ?
             lines.add(backFillValuesLine()); // TODO conditional ?
+            lines.add(badValuesLine());
             lines.add(inRangeValuesLine());
             lines.add(lowValuesLine());
             lines.add(highValuesLine());
@@ -775,6 +777,15 @@ public class BgGraphBuilder {
         highValuesLine.setPointRadius(pointSize);
         highValuesLine.setHasPoints(true);
         return highValuesLine;
+    }
+
+    public Line badValuesLine() {
+        Line badValuesLine = new Line(badValues);
+        badValuesLine.setColor(getCol(X.color_bad_values));
+        badValuesLine.setHasLines(false);
+        badValuesLine.setPointRadius(pointSize);
+        badValuesLine.setHasPoints(true);
+        return badValuesLine;
     }
 
     public Line lowValuesLine() {
@@ -1079,6 +1090,7 @@ public class BgGraphBuilder {
             noisePolyBgValues.clear();
             annotationValues.clear();
             treatmentValues.clear();
+            badValues.clear();
             highValues.clear();
             lowValues.clear();
             inRangeValues.clear();
@@ -1267,7 +1279,9 @@ public class BgGraphBuilder {
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(plugin.getGlucoseFromBgReading(bgReading, cd))));
                 }
-                if (bgReading.calculated_value >= 1000) {
+                if (bgReading.ignoreForStats) {
+                    badValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.calculated_value)));
+                } else if (bgReading.calculated_value >= 1000) {
                     highValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(1000)));
                 } else if (unitized(bgReading.calculated_value) >= highMark) {
                     highValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.calculated_value)));
