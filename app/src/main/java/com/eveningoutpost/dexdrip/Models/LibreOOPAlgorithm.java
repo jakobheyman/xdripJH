@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.ArrayList;
+
+import static com.eveningoutpost.dexdrip.NFCReaderX.verifyTime;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 class UnlockBuffers {
@@ -269,6 +271,8 @@ public class LibreOOPAlgorithm {
         glucoseData.glucoseLevel = (int)(oOPResults.currentBg * factor);
         glucoseData.glucoseLevelRaw = (int)(oOPResults.currentBg * factor);
 
+        verifyTime( glucoseData.sensorTime, "LibreOOPAlgorithm", null);
+
         // Add raw data to Libre2RawValue
         if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
             Libre2RawValue rawValue = new Libre2RawValue();
@@ -391,14 +395,15 @@ public class LibreOOPAlgorithm {
 
             glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
             glucoseData.sensorTime = sensorTime - relative_time;
-            trendList.add(glucoseData);
-
-            // Add raw data to Libre2RawValue
-            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                Libre2RawValue rawValue = new Libre2RawValue();
-                rawValue.timestamp = glucoseData.realDate;
-                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-                rawValue.save();
+            if(verifyTime( glucoseData.sensorTime, "parseBleDataPerMinute ", ble_data)) {
+                trendList.add(glucoseData);
+                // Add raw data to Libre2RawValue
+                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
+                    Libre2RawValue rawValue = new Libre2RawValue();
+                    rawValue.timestamp = glucoseData.realDate;
+                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
+                    rawValue.save();
+                }
             }
         }
         return trendList;
@@ -431,7 +436,9 @@ public class LibreOOPAlgorithm {
             glucoseData.source = GlucoseData.DataSource.BLE;
 
             glucoseData.realDate = captureDateTime  + (final_time - sensorTime) * Constants.MINUTE_IN_MS;
-            glucoseData.sensorTime = final_time;
+            if(verifyTime( final_time, "parseBleDataHistory", ble_data)) {
+                glucoseData.sensorTime = final_time;
+            }
             historyList.add(glucoseData);
 
             // Add raw data to Libre2RawValue

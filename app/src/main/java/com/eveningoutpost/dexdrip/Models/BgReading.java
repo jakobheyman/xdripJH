@@ -1285,7 +1285,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                     Log.d(TAG, "Ignoring duplicate bgr record due to timestamp: " + json);
                 }
             } catch (Exception e) {
-                Log.d(TAG, "Could not save BGR: " + e.toString());
+                Log.e(TAG, "Could not save BGR bgReading: ", e);
             }
         } else {
             Log.e(TAG,"Got null bgr from json");
@@ -1336,7 +1336,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                     Log.d(TAG, "Ignoring duplicate bgr record due to timestamp: " + timestamp);
                 }
             } catch (Exception e) {
-                Log.d(TAG, "Could not save BGR: " + e.toString());
+                Log.e(TAG, "Could not save BGR: ", e);
             }
         } else {
             Log.e(TAG,"Got null bgr from create");
