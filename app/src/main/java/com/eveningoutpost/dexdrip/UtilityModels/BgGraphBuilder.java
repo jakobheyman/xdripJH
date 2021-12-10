@@ -237,7 +237,7 @@ public class BgGraphBuilder {
             loaded_start = start;
             loaded_end = end;
             bgReadings = BgReading.latestForGraph(numValues, start, end);
-            if ((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer))
+            if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver)
                 Libre2RawValues = Libre2RawValue.latestForGraph(numValues, start, end);
             plugin_adjusted = false;
         } finally {
@@ -1210,7 +1210,7 @@ public class BgGraphBuilder {
             final boolean has_filtered = DexCollectionType.hasFiltered();
             final boolean predict_use_momentum = prefs.getBoolean("predict_use_momentum", true);
             final boolean show_moment_working_line = prefs.getBoolean("show_momentum_working_line", false);
-            final boolean interpret_raw = prefs.getBoolean("interpret_raw", false);
+            final boolean show_raw_plot = prefs.getBoolean("show_raw_plot", false);
             final boolean show_filtered = prefs.getBoolean("show_filtered_curve", false) && has_filtered;
             final boolean predict_lows = prefs.getBoolean("predict_lows", true);
             final boolean show_plugin = prefs.getBoolean("plugin_plot_on_graph", false);
@@ -1273,8 +1273,8 @@ public class BgGraphBuilder {
                         filteredValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp + rollingOffset), (float) unitized(rollingValue)));
                     }
                 }
-                if ((interpret_raw && (bgReading.raw_calculated > 0))) {
-                    rawInterpretedValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.raw_calculated)));
+                if ((show_raw_plot && (bgReading.raw_data > 0))) {
+                    rawInterpretedValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.raw_data)));
                 }
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(plugin.getGlucoseFromBgReading(bgReading, cd))));
@@ -1353,7 +1353,7 @@ public class BgGraphBuilder {
             }
 
             try {
-                if (((DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver) || (DexCollectionType.getDexCollectionType() == DexCollectionType.LimiTTer)) && prefs.getBoolean("Libre2_showRawGraph", false)) {
+                if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreReceiver && prefs.getBoolean("Libre2_showRawGraph", false)) {
                     for (final Libre2RawValue bgLibre : Libre2RawValues) {
                         if (bgLibre.glucose > 0) {
                             rawInterpretedValues.add(new PointValue((float) timeStampToGraphPos((double)bgLibre.timestamp), (float) unitized(bgLibre.glucose)));

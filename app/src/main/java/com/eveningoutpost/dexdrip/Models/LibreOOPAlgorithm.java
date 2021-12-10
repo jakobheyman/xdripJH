@@ -272,15 +272,6 @@ public class LibreOOPAlgorithm {
         glucoseData.glucoseLevelRaw = (int)(oOPResults.currentBg * factor);
 
         verifyTime( glucoseData.sensorTime, "LibreOOPAlgorithm", null);
-
-        // Add raw data to Libre2RawValue
-        if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-            Libre2RawValue rawValue = new Libre2RawValue();
-            rawValue.timestamp = glucoseData.realDate;
-            rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-            rawValue.save();
-        }
-
         readingData.trend.add(glucoseData);
         
         // TODO: Add here data of last 10 minutes or whatever.
@@ -295,14 +286,6 @@ public class LibreOOPAlgorithm {
                 glucoseData.glucoseLevel = (int)(historicBg.bg * factor);
                 glucoseData.glucoseLevelRaw = (int)(historicBg.bg * factor);
                 readingData.history.add(glucoseData);
-
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
             }
         }
         
@@ -397,13 +380,6 @@ public class LibreOOPAlgorithm {
             glucoseData.sensorTime = sensorTime - relative_time;
             if(verifyTime( glucoseData.sensorTime, "parseBleDataPerMinute ", ble_data)) {
                 trendList.add(glucoseData);
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
             }
         }
         return trendList;
@@ -440,14 +416,6 @@ public class LibreOOPAlgorithm {
                 glucoseData.sensorTime = final_time;
             }
             historyList.add(glucoseData);
-
-            // Add raw data to Libre2RawValue
-            if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                Libre2RawValue rawValue = new Libre2RawValue();
-                rawValue.timestamp = glucoseData.realDate;
-                rawValue.glucose = (double) glucoseData.glucoseLevelRaw * Constants.LIBRE_MULTIPLIER / 1000;
-                rawValue.save();
-            }
         }
         return historyList;
     }

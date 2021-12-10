@@ -34,7 +34,6 @@ import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.Libre2SensorData;
 import com.eveningoutpost.dexdrip.Models.LibreBlock;
 import com.eveningoutpost.dexdrip.Models.LibreOOPAlgorithm;
-import com.eveningoutpost.dexdrip.Models.Libre2RawValue;
 import com.eveningoutpost.dexdrip.Models.ReadingData;
 import com.eveningoutpost.dexdrip.Models.SensorSanity;
 import com.eveningoutpost.dexdrip.Models.UserError.Log;
@@ -828,13 +827,6 @@ public class NFCReaderX {
             glucoseData.sensorTime = time;
             if(verifyTime(time, "parseData history", data)) {
                 historyList.add(glucoseData);
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
             }            
         }
 
@@ -869,13 +861,6 @@ public class NFCReaderX {
             
             if(verifyTime(time, "parseData trendList", data)) {
                 trendList.add(glucoseData);
-                // Add raw data to Libre2RawValue
-                if (Libre2RawValue.is_new_data(glucoseData.realDate)) {
-                    Libre2RawValue rawValue = new Libre2RawValue();
-                    rawValue.timestamp = glucoseData.realDate;
-                    rawValue.glucose = (double) glucoseData.glucoseLevelRaw * LIBRE_MULTIPLIER / 1000;
-                    rawValue.save();
-                }
             }
         }
 
