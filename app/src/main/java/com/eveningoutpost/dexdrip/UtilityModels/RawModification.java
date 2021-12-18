@@ -26,15 +26,13 @@ public class RawModification {
     }
 
     public static double rawadd() {
-        double raw_add = JoH.tolerantParseDouble(prefs.getString("raw_addition", "0"), 0d) * bgScale() * 1000 / Constants.LIBRE_MULTIPLIER;
+        double raw_add = JoH.tolerantParseDouble(prefs.getString("raw_addition", "0"), 0d) * bgScale() * 1000;
         return raw_add;
     }
 
-    public static int raw_mod(int raw_in) {
+    public static double raw_mod(double raw_in) {
         if (raw_in > 0) {
-            double rawd = (double) raw_in * rawmult() + rawadd();
-            int raw_out = (int) rawd;
-            return raw_out;
+            return (raw_in * rawmult() + rawadd());
         } else {
             return raw_in;
         }

@@ -15,7 +15,6 @@ import com.eveningoutpost.dexdrip.UtilityModels.Intents;
 import com.eveningoutpost.dexdrip.UtilityModels.LibreUtils;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
-import com.eveningoutpost.dexdrip.UtilityModels.RawModification;
 import com.eveningoutpost.dexdrip.xdrip;
 import com.eveningoutpost.dexdrip.NFCReaderX;
 
@@ -248,10 +247,6 @@ public class LibreOOPAlgorithm {
             Log.e(TAG, "HandleData cought exception ", e);
             return;
         }
-        // only add data at least 5 min old from start of sensor
-        if(oOPResults.currentTime < 5) {
-            return;
-        }
         boolean use_raw = Pref.getBooleanDefaultFalse("calibrate_external_libre_algorithm");
         ReadingData readingData = new ReadingData();
 
@@ -335,9 +330,7 @@ public class LibreOOPAlgorithm {
     
     public static void handleDecodedBleResult(long timestamp, byte[] ble_data, byte []patchUid) {
         lastRecievedData = JoH.tsl();
-        //int raw  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
-        int raw1  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
-        int raw = RawModification.raw_mod(raw1);
+        int raw  = LibreOOPAlgorithm.readBits(ble_data, 0 , 0 , 0xe);
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
         Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
         
@@ -363,19 +356,16 @@ public class LibreOOPAlgorithm {
         for (int i = 0; i < 7; i++) {
             GlucoseData glucoseData = new GlucoseData();
 
+            glucoseData.glucoseLevelRaw = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, i * 4, 0xe, 0xc) << 2;
+            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0x1a , 0x6);
+            glucoseData.source = GlucoseData.DataSource.BLE;
+
             int relative_time = LIBRE2_SHIFT[i];
             // only add data at least 5 min old from start of sensor
             if((sensorTime - relative_time) < 5) {
                 break;
             }
-
-            //glucoseData.glucoseLevelRaw = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
-            int raw1  = LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0 , 0xe);
-            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, i * 4, 0xe, 0xc) << 2;
-            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, i * 4 , 0x1a , 0x6);
-            glucoseData.source = GlucoseData.DataSource.BLE;
-
             glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
             glucoseData.sensorTime = sensorTime - relative_time;
             if(verifyTime( glucoseData.sensorTime, "parseBleDataPerMinute ", ble_data)) {
@@ -397,20 +387,17 @@ public class LibreOOPAlgorithm {
         for (int i = 0; i < 3; i++) {
             GlucoseData glucoseData = new GlucoseData();
 
+            glucoseData.glucoseLevelRaw = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
+            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4, 0xe, 0xc) << 2;
+            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4 , 0x1a , 0x6);
+            glucoseData.source = GlucoseData.DataSource.BLE;
+
             int relative_time = i*15;
             int final_time = sensorTimeModulo - relative_time;
             // only add data at least 5 min old from start of sensor
             if(final_time < 5) {
                 break;
             }
-
-            //glucoseData.glucoseLevelRaw = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
-            int raw1  = readBits(ble_data, (i+7) * 4 , 0 , 0xe);
-            glucoseData.glucoseLevelRaw = RawModification.raw_mod(raw1);
-            glucoseData.temp = LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4, 0xe, 0xc) << 2;
-            glucoseData.flags =  LibreOOPAlgorithm.readBits(ble_data, (i+7) * 4 , 0x1a , 0x6);
-            glucoseData.source = GlucoseData.DataSource.BLE;
-
             glucoseData.realDate = captureDateTime  + (final_time - sensorTime) * Constants.MINUTE_IN_MS;
             if(verifyTime( final_time, "parseBleDataHistory", ble_data)) {
                 glucoseData.sensorTime = final_time;

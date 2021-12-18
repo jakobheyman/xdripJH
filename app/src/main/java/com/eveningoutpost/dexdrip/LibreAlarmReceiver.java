@@ -22,6 +22,7 @@ import com.eveningoutpost.dexdrip.Models.ReadingData;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.Intents;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
+import com.eveningoutpost.dexdrip.UtilityModels.RawModification;
 import com.eveningoutpost.dexdrip.utils.CheckBridgeBattery;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.LibreTrendUtil;
@@ -69,6 +70,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
 
     private static void createBGfromGD(GlucoseData gd, boolean use_smoothed_data, boolean quick) {
         final double converted;
+        final double converted_mod;
         if (gd.glucoseLevelRaw > 0) {
             if(use_smoothed_data && gd.glucoseLevelRawSmoothed > 0) {
                 converted = convert_for_dex(gd.glucoseLevelRawSmoothed);
@@ -87,8 +89,9 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                 if ((gd.realDate > newest) || (newest == -1)) newest = gd.realDate;
 
                 if (BgReading.getForPreciseTimestamp(gd.realDate, segmentation_timeslice, false) == null) {
+                    converted_mod = RawModification.raw_mod(converted); // modify raw value here
                     Log.d(TAG, "Creating bgreading at: " + JoH.dateTimeText(gd.realDate));
-                    BgReading.create(converted, converted, xdrip.getAppContext(), gd.realDate, quick); // quick lite insert
+                    BgReading.create(converted_mod, converted_mod, xdrip.getAppContext(), gd.realDate, quick); // quick lite insert
                 } else {
                     if (d)
                         Log.d(TAG, "Ignoring duplicate timestamp for: " + JoH.dateTimeText(gd.realDate));
