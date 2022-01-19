@@ -117,7 +117,9 @@ public class Libre2SensorData {
             Log.e(TAG, "Libre2SensorData Got exception processing json msg: " + e );
             return null;
         }
-        Log.e(TAG, "Successfuly created Libre2SensorData value " + json);
+        // changed to avoid long list in log
+        //Log.e(TAG, "Successfuly created Libre2SensorData value " + json);
+        Log.e(TAG, "Successfully created Libre2SensorData value (not shown here!)");
         return fresh;
     }
     
