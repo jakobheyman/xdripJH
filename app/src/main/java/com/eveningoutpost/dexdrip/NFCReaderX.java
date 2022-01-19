@@ -711,7 +711,8 @@ public class NFCReaderX {
                                 Long time = System.currentTimeMillis();
                                 while (true) {
                                     try {
-                                        Log.e(TAG, "sending command " + HexDump.toHexString(cmd));
+                                        // avoid long list in log
+                                        //Log.e(TAG, "sending command " + HexDump.toHexString(cmd));
                                         oneBlock = nfcvTag.transceive(cmd);
                                         break;
                                     } catch (IOException e) {

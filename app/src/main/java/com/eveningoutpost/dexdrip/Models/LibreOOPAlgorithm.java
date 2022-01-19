@@ -156,8 +156,11 @@ public class LibreOOPAlgorithm {
         if (ret == null) {
             Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) returning null");
         } else {
+            // changed to avoid long list in log
+            //Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) got data payload is " + JoH.bytesToHex(ret.btUnlockBuffer) + " " + JoH.bytesToHex(ret.nfcUnlockBuffer) +
+            //        " unlockBufferArray = " + ret.unlockBufferArray);
             Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) got data payload is " + JoH.bytesToHex(ret.btUnlockBuffer) + " " + JoH.bytesToHex(ret.nfcUnlockBuffer) +
-                    " unlockBufferArray = " + ret.unlockBufferArray);
+                    " (unlockBufferArray not shown here!)");
         }
         return ret;
     }
