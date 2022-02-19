@@ -883,9 +883,12 @@ public class Calibration extends Model {
     public static int recalcBgReadings(long time1, long time2, double slope1, double slope2, double intercept1, double intercept2) {
         // pick out bg data based on time1 and time2
         final List<BgReading> bgReadings = BgReading.latestForGraph(25000, time1, time2);
+        // convert time1 and time2 to doubles
+        double time1d = (double) time1;
+        double time2d = (double) time2;
         // go through bg points, calculate slope and intercept (linear interpolation over time), and calculate new bg values
         for (BgReading bgReading : bgReadings) {
-            double time_fraction = (double) ((bgReading.timestamp - time1) / (time2 - time1));
+            double time_fraction = ((double) bgReading.timestamp - time1d) / (time2d - time1d);
             double slope = slope1 + (time_fraction * (slope2 - slope1));
             double intercept = intercept1 + (time_fraction * (intercept2 - intercept1));
             bgReading.calculated_value = (slope * bgReading.age_adjusted_raw_value) + intercept;
