@@ -596,7 +596,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         PlusSyncService.startSyncService(getApplicationContext(), "HomeOnCreate");
         ParakeetHelper.notifyOnNextCheckin(false);
 
-        if (checkedeula && (!getString(R.string.app_name).equals("xDrip+"))) {
+        if (checkedeula && (!getString(R.string.app_name).equals("xdripJH"))) {
             showcasemenu(SHOWCASE_VARIANT);
         }
 
