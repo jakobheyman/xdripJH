@@ -19,6 +19,8 @@
 * Optionally set custom vibration pattern for low/high alerts (example: 0,150,70,150,70,500)
 * Optionally hide noise line (Graph Settings)
 * Calibration Graph uses the same unit (mg/dl or mmol/l) for raw and calibrated values
+* There may be issues/problems introduced by the modifications
+* There is no proper testing of the application
 
 ### Calibration notes
 * Slope and intercept calculated with weights decreasing linearly with time from calibration point
