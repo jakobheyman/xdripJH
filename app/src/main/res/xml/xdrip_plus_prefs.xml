@@ -1034,6 +1034,8 @@
             android:key="enable_telemetry"
             android:summary="@string/send_data_to_developers"
             android:title="@string/enable_telemetry" />
+<!--
+No feedback as this is a modified version of xDrip
         <Preference
             android:key="send_feedback"
             android:summary="@string/web_feedback_form_for_sending_messages"
@@ -1043,6 +1045,7 @@
                 android:targetClass="com.eveningoutpost.dexdrip.UtilityModels.SendFeedBack"
                 android:targetPackage="@string/local_target_package" />
         </Preference>
+-->
     </PreferenceScreen>
 
     <PreferenceCategory
