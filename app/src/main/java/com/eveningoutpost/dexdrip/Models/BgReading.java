@@ -945,8 +945,12 @@ public class BgReading extends Model implements ShareUploadableBg {
                 .execute();
     }
 
-    public static BgReading readingNearTimeStamp(double startTime) {
-        final double margin = (4 * 60 * 1000);
+    public static BgReading readingNearTimeStamp(long startTime) {
+        long margin = (4 * 60 * 1000);
+        return readingNearTimeStamp(startTime, margin);
+    }
+
+    public static BgReading readingNearTimeStamp(long startTime, final long margin) {
         final DecimalFormat df = new DecimalFormat("#");
         df.setMaximumFractionDigits(1);
         return new Select()
@@ -1296,7 +1300,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     // TODO this method shares some code with above.. merge
-    public static void bgReadingInsertFromInt(int value, long timestamp, boolean do_notification) {
+    public static void bgReadingInsertFromInt(int value, long timestamp, long margin, boolean do_notification) {
         // TODO sanity check data!
 
         if ((value <= 0) || (timestamp <= 0)) {
@@ -1326,11 +1330,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
 
             try {
-                if (readingNearTimeStamp(bgr.timestamp) == null) {
+                if (readingNearTimeStamp(bgr.timestamp, margin) == null) {
                     bgr.save();
                     bgr.find_slope();
                     if (do_notification) {
-                       // xdrip.getAppContext().startService(new Intent(xdrip.getAppContext(), Notifications.class)); // alerts et al
+                        // xdrip.getAppContext().startService(new Intent(xdrip.getAppContext(), Notifications.class)); // alerts et al
                         Notifications.start(); // this may not be needed as it is duplicated in handleNewBgReading
                     }
                     BgSendQueue.handleNewBgReading(bgr, "create", xdrip.getAppContext(), false, !do_notification); // pebble and widget
@@ -1341,7 +1345,7 @@ public class BgReading extends Model implements ShareUploadableBg {
                 Log.e(TAG, "Could not save BGR: ", e);
             }
         } else {
-            Log.e(TAG,"Got null bgr from create");
+            Log.e(TAG, "Got null bgr from create");
         }
     }
 

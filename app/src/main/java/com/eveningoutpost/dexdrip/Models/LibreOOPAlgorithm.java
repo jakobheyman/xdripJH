@@ -14,9 +14,7 @@ import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.Intents;
 import com.eveningoutpost.dexdrip.UtilityModels.LibreUtils;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
-import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.xdrip;
-import com.eveningoutpost.dexdrip.NFCReaderX;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -252,24 +250,16 @@ public class LibreOOPAlgorithm {
             Log.e(TAG, "HandleData cought exception ", e);
             return;
         }
-        boolean use_raw = Pref.getBooleanDefaultFalse("calibrate_external_libre_algorithm");
         ReadingData readingData = new ReadingData();
 
         readingData.trend = new ArrayList<GlucoseData>();
-
-        double factor = 1;
-        if (use_raw) {
-            // When handeling raw, data is expected to be bigger in a factor of 1000 and 
-            // is then devided by Constants.LIBRE_MULTIPLIER
-            factor = 1000 / Constants.LIBRE_MULTIPLIER;
-        }
 
         // Add the first object, that is the current time
         GlucoseData glucoseData = new GlucoseData();
         glucoseData.sensorTime = oOPResults.currentTime;
         glucoseData.realDate = oOPResults.timestamp;
-        glucoseData.glucoseLevel = (int) (oOPResults.currentBg * factor);
-        glucoseData.glucoseLevelRaw = (int) (oOPResults.currentBg * factor);
+        glucoseData.glucoseLevel = (int) (oOPResults.currentBg);
+        glucoseData.glucoseLevelRaw = (int) (oOPResults.currentBg);
 
         verifyTime(glucoseData.sensorTime, "LibreOOPAlgorithm", null);
         readingData.trend.add(glucoseData);
@@ -283,8 +273,8 @@ public class LibreOOPAlgorithm {
             if (historicBg.quality == 0) {
                 glucoseData = new GlucoseData();
                 glucoseData.realDate = oOPResults.timestamp + (historicBg.time - oOPResults.currentTime) * 60000;
-                glucoseData.glucoseLevel = (int) (historicBg.bg * factor);
-                glucoseData.glucoseLevelRaw = (int) (historicBg.bg * factor);
+                glucoseData.glucoseLevel = (int) (historicBg.bg);
+                glucoseData.glucoseLevelRaw = (int) (historicBg.bg);
                 readingData.history.add(glucoseData);
             }
         }
@@ -293,12 +283,12 @@ public class LibreOOPAlgorithm {
         // TODO: Base this on real BG values.
         glucoseData = new GlucoseData();
         glucoseData.realDate = oOPResults.timestamp;
-        glucoseData.glucoseLevel = (int) (oOPResults.currentBg * factor);
-        glucoseData.glucoseLevelRaw = (int) (oOPResults.currentBg * factor);
+        glucoseData.glucoseLevel = (int) (oOPResults.currentBg);
+        glucoseData.glucoseLevelRaw = (int) (oOPResults.currentBg);
         readingData.history.add(glucoseData);
 
         Log.d(TAG, "handleData Created the following object " + readingData.toString());
-        LibreAlarmReceiver.CalculateFromDataTransferObject(readingData, false, use_raw);
+        LibreAlarmReceiver.CalculateFromDataTransferObject(readingData, false, false);
     }
 
     public static SensorType getSensorType(byte[] SensorInfo) {
@@ -338,32 +328,33 @@ public class LibreOOPAlgorithm {
         return res;
     }
 
-    public static void handleDecodedBleResult(long timestamp, byte[] ble_data, byte[] patchUid) {
+    public static void handleDecodedBleResult(long timestamp, byte[] ble_data, byte[] patchUid, int[] trend_bg_vals, int[] history_bg_vals) {
         lastRecievedData = JoH.tsl();
         int raw = LibreOOPAlgorithm.readBits(ble_data, 0, 0, 0xe);
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
         Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
 
         ReadingData readingData = new ReadingData();
-        readingData.trend = new ArrayList<GlucoseData>();
-
         readingData.raw_data = ble_data;
-        readingData.trend = parseBleDataPerMinute(ble_data, timestamp);
+        // Add bg values inside trend and history.
+        readingData.trend = parseBleDataPerMinute(ble_data, trend_bg_vals, timestamp);
 
-        readingData.history = parseBleDataHistory(ble_data, timestamp);
+        readingData.history = parseBleDataHistory(ble_data, history_bg_vals, timestamp);
 
         String SensorSN = LibreUtils.decodeSerialNumberKey(patchUid);
 
         Log.e(TAG, "handleDecodedBleResult Created the following object " + readingData.toString());
-        NFCReaderX.SendLibrereading(SensorSN, readingData.raw_data, timestamp, patchUid, null);
-        LibreAlarmReceiver.processReadingDataTransferObject(readingData, timestamp, SensorSN, true /*=allowupload*/, patchUid, null/*=patchInfo*/);
+        NFCReaderX.sendLibrereadingToFollowers(SensorSN, readingData.raw_data, timestamp, patchUid, null);
+        boolean bg_val_exists = trend_bg_vals != null && history_bg_vals != null;
+        LibreAlarmReceiver.processReadingDataTransferObject(readingData, timestamp, SensorSN, true /*=allowupload*/, patchUid, null/*=patchInfo*/, bg_val_exists);
     }
 
-    public static ArrayList<GlucoseData> parseBleDataPerMinute(byte[] ble_data, Long captureDateTime) {
+    public static ArrayList<GlucoseData> parseBleDataPerMinute(byte[] ble_data, int[] trend_bg_vals, Long captureDateTime) {
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
 
         ArrayList<GlucoseData> trendList = new ArrayList<>();
-        for (int i = 0; i < 7; i++) {
+        final int DATA_SIZE = 7;
+        for (int i = 0; i < DATA_SIZE; i++) {
             GlucoseData glucoseData = new GlucoseData();
 
             glucoseData.glucoseLevelRaw = LibreOOPAlgorithm.readBits(ble_data, i * 4, 0, 0xe);
@@ -378,6 +369,9 @@ public class LibreOOPAlgorithm {
             }
             glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
             glucoseData.sensorTime = sensorTime - relative_time;
+            if (trend_bg_vals != null && trend_bg_vals.length == DATA_SIZE) {
+                glucoseData.glucoseLevel = trend_bg_vals[i];
+            }
             if (verifyTime(glucoseData.sensorTime, "parseBleDataPerMinute ", ble_data)) {
                 trendList.add(glucoseData);
             }
@@ -385,7 +379,7 @@ public class LibreOOPAlgorithm {
         return trendList;
     }
 
-    public static ArrayList<GlucoseData> parseBleDataHistory(byte[] ble_data, Long captureDateTime) {
+    public static ArrayList<GlucoseData> parseBleDataHistory(byte[] ble_data, int[] history_bg_vals, Long captureDateTime) {
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
         //System.out.println("sensorTime = " + sensorTime);
         if (sensorTime < 3) {
@@ -394,7 +388,9 @@ public class LibreOOPAlgorithm {
         int sensorTimeModulo = (sensorTime - 2) / 15 * 15;
         ArrayList<GlucoseData> historyList = new ArrayList<>();
 
-        for (int i = 0; i < 3; i++) {
+        final int DATA_SIZE = 3;
+
+        for (int i = 0; i < DATA_SIZE; i++) {
             GlucoseData glucoseData = new GlucoseData();
 
             glucoseData.glucoseLevelRaw = readBits(ble_data, (i + 7) * 4, 0, 0xe);
@@ -408,8 +404,12 @@ public class LibreOOPAlgorithm {
             if (final_time < 5) {
                 break;
             }
+
             glucoseData.realDate = captureDateTime + (final_time - sensorTime) * Constants.MINUTE_IN_MS;
             glucoseData.sensorTime = final_time;
+            if (history_bg_vals != null && history_bg_vals.length == DATA_SIZE) {
+                glucoseData.glucoseLevel = history_bg_vals[i];
+            }
             if (verifyTime(final_time, "parseBleDataHistory", ble_data)) {
                 historyList.add(glucoseData);
             }
@@ -429,10 +429,10 @@ public class LibreOOPAlgorithm {
     static long lastSentData = 0;
     static ArrayBlockingQueue<UnlockBuffers> UnlockBlockingQueue = new ArrayBlockingQueue<UnlockBuffers>(1);
 
-    static public void handleOop2DecodeFramResult(String tagId, long CaptureDateTime, byte[] buffer, byte[] patchUid, byte[] patchInfo) {
+    static public void handleOop2DecodeFramResult(String tagId, long CaptureDateTime, byte[] buffer, byte[] patchUid, byte[] patchInfo, int[] trend_bg_vals, int[] history_bg_vals) {
         lastRecievedData = JoH.tsl();
         Log.e(TAG, "handleOop2DecodeFramResult - data " + JoH.bytesToHex(buffer));
-        NFCReaderX.HandleGoodReading(tagId, buffer, CaptureDateTime, false, patchUid, patchInfo, true);
+        NFCReaderX.HandleGoodReading(tagId, buffer, CaptureDateTime, false, patchUid, patchInfo, true, trend_bg_vals, history_bg_vals);
     }
 
 
