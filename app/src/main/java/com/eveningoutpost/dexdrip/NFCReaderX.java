@@ -905,11 +905,11 @@ public class NFCReaderX {
                 && history_bg_vals.length == historyList.size()) {
             for (int i = 0; i < trend_bg_vals.length; i++) {
                 trendList.get(i).glucoseLevel = trend_bg_vals[i];
-                Log.e(TAG, "Adding bg val for trend at time " + trendList.get(i).sensorTime + " val =  " + trend_bg_vals[i]);
+                //Log.e(TAG, "Adding bg val for trend at time " + trendList.get(i).sensorTime + " val =  " + trend_bg_vals[i]);
             }
             for (int i = 0; i < history_bg_vals.length; i++) {
                 historyList.get(i).glucoseLevel = history_bg_vals[i];
-                Log.e(TAG, "Adding bg val for history at time " + historyList.get(i).sensorTime + " val =  " + history_bg_vals[i]);
+                //Log.e(TAG, "Adding bg val for history at time " + historyList.get(i).sensorTime + " val =  " + history_bg_vals[i]);
             }
         }
 

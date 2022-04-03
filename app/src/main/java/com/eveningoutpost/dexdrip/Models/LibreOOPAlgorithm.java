@@ -332,7 +332,7 @@ public class LibreOOPAlgorithm {
         lastRecievedData = JoH.tsl();
         int raw = LibreOOPAlgorithm.readBits(ble_data, 0, 0, 0xe);
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
-        Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
+        //Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
 
         ReadingData readingData = new ReadingData();
         readingData.raw_data = ble_data;
@@ -343,7 +343,7 @@ public class LibreOOPAlgorithm {
 
         String SensorSN = LibreUtils.decodeSerialNumberKey(patchUid);
 
-        Log.e(TAG, "handleDecodedBleResult Created the following object " + readingData.toString());
+        //Log.e(TAG, "handleDecodedBleResult Created the following object " + readingData.toString());
         NFCReaderX.sendLibrereadingToFollowers(SensorSN, readingData.raw_data, timestamp, patchUid, null);
         boolean bg_val_exists = trend_bg_vals != null && history_bg_vals != null;
         LibreAlarmReceiver.processReadingDataTransferObject(readingData, timestamp, SensorSN, true /*=allowupload*/, patchUid, null/*=patchInfo*/, bg_val_exists);

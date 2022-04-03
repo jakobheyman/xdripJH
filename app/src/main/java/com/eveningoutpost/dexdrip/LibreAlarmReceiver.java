@@ -212,6 +212,8 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
         Log.i(TAG, "CalculateFromDataTransferObject called");
         // insert any recent data we can
         final List<GlucoseData> mTrend = readingData.trend;
+        List<Integer> trendSensortime = new ArrayList<Integer>();
+        List<Integer> historySensortime = new ArrayList<Integer>();
         if (mTrend != null && mTrend.size() > 0) {
             Collections.sort(mTrend);
             final long thisSensorAge = mTrend.get(mTrend.size() - 1).sensorTime;
@@ -242,22 +244,23 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
             if (d)
                 Log.d(TAG, "Oldest cmp: " + JoH.dateTimeText(oldest_cmp) + " Newest cmp: " + JoH.dateTimeText(newest_cmp));
             if (mTrend.size() > 0) {
-
-                // This function changes timeShiftNearest which is the latest value we have, so we are far enough from it.
-                getTimeShift(mTrend);
-
+                double rawbg;
+                int oopbg;
                 for (GlucoseData gd : mTrend) {
                     if (d) Log.d(TAG, "DEBUG: sensor time: " + gd.sensorTime);
-                    if ((timeShiftNearest > 0) && ((timeShiftNearest - gd.realDate) < segmentation_timeslice) && (timeShiftNearest - gd.realDate != 0)) {
-                        if (d)
-                            Log.d(TAG, "Skipping record due to closeness to the most recent value: " + JoH.dateTimeText(gd.realDate));
+                    if (!BgReading.is_new_JH(gd.sensorTime) || gd.glucoseLevelRaw <= 0) {
                         continue;
                     }
-                    if (use_raw) {
-                        createBGfromGD(gd, use_smoothed_data, false); // not quick for recent
+                    if (use_smoothed_data && gd.glucoseLevelRawSmoothed > 0) {
+                        rawbg = convert_for_dex(gd.glucoseLevelRawSmoothed);
+                        oopbg = gd.glucoseLevelSmoothed;
                     } else {
-                        BgReading.bgReadingInsertFromInt(use_smoothed_data ? gd.glucoseLevelSmoothed : gd.glucoseLevel, gd.realDate, segmentation_timeslice, true);
+                        rawbg = convert_for_dex(gd.glucoseLevelRaw);
+                        oopbg = gd.glucoseLevel;
                     }
+                    BgReading.bgReadingInsertJH(rawbg, oopbg, gd.realDate, gd.sensorTime, use_raw);
+                    trendSensortime.add(gd.sensorTime);
+                    Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
                 }
             } else {
                 Log.e(TAG, "Trend data was empty!");
@@ -267,22 +270,17 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
             final List<GlucoseData> mHistory = readingData.history;
             if ((mHistory != null) && (mHistory.size() > 1)) {
                 Collections.sort(mHistory);
-                //applyTimeShift(mTrend, shiftx);
-                //final List<Double> polyxList = new ArrayList<Double>();  // NO INTERPOLATED VALUES ADDED
-                //final List<Double> polyyList = new ArrayList<Double>();  // NO INTERPOLATED VALUES ADDED
+                double rawbg;
                 for (GlucoseData gd : mHistory) {
                     if (d)
                         Log.d(TAG, "history : " + JoH.dateTimeText(gd.realDate) + " " + gd.glucose(false));
-                    //polyxList.add((double) gd.realDate);  // NO INTERPOLATED VALUES ADDED
-                    if (use_raw) {
-                        //polyyList.add((double) gd.glucoseLevelRaw);  // NO INTERPOLATED VALUES ADDED
-                        // For history, data is already averaged, no need for us to use smoothed data
-                        createBGfromGD(gd, false, true);
-                    } else {
-                        //polyyList.add((double) gd.glucoseLevel);  // NO INTERPOLATED VALUES ADDED
-                        // add in the actual value
-                        BgReading.bgReadingInsertFromInt(gd.glucoseLevel, gd.realDate, segmentation_timeslice, false);
+                    if (!BgReading.is_new_JH(gd.sensorTime) || gd.glucoseLevelRaw <= 0) {
+                        continue;
                     }
+                    rawbg = convert_for_dex(gd.glucoseLevelRaw);
+                    BgReading.bgReadingInsertJH(rawbg, gd.glucoseLevel, gd.realDate, gd.sensorTime, use_raw);
+                    historySensortime.add(gd.sensorTime);
+                    Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
                 }
 
                 /*  // NO INTERPOLATED VALUES ADDED
@@ -317,6 +315,13 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
 
             } else {
                 Log.e(TAG, "no librealarm history data");
+            }
+            // post process history and trend data
+            for (int i = 1; i <= historySensortime.size(); i++) {
+                BgReading.bgReadingPostprocessJH(historySensortime.get(i-1), true);
+            }
+            for (int i = 1; i <= trendSensortime.size(); i++) {
+                BgReading.bgReadingPostprocessJH(trendSensortime.get(i-1), false);
             }
         } else {
             Log.d(TAG, "Trend data is null!");

@@ -188,11 +188,21 @@ public class BgReading extends Model implements ShareUploadableBg {
     @Column(name = "source_info")
     public volatile String source_info;
 
+    @Expose
+    @Column(name = "sensor_time")
+    public int sensor_time;
+
+    @Expose
+    @Column(name = "oop_calibrated_value")
+    public double oop_calibrated_value;
+
     public synchronized static void updateDB() {
         final String[] updates = new String[]{"ALTER TABLE BgReadings ADD COLUMN dg_mgdl REAL;",
                 "ALTER TABLE BgReadings ADD COLUMN dg_slope REAL;",
                 "ALTER TABLE BgReadings ADD COLUMN dg_delta_name TEXT;",
-                "ALTER TABLE BgReadings ADD COLUMN source_info TEXT;"};
+                "ALTER TABLE BgReadings ADD COLUMN source_info TEXT;",
+                "ALTER TABLE BgReadings ADD COLUMN sensor_time INTEGER;",
+                "ALTER TABLE BgReadings ADD COLUMN oop_calibrated_value DOUBLE;"};
         for (String patch : updates) {
             try {
                 SQLiteUtils.execSql(patch);
@@ -1346,6 +1356,131 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
         } else {
             Log.e(TAG, "Got null bgr from create");
+        }
+    }
+
+    // method for xdripJH bg insertion to get bg values in rapidly (slope and postprocess done in bgReadingPostprocessJH)
+    public static void bgReadingInsertJH(double raw_data, int oopbg, long timestamp, int sensortime, boolean use_raw) {
+        BgReading bgReading = new BgReading();
+        final Sensor sensor = Sensor.currentSensor();
+        if ((sensor == null) || (raw_data <= 0) || (timestamp <= 0)) {
+            Log.e(TAG, "Error in bgReadingInsertJH");
+            return;
+        }
+        bgReading.sensor = sensor;
+        bgReading.sensor_uuid = sensor.uuid;
+        bgReading.sensor_time = sensortime;
+        bgReading.raw_data = (raw_data / 1000);
+        bgReading.filtered_data = bgReading.raw_data;
+        bgReading.age_adjusted_raw_value = bgReading.raw_data);
+        bgReading.oop_calibrated_value = oopbg;
+        bgReading.timestamp = timestamp;
+        bgReading.uuid = UUID.randomUUID().toString();
+        bgReading.time_since_sensor_started = bgReading.timestamp - sensor.started_at;
+        Calibration calibration = Calibration.lastValid();
+        double raw_val;
+        if (use_raw) {
+            raw_val = bgReading.raw_data;
+        } else {
+            raw_val = bgReading.oop_calibrated_value;
+        }
+        if (calibration == null) {
+            Log.d(TAG, "create: No calibration yet - using raw values");
+            bgReading.calibration_flag = false;
+            bgReading.calculated_value = raw_val;
+            bgReading.filtered_calculated_value = raw_val;
+        } else {
+            Log.d(TAG, "Calibrations, so doing everything: " + calibration.uuid);
+            bgReading.calibration = calibration;
+            bgReading.calibration_uuid = calibration.uuid;
+            // calculate glucose number from raw
+            final CalibrationAbstract.CalibrationData pcalibration;
+            final CalibrationAbstract plugin = getCalibrationPluginFromPreferences(); // make sure do this only once
+            if ((plugin != null) && ((pcalibration = plugin.getCalibrationData()) != null) && (Pref.getBoolean("use_pluggable_alg_as_primary", false))) {
+                Log.d(TAG, "USING CALIBRATION PLUGIN AS PRIMARY!!!");
+                if (plugin.isCalibrationSane(pcalibration)) {
+                    bgReading.calculated_value = (pcalibration.slope * raw_val) + pcalibration.intercept;
+                    bgReading.filtered_calculated_value = (pcalibration.slope * raw_val) + pcalibration.intercept;
+                } else {
+                    UserError.Log.wtf(TAG, "Calibration plugin failed intercept sanity check: " + pcalibration.toS());
+                    Home.toaststaticnext("Calibration plugin failed intercept sanity check");
+                }
+            } else {
+                bgReading.calculated_value = ((calibration.slope * raw_val) + calibration.intercept);
+                bgReading.filtered_calculated_value = ((calibration.slope * raw_val) + calibration.intercept);
+            }
+            updateCalculatedValueToWithinMinMax(bgReading);
+        }
+        bgReading.save();
+    }
+
+    // method for xdripJH insertion to get bg values in rapidly
+    public static void bgReadingPostprocessJH(int sensortime, boolean quick) {
+        final Sensor sensor = Sensor.currentSensor();
+        BgReading bgReading = null;
+        bgReading = BgReading.getForSensortime(sensortime);
+        bgReading.find_slope_JH();
+        bgReading.postProcess(quick);
+    }
+
+    public static BgReading getForSensortime(int sensortime) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            final BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time = ?", sensortime)
+                    .where("calculated_value != 0")
+                    .where("raw_data != 0")
+                    .executeSingle();
+            if (bgReading != null) {
+                return bgReading;
+            }
+        }
+        Log.d(TAG, "getForSensortime: No luck finding a BG sensortime match: " + "sensortime:" + sensortime + " Sensor: " + ((sensor == null) ? "null" : sensor.getId()));
+        return null;
+    }
+
+    public static BgReading getPriorSensortime(int sensortime, int maxmins) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            final BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time < ?", sensortime)
+                    .where("sensor_time >= ?", (sensortime - maxmins))
+                    .where("calculated_value != 0")
+                    .where("raw_data != 0")
+                    .orderBy("sensor_time desc")
+                    .executeSingle();
+            if (bgReading != null) {
+                return bgReading;
+            }
+        }
+        return null;
+    }
+
+    public static boolean is_new_JH(int sensortime) {
+        Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time = ?", sensortime)
+                    .executeSingle();
+            if (bgReading != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void find_slope_JH() {
+        BgReading priorBg = null;
+        priorBg = BgReading.getPriorSensortime(sensor_time, 15);
+        if (priorBg != null) {
+            calculated_value_slope = calculateSlope(this, priorBg);
+            save();
         }
     }
 
