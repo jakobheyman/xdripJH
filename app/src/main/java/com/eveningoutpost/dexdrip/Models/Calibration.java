@@ -852,35 +852,42 @@ public class Calibration extends Model {
     }
 
     public static void adjustBgReadings(double calib_point_in_time) {
+        // use raw or OOP-calibrated data?
+        boolean use_raw = Pref.getBoolean("calibrate_external_libre_2_algorithm", true);
         // pick out all calibrations with weight > 0
         List<Calibration> calibrations = allForSensorWithWeightX(0, 1, calib_point_in_time);
+        if (calibrations == null) {
+            BgReading.clearCalibrationsForSensor(use_raw);
+            Log.e(TAG, "Cleared all calibrations for sensor");
+            return;
+        }
         int recalc_n = 0;
         // if there are bg points beyond the last calibration point in time
         if (BgReading.last().timestamp > calibrations.get(0).timestamp) {
             // use one subsequent calibration point if existing or use the last calibration for all bg points past the last calibration
             Calibration postcalibration = getAfterTimestamp((double) (calibrations.get(0).timestamp + 60000)); 
             if (postcalibration == null) {
-                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, JoH.tsl(), calibrations.get(0).slope, calibrations.get(0).slope, calibrations.get(0).intercept, calibrations.get(0).intercept);
+                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, JoH.tsl(), calibrations.get(0).slope, calibrations.get(0).slope, calibrations.get(0).intercept, calibrations.get(0).intercept, use_raw);
             } else {
-                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, postcalibration.timestamp, calibrations.get(0).slope, postcalibration.slope, calibrations.get(0).intercept, postcalibration.intercept);
+                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, postcalibration.timestamp, calibrations.get(0).slope, postcalibration.slope, calibrations.get(0).intercept, postcalibration.intercept, use_raw);
             }
         }
         // go through pair of calibration points for all bg points within recalibrated points
         int caln = calibrations.size();
         for (int i = 1; i < caln; i++) {
-            recalc_n = recalc_n + recalcBgReadings(calibrations.get(i).timestamp, calibrations.get(i-1).timestamp, calibrations.get(i).slope, calibrations.get(i-1).slope, calibrations.get(i).intercept, calibrations.get(i-1).intercept);
+            recalc_n = recalc_n + recalcBgReadings(calibrations.get(i).timestamp, calibrations.get(i-1).timestamp, calibrations.get(i).slope, calibrations.get(i-1).slope, calibrations.get(i).intercept, calibrations.get(i-1).intercept, use_raw);
         }
         // use one prior calibration point if existing or use the first calibration for all initial bg points of the sensor
         Calibration precalibration = getForTimestamp((double) (calibrations.get(caln-1).timestamp - 60000));
         if (precalibration != null) {
-            recalc_n = recalc_n + recalcBgReadings(precalibration.timestamp, calibrations.get(caln-1).timestamp, precalibration.slope, calibrations.get(caln-1).slope, precalibration.intercept, calibrations.get(caln-1).intercept);
+            recalc_n = recalc_n + recalcBgReadings(precalibration.timestamp, calibrations.get(caln-1).timestamp, precalibration.slope, calibrations.get(caln-1).slope, precalibration.intercept, calibrations.get(caln-1).intercept, use_raw);
         } else {
-            recalc_n = recalc_n + recalcBgReadings(Sensor.currentSensor().started_at, calibrations.get(caln-1).timestamp, calibrations.get(caln-1).slope, calibrations.get(caln-1).slope, calibrations.get(caln-1).intercept, calibrations.get(caln-1).intercept);
+            recalc_n = recalc_n + recalcBgReadings(Sensor.currentSensor().started_at, calibrations.get(caln-1).timestamp, calibrations.get(caln-1).slope, calibrations.get(caln-1).slope, calibrations.get(caln-1).intercept, calibrations.get(caln-1).intercept, use_raw);
         }
         Log.e(TAG, "Recalculated " + recalc_n + " bg points");
     }
 
-    public static int recalcBgReadings(long time1, long time2, double slope1, double slope2, double intercept1, double intercept2) {
+    public static int recalcBgReadings(long time1, long time2, double slope1, double slope2, double intercept1, double intercept2, boolean use_raw) {
         // pick out bg data based on time1 and time2
         final List<BgReading> bgReadings = BgReading.latestForGraph(25000, time1, time2);
         // convert time1 and time2 to doubles
@@ -891,8 +898,12 @@ public class Calibration extends Model {
             double time_fraction = ((double) bgReading.timestamp - time1d) / (time2d - time1d);
             double slope = slope1 + (time_fraction * (slope2 - slope1));
             double intercept = intercept1 + (time_fraction * (intercept2 - intercept1));
-            bgReading.calculated_value = (slope * bgReading.age_adjusted_raw_value) + intercept;
-            bgReading.filtered_calculated_value = (slope * bgReading.filtered_data) + intercept;
+            if (use_raw) {
+                bgReading.calculated_value = (slope * bgReading.raw_data) + intercept;
+            } else {
+                bgReading.calculated_value = (slope * bgReading.oop_calibrated_value) + intercept;
+            }
+            bgReading.filtered_calculated_value = bgReading.calculated_value;
             bgReading.save();
         }
         return bgReadings.size();

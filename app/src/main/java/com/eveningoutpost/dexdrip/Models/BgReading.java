@@ -1372,7 +1372,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         bgReading.sensor_time = sensortime;
         bgReading.raw_data = (raw_data / 1000);
         bgReading.filtered_data = bgReading.raw_data;
-        bgReading.age_adjusted_raw_value = bgReading.raw_data);
+        bgReading.age_adjusted_raw_value = bgReading.raw_data;
         bgReading.oop_calibrated_value = oopbg;
         bgReading.timestamp = timestamp;
         bgReading.uuid = UUID.randomUUID().toString();
@@ -1481,6 +1481,28 @@ public class BgReading extends Model implements ShareUploadableBg {
         if (priorBg != null) {
             calculated_value_slope = calculateSlope(this, priorBg);
             save();
+        }
+    }
+
+    public static void clearCalibrationsForSensor(boolean use_raw) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor == null) {
+            return;
+        }
+        List<BgReading> bgReadings = new Select()
+                .from(BgReading.class)
+                .where("Sensor = ? ", sensor.getId())
+                .where("raw_data != 0")
+                .orderBy("timestamp desc")
+                .execute();
+        for (BgReading bgReading : bgReadings) {
+            if (use_raw) {
+                bgReading.calculated_value = bgReading.raw_data;
+            } else {
+                bgReading.calculated_value = bgReading.oop_calibrated_value;
+            }
+            bgReading.filtered_calculated_value = bgReading.calculated_value;
+            bgReading.save();
         }
     }
 
