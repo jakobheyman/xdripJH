@@ -71,6 +71,13 @@
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
+                    <com.eveningoutpost.dexdrip.UtilityModels.ColorPicker
+                        android:defaultValue="#FFFF00"
+                        android:key="color_oopcal_values"
+                        android:title="@string/oopcal_values"
+                        app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
+                        app:colorpicker_selectNoneButtonText="@string/revert_to_default"
+                        app:colorpicker_showHex="false" />
                 </PreferenceCategory>
 
                 <PreferenceCategory
@@ -402,6 +409,11 @@
                     android:key="show_raw_plot"
                     android:summary="@string/the_standard_xdrip_calculated_value"
                     android:title="@string/display_raw_plot_data" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="show_oop_calibrated"
+                    android:summary="@string/bg_value_calibrated_in_OOP"
+                    android:title="@string/display_oop_calibrated_data" />
                 <CheckBoxPreference
                     android:defaultValue="true"
                     android:key="show_basal_line"
