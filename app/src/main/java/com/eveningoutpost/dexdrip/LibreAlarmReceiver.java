@@ -248,7 +248,11 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                 int oopbg;
                 for (GlucoseData gd : mTrend) {
                     if (d) Log.d(TAG, "DEBUG: sensor time: " + gd.sensorTime);
-                    if (!BgReading.is_new_JH(gd.sensorTime) || gd.glucoseLevelRaw <= 0) {
+                    if (!BgReading.is_new_JH(gd.sensorTime)) {
+                        continue;
+                    }
+                    if (gd.glucoseLevelRaw <= 0) {
+                        Log.e(TAG, "time: " + gd.sensorTime + "  raw: 0");
                         continue;
                     }
                     if (use_smoothed_data && gd.glucoseLevelRawSmoothed > 0) {
@@ -274,7 +278,11 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                 for (GlucoseData gd : mHistory) {
                     if (d)
                         Log.d(TAG, "history : " + JoH.dateTimeText(gd.realDate) + " " + gd.glucose(false));
-                    if (!BgReading.is_new_JH(gd.sensorTime) || gd.glucoseLevelRaw <= 0) {
+                    if (!BgReading.is_new_JH(gd.sensorTime)) {
+                        continue;
+                    }
+                    if (gd.glucoseLevelRaw <= 0) {
+                        Log.e(TAG, "time: " + gd.sensorTime + "  raw: 0");
                         continue;
                     }
                     rawbg = convert_for_dex(gd.glucoseLevelRaw);
