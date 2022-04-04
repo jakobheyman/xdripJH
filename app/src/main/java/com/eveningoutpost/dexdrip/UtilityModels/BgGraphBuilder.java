@@ -174,8 +174,8 @@ public class BgGraphBuilder {
     private final List<PointValue> lowValues = new ArrayList<>();
     private final List<PointValue> badValues = new ArrayList<>();
     private final List<PointValue> pluginValues = new ArrayList<PointValue>();
-    private final List<PointValue> rawInterpretedValues = new ArrayList<PointValue>();
     private final List<PointValue> oopCalibratedValues = new ArrayList<PointValue>();
+    private final List<PointValue> rawInterpretedValues = new ArrayList<PointValue>();
     private final List<PointValue> filteredValues = new ArrayList<PointValue>();
     private final List<PointValue> bloodTestValues = new ArrayList<PointValue>();
     private final List<PointValue> calibrationValues = new ArrayList<PointValue>();
@@ -733,8 +733,8 @@ public class BgGraphBuilder {
                     lines.add(thisline);
                 }
             }
-            lines.add(rawInterpretedLine());
             lines.add(oopCalibratedLine());
+            lines.add(rawInterpretedLine());
 
             lines.add(remoteValuesLine()); // TODO conditional ?
             lines.add(backFillValuesLine()); // TODO conditional ?
@@ -907,18 +907,18 @@ public class BgGraphBuilder {
         return linearray;
     }
 
-    public Line rawInterpretedLine() {
-        Line line = new Line(rawInterpretedValues);
-        line.setColor(getCol(X.color_raw_values));
+    public Line oopCalibratedLine() {
+        Line line = new Line(oopCalibratedValues);
+        line.setColor(getCol(X.color_oopcal_values));
         line.setHasLines(false);
         line.setPointRadius(2);
         line.setHasPoints(true);
         return line;
     }
 
-    public Line oopCalibratedLine() {
-        Line line = new Line(oopCalibratedValues);
-        line.setColor(getCol(X.color_oopcal_values));
+    public Line rawInterpretedLine() {
+        Line line = new Line(rawInterpretedValues);
+        line.setColor(getCol(X.color_raw_values));
         line.setHasLines(false);
         line.setPointRadius(2);
         line.setHasPoints(true);
@@ -1092,8 +1092,8 @@ public class BgGraphBuilder {
             }
 
             filteredValues.clear();
-            rawInterpretedValues.clear();
             oopCalibratedValues.clear();
+            rawInterpretedValues.clear();
             iobValues.clear();
             activityValues.clear();
             cobValues.clear();
@@ -1222,8 +1222,8 @@ public class BgGraphBuilder {
             final boolean has_filtered = DexCollectionType.hasFiltered();
             final boolean predict_use_momentum = prefs.getBoolean("predict_use_momentum", true);
             final boolean show_moment_working_line = prefs.getBoolean("show_momentum_working_line", false);
-            final boolean show_raw_plot = prefs.getBoolean("show_raw_plot", false);
             final boolean show_oop_calibrated = prefs.getBoolean("show_oop_calibrated", false);
+            final boolean show_raw_plot = prefs.getBoolean("show_raw_plot", false);
             final boolean show_filtered = prefs.getBoolean("show_filtered_curve", false) && has_filtered;
             final boolean predict_lows = prefs.getBoolean("predict_lows", true);
             final boolean show_plugin = prefs.getBoolean("plugin_plot_on_graph", false);
@@ -1286,11 +1286,11 @@ public class BgGraphBuilder {
                         filteredValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp + rollingOffset), (float) unitized(rollingValue)));
                     }
                 }
-                if ((show_raw_plot && (bgReading.raw_data > 0))) {
-                    rawInterpretedValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.raw_data)));
-                }
                 if ((show_oop_calibrated && (bgReading.oop_calibrated_value > 0))) {
                     oopCalibratedValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.oop_calibrated_value)));
+                }
+                if ((show_raw_plot && (bgReading.raw_data > 0))) {
+                    rawInterpretedValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(bgReading.raw_data)));
                 }
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new PointValue(timestampToFuzzedGraphPos(bgReading.timestamp), (float) unitized(plugin.getGlucoseFromBgReading(bgReading, cd))));
