@@ -415,6 +415,11 @@
                     android:summary="@string/bg_value_calibrated_in_OOP"
                     android:title="@string/display_oop_calibrated_data" />
                 <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="show_oop_bg_value"
+                    android:summary="@string/last_oop_bg_value"
+                    android:title="@string/display_oop_calibrated_bg_value" />
+                <CheckBoxPreference
                     android:defaultValue="true"
                     android:key="show_basal_line"
                     android:summary="@string/summary_show_basal_line"

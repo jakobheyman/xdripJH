@@ -259,6 +259,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private TextView parakeetBattery;
     private TextView sensorAge;
     private TextView currentBgValueText;
+    private TextView oopBgValueText;
     private TextView notificationText;
     private TextView extraStatusLineText;
     private boolean alreadyDisplayedBgInfoCommon = false;
@@ -396,6 +397,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         this.sensorAge = (TextView) findViewById(R.id.libstatus);
         this.extraStatusLineText = (TextView) findViewById(R.id.extraStatusLine);
         this.currentBgValueText = (TextView) findViewById(R.id.currentBgValueRealTime);
+        this.oopBgValueText = (TextView) findViewById(R.id.oopBgValue);
         this.bpmButton = (Button) findViewById(R.id.bpmButton);
         this.stepsButton = (Button) findViewById(R.id.walkButton);
 
@@ -2823,6 +2825,16 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             sensorAge.setText("SCANNING.. DISPLAY LOCKED!");
             sensorAge.setVisibility(View.VISIBLE);
             sensorAge.setTextColor(Color.GREEN);
+        }
+
+        final double lastOopBg = BgReading.lastOopBg();
+        if (Pref.getBoolean("show_oop_bg_value", false) && (lastOopBg != 0)) {
+            oopBgValueText.setText("OOP: " + bgGraphBuilder.unitized_string(lastOopBg));
+            oopBgValueText.setVisibility(View.VISIBLE);
+            oopBgValueText.setTextColor(getCol(X.color_oopcal_values));
+        } else {
+            oopBgValueText.setText("");
+            oopBgValueText.setVisibility(View.GONE);
         }
 
         if ((currentBgValueText.getPaintFlags() & Paint.STRIKE_THRU_TEXT_FLAG) > 0) {
