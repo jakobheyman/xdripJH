@@ -298,7 +298,7 @@ public class AlertPlayer {
             mp.setDataSource(context, uri);
             return true;
         } catch (IOException | NullPointerException | IllegalArgumentException | SecurityException ex) {
-            Log.e(TAG, "setMediaDataSource from uri failed:", ex);
+            Log.e(TAG, "setMediaDataSource from uri failed: uri = " + uri.toString(), ex);
             // fall through
         }
         return false;
