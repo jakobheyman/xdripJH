@@ -501,7 +501,7 @@ public class BgReading extends Model implements ShareUploadableBg {
 
         Calibration calibration = Calibration.lastValid();
         if (calibration == null) {
-            Log.d(TAG, "create: No calibration yet - using raw values");
+            Log.d(TAG, "create: No calibration yet");
             bgReading.sensor = sensor;
             bgReading.sensor_uuid = sensor.uuid;
             bgReading.raw_data = (raw_data / 1000);
@@ -513,12 +513,9 @@ public class BgReading extends Model implements ShareUploadableBg {
 
             bgReading.calculateAgeAdjustedRawValue();
 
-            bgReading.calculated_value = bgReading.age_adjusted_raw_value;
-            bgReading.filtered_calculated_value = bgReading.ageAdjustedFiltered();
             bgReading.save();
             bgReading.perform_calculations();
-            bgReading.postProcess(quick);
-            //BgSendQueue.sendToPhone(context);
+            BgSendQueue.sendToPhone(context);
         } else {
             Log.d(TAG, "Calibrations, so doing everything: " + calibration.uuid);
             bgReading = createFromRawNoSave(sensor, calibration, raw_data, filtered_data, timestamp);
@@ -592,12 +589,10 @@ public class BgReading extends Model implements ShareUploadableBg {
                 Log.d(TAG, "Create calibration.uuid=" + calibration.uuid + " bgReading.uuid: " + bgReading.uuid + " lastBgReading.calibration_uuid: " + lastBgReading.calibration_uuid + " lastBgReading.calibration.uuid: " + lastBgReading.calibration.uuid);
                 Log.d(TAG, "Create lastBgReading.calibration_flag=" + lastBgReading.calibration_flag + " bgReading.timestamp: " + bgReading.timestamp + " lastBgReading.timestamp: " + lastBgReading.timestamp + " lastBgReading.calibration.timestamp: " + lastBgReading.calibration.timestamp);
                 Log.d(TAG, "Create lastBgReading.calibration_flag=" + lastBgReading.calibration_flag + " bgReading.timestamp: " + JoH.dateTimeText(bgReading.timestamp) + " lastBgReading.timestamp: " + JoH.dateTimeText(lastBgReading.timestamp) + " lastBgReading.calibration.timestamp: " + JoH.dateTimeText(lastBgReading.calibration.timestamp));
-                /*  // always use the raw value from just one point
                 if (lastBgReading.calibration_flag == true && ((lastBgReading.timestamp + (60000 * 20)) > bgReading.timestamp) && ((lastBgReading.calibration.timestamp + (60000 * 20)) > bgReading.timestamp)) {
                     lastBgReading.calibration.rawValueOverride(BgReading.weightedAverageRaw(lastBgReading.timestamp, bgReading.timestamp, lastBgReading.calibration.timestamp, lastBgReading.age_adjusted_raw_value, bgReading.age_adjusted_raw_value), xdrip.getAppContext());
                     newCloseSensorData();
                 }
-                */
             }
 
             if ((bgReading.raw_data != 0) && (bgReading.raw_data * 2 == bgReading.filtered_data)) {
@@ -634,13 +629,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
         }
 
-        // LimiTTer can send 12 to indicate problem with NFC reading. LibreBluetooth can send 5 ???
-        if ((!calibration.check_in) && (raw_data == 5) && (filtered_data == 5)) {
+        // LimiTTer can send 12 to indicate problem with NFC reading.
+        if ((!calibration.check_in) && (raw_data == 12) && (filtered_data == 12)) {
             // store the raw value for sending special codes, note updateCalculatedValue would try to nix it
-            //bgReading.calculated_value = raw_data;
-            //bgReading.filtered_calculated_value = filtered_data;
-            bgReading.calculated_value = 0;
-            bgReading.filtered_calculated_value = 0;
+            bgReading.calculated_value = raw_data;
+            bgReading.filtered_calculated_value = filtered_data;
         }
         return  bgReading;
     }

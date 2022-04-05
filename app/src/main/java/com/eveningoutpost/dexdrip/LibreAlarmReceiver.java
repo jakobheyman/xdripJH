@@ -50,7 +50,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
     private static final String TAG = "jamorham librereceiver";
     private static final boolean debug = false;
     private static final boolean d = true;
-    private static final long segmentation_timeslice = (long) (Constants.MINUTE_IN_MS * 0.75);
+    private static final long segmentation_timeslice = (long) (Constants.MINUTE_IN_MS * 4.5);
     private static SharedPreferences prefs;
     private static long oldest = -1;
     private static long newest = -1;
@@ -79,7 +79,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                 converted = convert_for_dex(gd.glucoseLevelRaw);
             }
         } else {
-            converted = 0; // RF error message - might be something else like unconstrained spline
+            converted = 12; // RF error message - might be something else like unconstrained spline
         }
         if (gd.realDate > 0) {
             //   Log.d(TAG, "Raw debug: " + JoH.dateTimeText(gd.realDate) + " raw: " + gd.glucoseLevelRaw + " converted: " + converted);
@@ -344,7 +344,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
         timeShiftNearest = nearest;
         if (nearest > 0) {
             final long since = JoH.msSince(nearest);
-            if ((since > 0) && (since < Constants.MINUTE_IN_MS * 1)) {
+            if ((since > 0) && (since < Constants.MINUTE_IN_MS * 5)) {
                 return since;
             }
         }
