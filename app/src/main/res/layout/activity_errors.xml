@@ -59,8 +59,10 @@
                 android:layout_height="437dp"
                 android:id="@+id/errorList"
                 android:layout_below="@+id/linearLayout4"
-                android:layout_above="@+id/send_logs_button" />
+                android:layout_above="@+id/autorefresh" />
 
+<!--
+Don't send logs as this is a modified version of xDrip
             <Button
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
@@ -70,6 +72,7 @@
                 android:id="@+id/send_logs_button"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentEnd="true" />
+-->
 
             <Switch
                 android:layout_width="wrap_content"

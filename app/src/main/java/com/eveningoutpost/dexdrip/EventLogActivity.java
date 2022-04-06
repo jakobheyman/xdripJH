@@ -289,6 +289,7 @@ public class EventLogActivity extends BaseAppCompatActivity {
         }
     }
 
+    /* Don't send logs as this is a modified version of xDrip
     // prepare current visible logs for upload
     public synchronized void uploadEventLogs(View v) {
         final StringBuilder builder = new StringBuilder(50000);
@@ -304,6 +305,7 @@ public class EventLogActivity extends BaseAppCompatActivity {
         }
         startActivity(new Intent(getApplicationContext(), SendFeedBack.class).putExtra("generic_text", builder.toString()));
     }
+    */
 
     // View model container - accessible binding methods must be declared public
     public class ViewModel implements View.OnTouchListener {
