@@ -8,7 +8,9 @@
         Major changes (Libre-2 OOP2 setup):\n
         * Display 1 min data\n
         * Default calibration modified\n
-        * Display raw data\n
+        * Use OOP raw or calibrated data\n
+        * Display OOP raw and/or calibrated data\n
+        * Display last OOP calibrated bg value\n
         * Optionally modify Libre-2 raw values\n
         * Display mmol values with two decimals\n
         * Extended potential min and max bg values\n
@@ -18,7 +20,8 @@
         * Optionally set custom vibration pattern\n
         * Optionally hide noise line \n
         * Modified zoom in main/preview graph\n
-        * Modified calibration graph\n\n
+        * Modified calibration graph\n
+        * The application is not properly tested\n\n
         Calibration notes:\n
         * Control weights (Advanced Calibration)\n
         * If no calibration, use raw as glucose\n
