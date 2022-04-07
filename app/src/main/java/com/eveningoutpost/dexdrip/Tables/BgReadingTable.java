@@ -97,11 +97,14 @@ public class BgReadingTable extends BaseListActivity implements NavigationDrawer
 
         void bindView(View view, final Context context, final BgReading bgReading) {
             final BgReadingCursorAdapterViewHolder tag = (BgReadingCursorAdapterViewHolder) view.getTag();
+            final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
             tag.raw_data_id.setText(BgGraphBuilder.unitized_string_with_units_static(bgReading.calculated_value)
                     + "  " + JoH.qs(bgReading.calculated_value, 1)
                     + " " + (!bgReading.isBackfilled() ? bgReading.slopeArrow() : ""));
-            tag.raw_data_value.setText("Aged raw: " + JoH.qs(bgReading.age_adjusted_raw_value, 2));
-            tag.raw_data_slope.setText(bgReading.isBackfilled() ? ("Backfilled" + " " + ((bgReading.source_info != null) ? bgReading.source_info : "")) : "Raw: " + JoH.qs(bgReading.raw_data, 2) + " " + ((bgReading.source_info != null) ? bgReading.source_info : ""));
+            tag.raw_data_value.setText("Raw: " + JoH.qs(BgGraphBuilder.unitized(bgReading.raw_data, domgdl), 2));
+            tag.raw_data_slope.setText("OOP-bg: " + JoH.qs(BgGraphBuilder.unitized(bgReading.oop_calibrated_value, domgdl), (domgdl ? 0 : 2)));
+            //tag.raw_data_value.setText("Aged raw: " + JoH.qs(bgReading.age_adjusted_raw_value, 2));
+            //tag.raw_data_slope.setText(bgReading.isBackfilled() ? ("Backfilled" + " " + ((bgReading.source_info != null) ? bgReading.source_info : "")) : "Raw: " + JoH.qs(bgReading.raw_data, 2) + " " + ((bgReading.source_info != null) ? bgReading.source_info : ""));
             tag.raw_data_timestamp.setText(new Date(bgReading.timestamp).toString());
 
             if (bgReading.ignoreForStats) {

@@ -18,6 +18,7 @@ import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.NavigationDrawerFragment;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.BgGraphBuilder;
+import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,9 +96,10 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
 
         void bindView(View view, final Context context, final Calibration calibration) {
             final CalibrationDataCursorAdapterViewHolder tag = (CalibrationDataCursorAdapterViewHolder) view.getTag();
+            final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
             tag.raw_data_id.setText(JoH.qs(calibration.bg, 4) + "    "+ BgGraphBuilder.unitized_string_static(calibration.bg));
-            tag.raw_data_value.setText("raw: " + JoH.qs(calibration.estimate_raw_at_time_of_calibration, 4));
-            tag.raw_data_slope.setText("slope: " + JoH.qs(calibration.slope, 4) + " intercept: " + JoH.qs(calibration.intercept, 4));
+            tag.raw_data_value.setText("raw: " + JoH.qs(BgGraphBuilder.unitized(calibration.estimate_raw_at_time_of_calibration, domgdl), 4));
+            tag.raw_data_slope.setText("slope: " + JoH.qs(calibration.slope, 4) + " intercept: " + JoH.qs(BgGraphBuilder.unitized(calibration.intercept, domgdl), 4));
             tag.raw_data_timestamp.setText(JoH.dateTimeText(calibration.timestamp) + "  (" + JoH.dateTimeText(calibration.raw_timestamp) + ")");
 
             if (calibration.isNote()) {
