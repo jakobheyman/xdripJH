@@ -2170,6 +2170,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         return Home.is_holo;
     }
 
+    public void toggleOopCalibratedDataPlot(View v) {
+        Pref.setBoolean("show_oop_calibrated", !Pref.getBoolean("show_oop_calibrated", true));
+        staticRefreshBGCharts();
+    }
+
     public void toggleStepsVisibility(View v) {
         Pref.setBoolean("show_pebble_movement_line", !Pref.getBoolean("show_pebble_movement_line", true));
         staticRefreshBGCharts();
