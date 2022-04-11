@@ -1477,6 +1477,58 @@ public class BgReading extends Model implements ShareUploadableBg {
         }
     }
 
+    public static long getPossibleCaptures(long startTime, long endTime) {
+        long margin = Constants.MINUTE_IN_MS * 30;
+        final DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(1);
+        BgReading bgReadingFrom = new Select()
+                .from(BgReading.class)
+                .where("timestamp >= " + df.format(startTime))
+                .where("timestamp <= " + df.format(startTime + margin))
+                .where("sensor_time >= 5")
+                .orderBy("sensor_time asc")
+                .executeSingle();
+        BgReading bgReadingTo = new Select()
+                .from(BgReading.class)
+                .where("timestamp >= " + df.format(endTime - margin))
+                .where("timestamp <= " + df.format(endTime))
+                .where("sensor_time >= 5")
+                .orderBy("sensor_time desc")
+                .executeSingle();
+        if (bgReadingFrom == null || bgReadingTo == null) {
+            return ((endTime - startTime) / Constants.MINUTE_IN_MS);
+        } else {
+            if (bgReadingFrom.sensor == bgReadingTo.sensor) {
+                return ((endTime - startTime) / ((bgReadingTo.timestamp - bgReadingFrom.timestamp) / (long) (bgReadingTo.sensor_time - bgReadingFrom.sensor_time)));
+            } else {
+                BgReading bgReadingTo1 = new Select()
+                        .from(BgReading.class)
+                        .where("sensor = ?", bgReadingFrom.sensor)
+                        .where("sensor_time > ?", bgReadingFrom.sensor_time)
+                        .orderBy("sensor_time desc")
+                        .executeSingle();
+                BgReading bgReadingFrom2 = new Select()
+                        .from(BgReading.class)
+                        .where("sensor = ?", bgReadingTo.sensor)
+                        .where("sensor_time < ?", bgReadingTo.sensor_time)
+                        .orderBy("sensor_time asc")
+                        .executeSingle();
+                if (bgReadingTo1 != null && bgReadingFrom2 != null) {
+                    final long period1 = bgReadingTo1.timestamp - bgReadingFrom.timestamp;
+                    final long measurementPeriod1 = period1 / (long) (bgReadingTo1.sensor_time - bgReadingFrom.sensor_time);
+                    final long period2 = bgReadingTo.timestamp - bgReadingFrom2.timestamp;
+                    final long measurementPeriod2 = period2 / (long) (bgReadingTo.sensor_time - bgReadingFrom2.sensor_time);
+                    return ((endTime - startTime) / (((measurementPeriod1 * period1) + (measurementPeriod2 * period2)) / (period1 + period2)));
+                } else if (bgReadingTo1 != null) {
+                    return ((endTime - startTime) / ((bgReadingTo1.timestamp - bgReadingFrom.timestamp) / (long) (bgReadingTo1.sensor_time - bgReadingFrom.sensor_time)));
+                } else if (bgReadingFrom2 != null) {
+                    return ((endTime - startTime) / ((bgReadingTo.timestamp - bgReadingFrom2.timestamp) / (long) (bgReadingTo.sensor_time - bgReadingFrom2.sensor_time)));
+                }
+                return ((endTime - startTime) / Constants.MINUTE_IN_MS);
+            }
+        }
+    }
+
     public static void clearCalibrationsForSensor(boolean use_raw) {
         final Sensor sensor = Sensor.currentSensor();
         if (sensor == null) {
