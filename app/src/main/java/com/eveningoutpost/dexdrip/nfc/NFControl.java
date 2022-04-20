@@ -62,7 +62,7 @@ public class NFControl {
                     return;
 
                 } else if (!mNfcAdapter.isEnabled()) {
-                    JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
+                    //JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
                     return;
                 }
             } catch (NullPointerException e) {
