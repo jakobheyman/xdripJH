@@ -156,10 +156,6 @@ public class StartNewSensor extends ActivityWithMenu {
                 int min = newmins % 60;
                 int hour = (newmins - min) / 60;
                 ucalendar.set(ucalendar.get(Calendar.YEAR), ucalendar.get(Calendar.MONTH), ucalendar.get(Calendar.DAY_OF_MONTH), hour, min);
-                // don't add 1h warmup time for Libre
-                //~ if (DexCollectionType.hasLibre()) {
-                    //~ ucalendar.add(Calendar.HOUR_OF_DAY, -1); // hack for warmup time
-                //~ }
 
                 startSensorOrAskForG6Code();
             }
@@ -212,12 +208,8 @@ public class StartNewSensor extends ActivityWithMenu {
         // TODO this is just a timer and could be confusing - consider removing this notification
        // JoH.scheduleNotification(xdrip.getAppContext(), "Sensor should be ready", xdrip.getAppContext().getString(R.string.please_enter_two_calibrations_to_get_started), 60 * 130, Home.SENSOR_READY_ID);
 
-        // reverse libre hacky workaround  // don't use this!
-        //final long modifiedStartTime = DexCollectionType.hasLibre() ? (startTime + 3600000) : startTime;
-
-        // Add treatment entry in db  // use startTime as is
-        //Treatments.sensorStart(modifiedStartTime, "Started by xDrip");
-        Treatments.sensorStart(startTime, "Started by xDrip");
+        // Add treatment entry in db
+        //Treatments.sensorStart(startTime, "Started by xDrip");
 
         CollectionServiceStarter.restartCollectionServiceBackground();
 
@@ -235,6 +227,7 @@ public class StartNewSensor extends ActivityWithMenu {
             for (int i = 0; i < permissions.length; i++) {
                 if (permissions[i].equals(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
                     if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                        Ob1G5CollectionService.clearScanError();
                         sensorButtonClick();
                     }
                 }
