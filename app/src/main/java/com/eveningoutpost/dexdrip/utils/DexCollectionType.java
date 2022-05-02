@@ -163,9 +163,10 @@ public enum DexCollectionType {
         if (collector == null) {
             collector = DexCollectionType.getDexCollectionType();
         }
-        return hasLibre(collector) &&
-                (Pref.getBooleanDefaultFalse("external_blukon_algorithm") ||
-                        Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("no_calibration"));
+        //~ return hasLibre(collector) &&
+                //~ (Pref.getBooleanDefaultFalse("external_blukon_algorithm") ||
+                        //~ Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("no_calibration"));
+        return hasLibre(collector) && Pref.getBooleanDefaultFalse("external_blukon_algorithm");
     }
 
     public static Class<?> getCollectorServiceClass() {

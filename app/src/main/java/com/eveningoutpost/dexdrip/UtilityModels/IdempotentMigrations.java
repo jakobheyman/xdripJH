@@ -138,7 +138,7 @@ public class IdempotentMigrations {
         val newPref = "calibrate_external_libre_2_algorithm_type";
         if (Pref.isPreferenceSet(oldPref) && !Pref.isPreferenceSet(newPref)) {
             Log.e(TAG, oldPref + " found - updating to new style");
-            Pref.setString(newPref, Pref.getBooleanDefaultFalse(oldPref) ? "calibrate_raw" : "no_calibration");
+            Pref.setString(newPref, Pref.getBooleanDefaultFalse(oldPref) ? "calibrate_raw" : "calibrate_glucose");
         }
     }
 

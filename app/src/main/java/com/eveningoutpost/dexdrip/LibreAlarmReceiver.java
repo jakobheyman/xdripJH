@@ -222,7 +222,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
         if (Pref.getBooleanDefaultFalse("external_blukon_algorithm") != false) {
             Log.wtf(TAG, "Error external_blukon_algorithm should be false here");
         }
-        boolean use_raw = !Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("no_calibration");
+        boolean use_raw = Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("calibrate_raw");
         CalculateFromDataTransferObject(readingData, use_smoothed_data, use_raw);
     }
 
