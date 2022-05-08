@@ -129,9 +129,9 @@ public class BgGraphBuilder {
     final int previewAxisTextSize;
     final int hoursPreviewStep;
     //private final int numValues = (60 / 5) * 24;
-    public double end_time = timestampToFuzzedGraphPos(new Date().getTime() + (60000 * 10));
-    public double predictive_end_time;
-    public double start_time = end_time - timestampToFuzzedGraphPos((60000 * 60 * 24));
+    public long end_time = timestampToFuzzedGraphPos(new Date().getTime() + (60000 * 10));
+    public long predictive_end_time;
+    public long start_time = end_time - timestampToFuzzedGraphPos((60000 * 60 * 24));
 
 
     private final static double timeshift = 500_000;
@@ -697,7 +697,7 @@ public class BgGraphBuilder {
                 lines.add(subLine); // iob line
             }
 
-            predictive_end_time = simple ? end_time : timeStampToGraphPos(graphPosToTimestamp(end_time) + (60000 * 10) + (1000 * 60 * 60 * predictivehours)); // used first in ideal/highline
+            predictive_end_time = simple ? end_time : timestampToFuzzedGraphPos(graphPosToTimestamp((double) end_time) + (60000 * 10) + (1000 * 60 * 60 * predictivehours)); // used first in ideal/highline
 //            predictive_end_time = (new Date().getTime() + (60000 * 10) + (1000 * 60 * 60 * predictivehours)) / FUZZER; // used first in ideal/highline
 
 
@@ -1684,7 +1684,7 @@ public class BgGraphBuilder {
                     // we need to check we actually have sufficient data for this
                     double predictedbg = -1000;
                     BgReading mylastbg = bgReadings.get(0);
-                    double lasttimestamp = 0;
+                    long lasttimestamp = 0;
 
                     // this can be optimised to oncreate and onchange
                     Profile.reloadPreferencesIfNeeded(prefs); // TODO handle this better now we use profile time blocks
