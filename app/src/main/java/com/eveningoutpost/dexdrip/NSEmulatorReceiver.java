@@ -243,7 +243,7 @@ public class NSEmulatorReceiver extends BroadcastReceiver {
         if(version < 1.2 && !calibrate_raw) {
             // Versions before 1.2 had a bug or missed features which allows them only to work on raw mode.
             JoH.static_toast_long(gs(R.string.please_update_OOP2_or_move_to_calibrate_based_on_raw_mode));
-            Log.ueh(TAG, "OOP2 is too old to use with no calibration mode. Please update OOP2 or move to 'calibrate based on raw' mode.");
+            Log.ueh(TAG, "OOP2 is too old to use with no calibration mode. Please update OOP2 or move to 'use raw' mode.");
             return null;
         }
 
