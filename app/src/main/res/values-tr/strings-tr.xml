@@ -186,6 +186,7 @@
     <string name="general_settings">Genel Ayarlar</string>
     <string name="high_value">Yüksek Değer</string>
     <string name="low_value">Düşük değer</string>
+    <string name="stats_range_settings">Aralık Ayarları: </string>
     <string name="end_user_license_agreement">Son Kullanıcı Lisans Sözleşmesi</string>
     <string name="save">Kaydet</string>
     <string name="view_important_warning">Önemli Uyarıyı Görüntüle</string>
@@ -912,6 +913,7 @@
     <string name="offical_msg">Resmi app</string>
     <string name="use_conflict_msg">verici cihazına da erişmeyi deneyebilir ve bu durum her iki uygulamada da sorunlara neden olabilir</string>
     <string name="use_confict_msg_glimp">Glimp ayarlarını yapabilirsiniz: seçenekler -&gt; cihazlar -&gt; Bluetooth seçeneğini kaldır</string>
+    <string name="eng_mode_is_on">Mühendislik modu etkinleştirildi. Beklenmeyen davranışlara neden olabileceğinden, ihtiyacınız olduğundan emin değilseniz lütfen devre dışı bırakın.</string>
     <string name="yes">Evet</string>
     <string name="xdrip_compatible_features">xDrip + %s özellikleri</string>
     <string name="garmin">Garmin</string>
