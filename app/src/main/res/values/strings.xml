@@ -325,6 +325,7 @@
     <string name="high_glucose_values">High Glucose Values</string>
     <string name="in_range_glucose_values">In-range Glucose Values</string>
     <string name="default_color_selected">Default Color Selected</string>
+    <string name="color_bg_values">Colors of BG Reading and Trend Arrow</string>
     <string name="xdrip_plus_extra_settings">xDrip+ extra settings</string>
     <string name="example_chart">Example Chart</string>
     <string name="treatments_prediction_curves">Treatments / Prediction Curves</string>
@@ -1243,6 +1244,10 @@
     <string name="send_bg_readings_to_backfill">Send BG readings to backfill</string>
     <string name="view_old_error_log">View old Error Log</string>
     <string name="return_to_home_screen">Return to Home Screen</string>
+
+    <string name="title_broadcast_service_api">Broadcast Service API</string>
+    <string name="summary_broadcast_service_api">Enables xDrip communication with third-party applications by using new API</string>
+
     <string name="title_miband">MiBand</string>
     <string name="summary_miband_enable">Sync Data with MiBand fitness bands</string>
     <string name="title_miband_enable">Use MiBand Band</string>
@@ -1711,4 +1716,5 @@
     <string name="source_wizard_button">Source Wizard Button</string>
     <string name="please_wait_seconds_before_trying_to_start_sensor">Please wait %d seconds before trying to start sensor</string>
     <string name="please_update_OOP2_or_move_to_calibrate_based_on_raw_mode">please update OOP2 or move to use raw mode</string>
+    <string name="special_pairing_workaround">Special Pairing Workaround</string>
 </resources>
