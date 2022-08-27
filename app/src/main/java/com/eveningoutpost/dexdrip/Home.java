@@ -3081,15 +3081,27 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             if (extrastring.length() > 0)
                 currentBgValueText.setText(extrastring + currentBgValueText.getText());
         }
+        int seconds = (int) (System.currentTimeMillis() - lastBgReading.timestamp) / 1000;
         int minutes = (int) (System.currentTimeMillis() - lastBgReading.timestamp) / (60 * 1000);
 
         if ((!small_width) || (notificationText.length() > 0)) notificationText.append("\n");
         if (!small_width) {
-            final String fmt = getString(R.string.minutes_ago);
-            notificationText.append(MessageFormat.format(fmt, minutes));
+            if (minutes == 0) {
+                notificationText.append(seconds + getString(R.string.space_sec));
+            } else {
+                seconds = seconds - (minutes * 60);
+                notificationText.append(minutes + getString(R.string.space_min_space) + seconds + getString(R.string.space_sec));
+            }
+            //~ final String fmt = getString(R.string.minutes_ago);
+            //~ notificationText.append(MessageFormat.format(fmt, minutes));
         } else {
             // small screen
-            notificationText.append(minutes + getString(R.string.space_mins));
+            if (minutes == 0) {
+                notificationText.append(seconds + getString(R.string.space_sec));
+            } else {
+                notificationText.append(minutes + getString(R.string.space_min));
+            }
+            //~ notificationText.append(minutes + getString(R.string.space_mins));
             currentBgValueText.setPadding(0, 0, 0, 0);
         }
 

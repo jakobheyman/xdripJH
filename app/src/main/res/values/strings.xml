@@ -167,6 +167,9 @@
     <string name="waiting_for_packet">Waiting for packet</string>
     <string name="persistent_high_for_greater_than">Persistent High for > </string>
     <string name="space_mins">" mins"</string>
+    <string name="space_min_space">" min "</string>
+    <string name="space_sec">" sec"</string>
+    <string name="space_min">" min"</string>
     <string name="till">till</string>
     <string name="low_predicted">Low predicted</string>
     <string name="in">in</string>
