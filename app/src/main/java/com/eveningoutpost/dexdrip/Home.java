@@ -2074,6 +2074,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         previewChart.setBackgroundColor(getCol(X.color_home_chart_background));
         previewChart.setZoomType(ZoomType.VERTICAL);
+        previewChart.setMaxZoom(50f);
         previewChart.setLineChartData(bgGraphBuilder.previewLineData(chart.getLineChartData()));
         previewChart.setViewportCalculationEnabled(true);
         previewChart.setViewportChangeListener(new PreviewChartViewportListener());
