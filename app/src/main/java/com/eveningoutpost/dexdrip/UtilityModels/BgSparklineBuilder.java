@@ -38,9 +38,8 @@ public class BgSparklineBuilder {
     protected int height;
     protected BgGraphBuilder bgGraphBuilder;
     protected LineChartView chart;
-    protected long endTimeInMillis = new Date().getTime();
-    protected long end = BgGraphBuilder.timestampToFuzzedGraphPos(endTimeInMillis);
-    protected long start = BgGraphBuilder.timestampToFuzzedGraphPos(endTimeInMillis- 60000*180); // 3h
+    protected long end = new Date().getTime() / BgGraphBuilder.FUZZER;
+    protected long start = end - (60000*180 / BgGraphBuilder.FUZZER); // 3h
     protected boolean showLowLine = false;
     protected boolean showHighLine = false;
     protected boolean showAxes = false;
@@ -51,12 +50,12 @@ public class BgSparklineBuilder {
     protected final static int SCALE_TRIGGER = 84;
 
     public BgSparklineBuilder setStart(long start) {
-        this.start = BgGraphBuilder.timestampToFuzzedGraphPos(start);
+        this.start = start / BgGraphBuilder.FUZZER;
         return this;
     }
 
     public BgSparklineBuilder setEnd(long end) {
-        this.end = BgGraphBuilder.timestampToFuzzedGraphPos(end);
+        this.end = end / BgGraphBuilder.FUZZER;
         return this;
     }
 
@@ -234,8 +233,8 @@ public class BgSparklineBuilder {
         chart.setBackgroundColor(backgroundColor);
         chart.setLineChartData(lineData);
         Viewport viewport = chart.getMaximumViewport();
-        viewport.left = start;
-        viewport.right = end;
+        viewport.left = HPointValue.convert(start);
+        viewport.right = HPointValue.convert(end);
         if (height<=SCALE_TRIGGER)
         {
             // for pebble classic we always want the lowest mark to be in the same place on the image

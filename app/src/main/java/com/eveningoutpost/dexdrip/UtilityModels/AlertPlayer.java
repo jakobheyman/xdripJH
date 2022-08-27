@@ -391,6 +391,7 @@ public class AlertPlayer {
         try {
             requestAudioFocus();
             mediaPlayer.setAudioStreamType(streamType);
+            mediaPlayer.setLooping(false);
             mediaPlayer.setOnPreparedListener(mp -> {
                 adjustCurrentVolumeForAlert(streamType, volumeFrac, overrideSilentMode);
                 mediaPlayer.start();

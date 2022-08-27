@@ -1,71 +1,72 @@
-package com.eveningoutpost.dexdrip.Tables;
+package com.eveningoutpost.dexdrip.tables;
 
-import android.app.ListActivity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.eveningoutpost.dexdrip.Models.BloodTest;
+import com.eveningoutpost.dexdrip.BaseListActivity;
+import com.eveningoutpost.dexdrip.Models.BgReading;
 import com.eveningoutpost.dexdrip.Models.JoH;
-import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.NavigationDrawerFragment;
 import com.eveningoutpost.dexdrip.R;
-import com.eveningoutpost.dexdrip.xdrip;
+import com.eveningoutpost.dexdrip.UtilityModels.BgGraphBuilder;
+import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.eveningoutpost.dexdrip.xdrip.gs;
 
-public class BloodTestTable extends ListActivity {
-    private final static String TAG = "jamorham " + TreatmentsTable.class.getSimpleName();
+
+public class BgReadingTable extends BaseListActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+    private String menu_name = "BG Data Table";
+    private NavigationDrawerFragment mNavigationDrawerFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        UserError.Log.d(TAG, "onCreate");
+        setTheme(R.style.OldAppTheme); // or null actionbar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.raw_data_list);
     }
 
     @Override
     protected void onResume() {
-        UserError.Log.d(TAG, "onResume");
         super.onResume();
+        mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
+        mNavigationDrawerFragment.setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), menu_name, this);
 
         getData();
     }
 
-    private void getData() {
-        UserError.Log.d(TAG, "getData");
-        final long startTime = new Date().getTime() - (60000 * 60 * 24 * 3);//3 days
-        final List<BloodTest> latest = BloodTest.latestForGraph(60, startTime);
-
-        ListAdapter adapter = new thisAdapter(this, latest);
-        this.setListAdapter(adapter);
-
-        String msg = "";
-        int size = 0;
-        if (latest != null) size = latest.size();
-        if (size == 0) {
-            msg = getResources().getString(R.string.notify_table_size, "BloodTest", size);
-            JoH.static_toast(xdrip.getAppContext(), msg, Toast.LENGTH_SHORT);
-        }
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+        mNavigationDrawerFragment.swapContext(position);
     }
 
-    public static class thisCursorAdapterViewHolder {
+    private void getData() {
+        final List<BgReading> latest = BgReading.latest(5000);
+        ListAdapter adapter = new BgReadingAdapter(this, latest);
+
+        this.setListAdapter(adapter);
+    }
+
+    public static class BgReadingCursorAdapterViewHolder {
         TextView raw_data_id;
         TextView raw_data_value;
         TextView raw_data_slope;
         TextView raw_data_timestamp;
 
-        public thisCursorAdapterViewHolder(View root) {
-            UserError.Log.d(TAG, "thisCursorAdapterViewHolder");
+        public BgReadingCursorAdapterViewHolder(View root) {
             raw_data_id = (TextView) root.findViewById(R.id.raw_data_id);
             raw_data_value = (TextView) root.findViewById(R.id.raw_data_value);
             raw_data_slope = (TextView) root.findViewById(R.id.raw_data_slope);
@@ -73,40 +74,40 @@ public class BloodTestTable extends ListActivity {
         }
     }
 
-    public static class thisAdapter extends BaseAdapter {
+    public static class BgReadingAdapter extends BaseAdapter {
         private final Context         context;
-        private final List<BloodTest> data;
+        private final List<BgReading> readings;
 
-        public thisAdapter(Context context, List<BloodTest> data) {
-            UserError.Log.d(TAG, "thisAdapter");
+        public BgReadingAdapter(Context context, List<BgReading> readings) {
             this.context = context;
-            if(data == null)
-                data = new ArrayList<>();
+            if(readings == null)
+                readings = new ArrayList<>();
 
-            this.data = data;
-            UserError.Log.d(TAG, "thisAdapter data.size()=" + data.size());
+            this.readings = readings;
         }
 
         public View newView(Context context, ViewGroup parent) {
-            UserError.Log.d(TAG, "newView");
             final View view = LayoutInflater.from(context).inflate(R.layout.raw_data_list_item, parent, false);
 
-            final thisCursorAdapterViewHolder holder = new thisCursorAdapterViewHolder(view);
+            final BgReadingCursorAdapterViewHolder holder = new BgReadingCursorAdapterViewHolder(view);
             view.setTag(holder);
 
             return view;
         }
 
-        public void bindView(View view, final Context context, final BloodTest data) {
-            UserError.Log.d(TAG, "bindView");
-            final thisCursorAdapterViewHolder tag = (thisCursorAdapterViewHolder) view.getTag();
-            tag.raw_data_id.setText(Long.toString(Math.round(data.mgdl)));
-            tag.raw_data_value.setText(data.source!=null ? data.source : "");
-            tag.raw_data_slope.setText("State: " + Long.toString(data.state));
-            tag.raw_data_timestamp.setText(new Date(data.timestamp).toString());
-            view.setBackgroundColor(Color.parseColor("#212121"));
+        void bindView(View view, final Context context, final BgReading bgReading) {
+            final BgReadingCursorAdapterViewHolder tag = (BgReadingCursorAdapterViewHolder) view.getTag();
+            final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
+            tag.raw_data_id.setText(BgGraphBuilder.unitized_string_with_units_static(bgReading.calculated_value)
+                    + "  " + JoH.qs(bgReading.calculated_value, 1)
+                    + " " + (!bgReading.isBackfilled() ? bgReading.slopeArrow() : ""));
+            tag.raw_data_value.setText("Raw: " + JoH.qs(BgGraphBuilder.unitized(bgReading.raw_data, domgdl), 2));
+            tag.raw_data_slope.setText("OOP-bg: " + JoH.qs(BgGraphBuilder.unitized(bgReading.oop_calibrated_value, domgdl), (domgdl ? 0 : 2)));
+            //tag.raw_data_value.setText(bgReading.age_adjusted_raw_value > 0 ? "Aged raw: " + JoH.qs(bgReading.age_adjusted_raw_value, 2) : "");
+            //tag.raw_data_slope.setText(bgReading.isBackfilled() ? ("Backfilled" + " " + ((bgReading.source_info != null) ? bgReading.source_info : "")) : "Raw: " + JoH.qs(bgReading.raw_data, 2) + " " + ((bgReading.source_info != null) ? bgReading.source_info : ""));
+            tag.raw_data_timestamp.setText(new Date(bgReading.timestamp).toString());
 
-            /*if (bgReading.ignoreForStats) {
+            if (bgReading.ignoreForStats) {
                 // red invalid/cancelled/overridden
                 view.setBackgroundColor(Color.parseColor("#660000"));
             } else {
@@ -125,11 +126,15 @@ public class BloodTestTable extends ListActivity {
                                 case DialogInterface.BUTTON_POSITIVE:
                                     bgReading.ignoreForStats = true;
                                     bgReading.save();
+                                    notifyDataSetChanged();
+                                    if (Pref.getBooleanDefaultFalse("wear_sync")) BgReading.pushBgReadingSyncToWatch(bgReading, false);
                                     break;
 
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     bgReading.ignoreForStats = false;
                                     bgReading.save();
+                                    notifyDataSetChanged();
+                                    if (Pref.getBooleanDefaultFalse("wear_sync")) BgReading.pushBgReadingSyncToWatch(bgReading, false);
                                     break;
                             }
                         }
@@ -140,18 +145,18 @@ public class BloodTestTable extends ListActivity {
                             .setNegativeButton(gs(R.string.no), dialogClickListener).show();
                     return true;
                 }
-            });*/
+            });
 
         }
 
         @Override
         public int getCount() {
-            return data.size();
+            return readings.size();
         }
 
         @Override
-        public BloodTest getItem(int position) {
-            return data.get(position);
+        public BgReading getItem(int position) {
+            return readings.get(position);
         }
 
         @Override
@@ -161,7 +166,6 @@ public class BloodTestTable extends ListActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            UserError.Log.d(TAG, "getView");
             if (convertView == null)
                 convertView = newView(context, parent);
 
