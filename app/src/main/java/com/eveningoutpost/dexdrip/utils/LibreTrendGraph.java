@@ -121,7 +121,7 @@ public class LibreTrendGraph extends BaseAppCompatActivity {
              }
              long bg_time = libreTrendLatest.timestamp - time_offset;
              if (bg_time <= end_time && bg_time >= start_time) {
-                 points.add(new HPointValue( ((double)(bg_time) / FUZZER), bg * conversion_factor_mmol));
+                 points.add(new HPointValue( ((double)(bg_time) / FUZZER), bg * conversion_factor_mmol, start_time / FUZZER));
              }
              
              time_offset += Constants.MINUTE_IN_MS;

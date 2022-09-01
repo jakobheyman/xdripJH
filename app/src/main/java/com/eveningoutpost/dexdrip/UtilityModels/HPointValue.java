@@ -17,14 +17,16 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class HPointValue extends PointValue {
 
-    private static final long OFFSET = (BuildConfig.buildTimestamp - Constants.MONTH_IN_MS) / FUZZER;
+    // xdripJH: OFFSET changed to offset
+    //private static final long OFFSET = (BuildConfig.buildTimestamp - Constants.MONTH_IN_MS) / FUZZER;
 
     private double x;
     private float y;
+    private long offset;
 
     @Override
     public float getX() {
-        return convert(this.x);
+        return convert(this.x, this.offset);
     }
 
     @Override
@@ -32,9 +34,14 @@ public class HPointValue extends PointValue {
         return this.y;
     }
 
-    public HPointValue set(double x, float y) {
+    public long getOffset() {
+        return this.offset;
+    }
+
+    public HPointValue set(double x, float y, long offset) {
         this.x = x;
         this.y = y;
+        this.offset = offset;
         return this;
     }
 
@@ -42,12 +49,12 @@ public class HPointValue extends PointValue {
         return (long) (x * FUZZER);
     }
 
-    public static float convert(final double x) {
-        return (float) (x - OFFSET);
+    public static float convert(final double x, final long offset) {
+        return (float) (x - offset);
     }
 
-    public static double unconvert(final float x) {
-        return x + OFFSET;
+    public static double unconvert(final float x, final long offset) {
+        return x + offset;
     }
 
 }

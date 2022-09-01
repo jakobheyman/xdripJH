@@ -9,17 +9,17 @@ public class PointValueExtended extends HPointValue {
     public static final int BloodTest = 1;
     public static final int AdjustableDose = 2;
 
-    public PointValueExtended(double x, float y, String note_param) {
-        super(x, y);
+    public PointValueExtended(double x, float y, long offset, String note_param) {
+        super(x, y, offset);
         note = note_param;
     }
 
-    public PointValueExtended(double x, float y, float filtered) {
-        super(x, y);
+    public PointValueExtended(double x, float y, long offset, float filtered) {
+        super(x, y, offset);
         calculatedFilteredValue = filtered;
     }
-    public PointValueExtended(double x, float y) {
-        super(x, y);
+    public PointValueExtended(double x, float y, long offset) {
+        super(x, y, offset);
         calculatedFilteredValue = -1;
     }
 
