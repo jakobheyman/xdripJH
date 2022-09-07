@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.eveningoutpost.dexdrip.AddCalibration;
-import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.APStatus;
@@ -1100,13 +1099,13 @@ public class BgGraphBuilder {
             iconValues.clear();
             smbValues.clear();
 
-            //~ if (Pref.getBooleanDefaultFalse("graph_smoothing")) {
-                //~ if (Home.get_engineering_mode() && Pref.getBooleanDefaultFalse("show-unsmoothed-values-as-plugin")) {
-                    //~ showUnSmoothedValues(bgReadings);
-                //~ }
-                //~ SmootherFactory.get(Pref.getString("main-chart-smoothing-alg","")).smoothBgReadings(bgReadings);
-                //~ smoother_adjusted = true;
-            //~ }
+            if (Pref.getBooleanDefaultFalse("graph_smoothing")) {
+                if (Pref.getBooleanDefaultFalse("show-unsmoothed-values-as-plugin")) {
+                    showUnSmoothedValues(bgReadings);
+                }
+                SmootherFactory.get(Pref.getString("main-chart-smoothing-alg","")).smoothBgReadings(bgReadings);
+                smoother_adjusted = true;
+            }
 
             final double bgScale = bgScale();
             final long now = JoH.tsl();
