@@ -14,7 +14,7 @@
         * Optionally modify Libre-2 raw values\n
         * Display mmol values with two decimals\n
         * Extended potential min and max bg values\n
-        * Increased X (time) resolution in graph\n
+        * 1 second X (time) resolution in graph\n
         * Keep Y range constant in main graph\n
         * Modify X/Y for portrait/landscape change\n
         * Optionally set custom vibration pattern\n
