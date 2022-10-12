@@ -322,6 +322,12 @@ public enum DexCollectionType {
 
     public static long getCollectorSamplePeriod(final DexCollectionType type) {
         switch (type) {
+            case LibreReceiver:
+            case LibreWifi:
+            case LimiTTerWifi:
+            case LimiTTer:
+                return 60_000; // 1 minute
+
             default:
                 return 300_000; // 5 minutes
         }
