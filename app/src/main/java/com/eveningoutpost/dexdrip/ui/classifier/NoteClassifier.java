@@ -76,7 +76,7 @@ public class NoteClassifier {
     }
 
     private static HPointValue icon(@DrawableRes int id, @ColorInt int color, String note) {
-        final PointValueExtended pv = new PointValueExtended(0,0,0);
+        final PointValueExtended pv = new PointValueExtended(0,0);
         BitmapLoader.loadAndSetKey(pv, id, 0);
         pv.setBitmapTint(color);
         pv.setBitmapScale(1f);
