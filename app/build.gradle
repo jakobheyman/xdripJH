@@ -68,16 +68,30 @@ def getLocalProperty(String propertyName) {
     return propVal
 }
 
+// Create a variable called keystorePropertiesFile, and initialize it to your
+// keystore.properties file, in the rootProject folder.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+// Initialize a new Properties() object called keystoreProperties.
+def keystoreProperties = new Properties()
+// Load your keystore.properties file into the keystoreProperties object.
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     signingConfigs {
         debug {
-            storeFile file('/home/jakob/JH/git/android_key/xdrip_key.jks')
-            storePassword 'xdripjh'
-            keyPassword 'xdripjh'
-            keyAlias 'xdripjh'
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
         }
     }
-    compileSdkVersion 29
+    compileSdkVersion 31
 
     dexOptions {
         javaMaxHeapSize "3g"
@@ -189,6 +203,7 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
             minifyEnabled true
@@ -201,6 +216,7 @@ android {
             //      applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
             debuggable true
+            signingConfig signingConfigs.debug
         }
         dev {
             minifyEnabled false
