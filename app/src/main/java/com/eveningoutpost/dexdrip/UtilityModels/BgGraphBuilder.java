@@ -1282,7 +1282,7 @@ public class BgGraphBuilder {
                     oopCalibratedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.oop_calibrated_value, BgReading.BG_READING_MAXIMUM_VALUE))));
                 }
                 if ((show_raw_plot && (bgReading.raw_data > 0))) {
-                    rawInterpretedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.raw_calculated, BgReading.BG_READING_MAXIMUM_VALUE))));
+                    rawInterpretedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.raw_data, BgReading.BG_READING_MAXIMUM_VALUE))));
                 }
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(plugin.getGlucoseFromBgReading(bgReading, cd), BgReading.BG_READING_MAXIMUM_VALUE))));
