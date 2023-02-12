@@ -78,7 +78,7 @@ public class BgReading extends Model implements ShareUploadableBg {
 
     public static final int BG_READING_ERROR_VALUE = 0; // error marker
     public static final int BG_READING_MINIMUM_VALUE = 6;
-    public static final int BG_READING_MAXIMUM_VALUE = 1000;
+    public static final int BG_READING_MAXIMUM_VALUE = 700;
 
     private static volatile long earliest_backfill = 0;
 
