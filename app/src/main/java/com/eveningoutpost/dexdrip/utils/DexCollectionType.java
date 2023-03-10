@@ -328,6 +328,9 @@ public enum DexCollectionType {
         return getCollectorSamplePeriod(this);
     }
 
+    //~ private static final boolean libreOneMinute = Pref.getBooleanDefaultFalse("libre_one_minute")
+            //~ && Pref.getBooleanDefaultFalse("engineering_mode");
+
     public static long getCollectorSamplePeriod(final DexCollectionType type) {
         switch (type) {
             case LibreReceiver:
@@ -335,7 +338,6 @@ public enum DexCollectionType {
             case LimiTTerWifi:
             case LimiTTer:
                 return 60_000; // 1 minute
-
             default:
                 return 300_000; // 5 minutes
         }

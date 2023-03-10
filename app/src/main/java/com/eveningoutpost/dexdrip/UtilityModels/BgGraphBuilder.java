@@ -101,6 +101,7 @@ public class BgGraphBuilder {
     private static long noise_processed_till_timestamp = -1;
     private final static String TAG = "jamorham graph";
     //private final static int pluginColor = Color.parseColor("#AA00FFFF"); // temporary
+    public boolean custimze_y_range = Pref.getBoolean("Customize_yRange", false); // True when Customize y axis range is enabled
 
     private final static int pluginSize = 2;
     final int pointSize;
@@ -252,6 +253,12 @@ public class BgGraphBuilder {
         defaultMaxY = tolerantParseDouble(prefs.getString("graph_max_y", "10.4"), 10.4d);
         landscapeYMult = tolerantParseDouble(prefs.getString("y_landscape_mult", "0.65"), 0.65d);
         landscapeTimeMult = tolerantParseDouble(prefs.getString("time_landscape_mult", "3"), 3d);
+        //~ defaultMinY = unitized(40);
+        //~ defaultMaxY = unitized(250);
+        //~ if (custimze_y_range) { // If Customize y axis range is enabled
+            //~ defaultMinY = unitized(Pref.getStringToInt("default_ymin", 40)); // Use the user-defined ymin
+            //~ defaultMaxY = unitized(Pref.getStringToInt("default_ymax", 250)); // Use the user-defined ymax
+        //~ }
         pointSize = isXLargeTablet(context) ? 5 : 3;
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
         previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
@@ -1188,7 +1195,7 @@ public class BgGraphBuilder {
                 for (BloodTest bloodtest : bloodtests) {
                     final long adjusted_timestamp = (bloodtest.timestamp + (AddCalibration.estimatedInterstitialLagSeconds * 1000));
                     final PointValueExtended this_point = new PointValueExtended((double) (adjusted_timestamp / FUZZER), unitized(bloodtest.mgdl))
-                           .setType(PointValueExtended.BloodTest)
+                            .setType(PointValueExtended.BloodTest)
                             .setUUID(bloodtest.uuid);
                     this_point.real_timestamp = bloodtest.timestamp;
                     // exclude any which have been used for calibration
@@ -1809,7 +1816,10 @@ public class BgGraphBuilder {
                                         df.setMaximumFractionDigits(2);
                                         df.setMinimumIntegerDigits(1);
                                         //  iv.setLabel("IoB: " + df.format(iob.iob));
-                                        Home.updateStatusLine("iob", df.format(iob.iob));
+                                        val iobformatted = df.format(iob.iob);
+                                        keyStore.putS("last_iob", iobformatted);
+                                        keyStore.putL("last_iob_timestamp", JoH.tsl());
+                                        Home.updateStatusLine("iob", iobformatted);
                                         //  annotationValues.add(iv); // needs to be different value list so we can make annotation nicer
 
                                     }
@@ -1845,18 +1855,20 @@ public class BgGraphBuilder {
                                 if (evaluation[0] > Profile.minimum_carb_recommendation) {
                                     //PointValue iv = new HPointValue((double) fuzzed_timestamp, (float) (10 * bgScale));
                                     //iv.setLabel("+Carbs: " + JoH.qs(evaluation[0], 0));
-                                    bwp_update = "\u224F" + " Carbs: " + JoH.qs(evaluation[0], 0);
+                                    bwp_update = "\u224F" + " Carbs: " + JoH.qs(evaluation[0], 0); // TODO I18n
                                     //annotationValues.add(iv); // needs to be different value list so we can make annotation nicer
                                 } else if (evaluation[1] > Profile.minimum_insulin_recommendation) {
                                     //PointValue iv = new HPointValue((double) fuzzed_timestamp, (float) (11 * bgScale));
                                     //iv.setLabel("+Insulin: " + JoH.qs(evaluation[1], 1));
                                     keyStore.putS("bwp_last_insulin", JoH.qs(evaluation[1], 1) + ((low_occurs_at > 0) ? ("!") : ""));
                                     keyStore.putL("bwp_last_insulin_timestamp", JoH.tsl());
-                                    bwp_update = "\u224F" + " Insulin: " + JoH.qs(evaluation[1], 1) + ((low_occurs_at > 0) ? (" " + "\u26A0") : ""); // warning symbol
+                                    bwp_update = "\u224F" + " Insulin: " + JoH.qs(evaluation[1], 1) + ((low_occurs_at > 0) ? (" " + "\u26A0") : ""); // warning symbol // TODO I18n
                                     //annotationValues.add(iv); // needs to be different value list so we can make annotation nicer
                                 }
                             }
                         }
+                        keyStore.putS("last_bwp", bwp_update);
+                        keyStore.putL("last_bwp_timestamp", JoH.tsl());
                         Home.updateStatusLine("bwp", bwp_update); // always send so we can blank if needed
                     }
 
