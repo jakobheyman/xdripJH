@@ -54,6 +54,9 @@ public class StartNewSensor extends ActivityWithMenu {
     // private TimePicker tp;
     final Activity activity = this;
     Calendar ucalendar = Calendar.getInstance();
+    private int transmitterAgeInDays() { // Transmitter days reported by the transmitter; 0 on day 1; -1 if unknown due to no connectivity.
+        return DexTimeKeeper.getTransmitterAgeInDays(getTransmitterID());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,8 +104,9 @@ public class StartNewSensor extends ActivityWithMenu {
 
         ucalendar = Calendar.getInstance();
         if (Ob1G5CollectionService.usingNativeMode()) {
-            if (!DexSyncKeeper.isReady(Pref.getString("dex_txid", "NULL"))) {
-                JoH.static_toast_long("Need to connect to transmitter once before we can start sensor");
+            if (!DexSyncKeeper.isReady(Pref.getString("dex_txid", "NULL")) || transmitterAgeInDays() == -1) {
+                JoH.static_toast_long("Need to connect to transmitter before we can start sensor");
+                UserError.Log.e(TAG, "Need to connect to transmitter before we can start sensor");
                 MegaStatus.startStatus(MegaStatus.G5_STATUS);
             } else {
                 startSensorOrAskForG6Code();   // If we're using native mode, don't bother asking about insertion time
@@ -175,11 +179,15 @@ public class StartNewSensor extends ActivityWithMenu {
     private static final int MONTH_WARNING_DAYS = 30;
 
     private void startSensorOrAskForG6Code() {
+        if (getTransmitterID().length() == 4) {
+            Sensor.createDefaultIfMissing();
+            finish();
+        }
         final int cap = 20;
         if (Ob1G5CollectionService.usingCollector() && Ob1G5StateMachine.usingG6()) {
             if (JoH.pratelimit("dex-stop-start", cap)) {
                 JoH.clearRatelimit("dex-stop-start");
-                val transmitterAgeInDays = DexTimeKeeper.getTransmitterAgeInDays(getTransmitterID());
+                val transmitterAgeInDays = transmitterAgeInDays();
                 val modified = FirmwareCapability.isTransmitterModified(getTransmitterID());
                 val endOfLife = transmitterAgeInDays >= ABSOLUTE_MAX_AGE_DAYS || (!modified && transmitterAgeInDays >= MAX_AGE_DAYS);
                 if (transmitterAgeInDays < MAX_AGE_DAYS - MONTH_WARNING_DAYS
