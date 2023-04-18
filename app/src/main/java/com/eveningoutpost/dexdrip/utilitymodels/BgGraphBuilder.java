@@ -261,7 +261,7 @@ public class BgGraphBuilder {
         //~ }
         pointSize = isXLargeTablet(context) ? 5 : 3;
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
-        previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
+        previewAxisTextSize = isXLargeTablet(context) ? 12 : 6;
         hoursPreviewStep = isXLargeTablet(context) ? 2 : 1;
     }
 
@@ -615,7 +615,7 @@ public class BgGraphBuilder {
             if (d) Log.d(TAG, "Cloned preview chart data");
         }
 
-        previewLineData.setAxisYLeft(yAxis());
+        previewLineData.setAxisYLeft(previewYAxis());
         previewLineData.setAxisXBottom(previewXAxis());
 
         // reduce complexity of preview chart by removing some lines
@@ -2088,6 +2088,12 @@ public class BgGraphBuilder {
         yAxis.setTextSize(axisTextSize);
         yAxis.setHasLines(prefs.getBoolean("show_graph_grid_glucose", true));
         return yAxis;
+    }
+
+    public Axis previewYAxis() {
+        Axis previewYaxis = yAxis();
+        previewYaxis.setTextSize(previewAxisTextSize);
+        return previewYaxis;
     }
 
     @NonNull
