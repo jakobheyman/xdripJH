@@ -4,7 +4,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.eveningoutpost.dexdrip.xdrip;
-import com.eveningoutpost.dexdrip.Models.JoH;
+import com.eveningoutpost.dexdrip.models.JoH;
 
 // Used for modification (multiplication and/or plus/minus) of Libre2 raw values
 // Jakob Heyman 2021-05-19

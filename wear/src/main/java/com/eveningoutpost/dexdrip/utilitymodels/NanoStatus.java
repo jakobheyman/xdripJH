@@ -19,7 +19,7 @@ import android.util.Log;
 import com.eveningoutpost.dexdrip.BuildConfig;
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
-import com.eveningoutpost.dexdrip.Models.UserError;
+import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -119,7 +119,7 @@ public class NanoStatus {
             case "collector":
                 return collectorNano(DexCollectionType.getCollectorServiceClass());
             case "mtp-configure":
-                return collectorNano(getClassByName(".UtilityModels.MtpConfigure"));
+                return collectorNano(getClassByName(".utilitymodels.MtpConfigure"));
             default:
                 return new SpannableString("Invalid module type");
         }
