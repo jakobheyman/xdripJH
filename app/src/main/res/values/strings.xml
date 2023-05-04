@@ -811,8 +811,8 @@
     <string name="alert_seconds_reraise">Number of SECONDS to pass before raising the same alert.</string>
     <string name="bg_falling_fast">BG falling fast</string>
     <string name="bg_rising_fast">BG rising fast</string>
-    <string name="falling_threshold">falling threshold</string>
-    <string name="rising_threshold">rising threshold</string>
+    <string name="falling_threshold">falling rate threshold</string>
+    <string name="rising_threshold">rising rate threshold</string>
     <string name="set_sound_for_bg_alerts">Set sound used for BG Alerts.</string>
     <string name="alert_sound">Alert Sound</string>
     <string name="override_silent_mode_these">Override Silent mode on these alerts</string>
@@ -1360,7 +1360,7 @@
     <string name="summary_clfollow_download_meals">Download meals from CareLink</string>
     <string name="title_clfollow_download_notifications">Notifications</string>
     <string name="summary_clfollow_download_notifications">Download notifications from CareLink</string>
-    <string name="title_ob1_options">OB1 G5/G6 Collector Settings</string>
+    <string name="title_ob1_options">OB1 G5/G6/G7 Collector Settings</string>
     <string name="summary_use_ob1_g5_collector_service">Complete re-write, should work on Android 4.4 - 9, supports native mode and more</string>
     <string name="title_use_ob1_g5_collector_service">Use the OB1 Collector</string>
     <string name="summary_ob1_g5_use_transmitter_alg">Use the transmitter\'s internal algorithm to calculate glucose values when possible.</string>
