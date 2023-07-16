@@ -1290,6 +1290,8 @@
     <string name="summary_clfollow_pass">CareLink sisselogimise parool</string>
     <string name="title_clfollow_country">CareLink riik</string>
     <string name="summary_clfollow_country">Vali enda CareLink riik.</string>
+    <string name="title_clfollow_patient">CareLink patsiendi kasutajanimi</string>
+    <string name="summary_clfollow_patient">CareLink patsiendi kasutajanimi (vabalt valitav)</string>
     <string name="title_clfollow_lang">CareLink keel</string>
     <string name="summary_clfollow_lang">CareLink keele kood</string>
     <string name="title_clfollow_grace_period">Ooteperiood</string>
@@ -1590,6 +1592,11 @@
     <string name="enable_streaming_always_allow">Ühenda alati Libre2 sensoriga</string>
     <string name="enable_streaming_ask_each_time">Küsi iga kord</string>
     <string name="enable_streaming_never">Ära kunagi ühenda Libre2 sensoriga</string>
+    <string name="libre_filter_length_10">10 minutit</string>
+    <string name="libre_filter_length_15">15 minutit</string>
+    <string name="libre_filter_length_25">25 minutit &gt;</string>
+    <string name="libre_filter_length_summary">Arvesse võetavate minutite arv librex-andmete kasutamisel</string>
+    <string name="libre_filter_length_title">Silu Libre 3 andmeid xxx-meetodi kasutamisel</string>
     <string name="enable_streaming_dialog_yes">Ühenda selle Libre2 sensoriga</string>
     <string name="enable_streaming_dialog_no">Ära ühenda selle Libre2 sensoriga </string>
     <string name="enable_streaming_dialog_dont_ask_again">Ära küsi seda enam uuesti</string>
@@ -1761,6 +1768,7 @@
     <string name="title_ymax">Seadista y-telje ülempiir</string>
     <string name="summary_ymin">Vali yMin, kui sellest väiksemaid näitusid ei ole.</string>
     <string name="summary_ymax">Vali yMax, kui sellest suuremaid näitusid ei ole.</string>
+    <string name="wait_to_connect">Kontrolli seadeid ja oota ühendust.</string>
     <string name="close">Sulge</string>
     <string name="title_advanced_settings_4_Lib2">Libre 2 täpsemad sätted</string>
     <string name="title_Lib2_show_raw_values">Näita graafikus töötlemata väärtuseid</string>

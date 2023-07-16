@@ -1290,6 +1290,8 @@
     <string name="summary_clfollow_pass">Contraseña de acceso a CareLink</string>
     <string name="title_clfollow_country">País de CareLink</string>
     <string name="summary_clfollow_country">Seleccione tu país de CareLink.</string>
+    <string name="title_clfollow_patient">Usuario del paciente de CareLink</string>
+    <string name="summary_clfollow_patient">Usuario del paciente de CareLink (opcional)</string>
     <string name="title_clfollow_lang">Idioma de CareLink</string>
     <string name="summary_clfollow_lang">Código de idioma de CareLink</string>
     <string name="title_clfollow_grace_period">Periodo de gracia</string>
@@ -1590,6 +1592,11 @@
     <string name="enable_streaming_always_allow">Conectar siempre a sensores Libre2</string>
     <string name="enable_streaming_ask_each_time">Preguntar cada vez</string>
     <string name="enable_streaming_never">Nunca conectar a sensores Libre2</string>
+    <string name="libre_filter_length_10">10 minutos</string>
+    <string name="libre_filter_length_15">15 minutos</string>
+    <string name="libre_filter_length_25">25 minutos &gt;</string>
+    <string name="libre_filter_length_summary">Número de minutos a tomar en consideración al usar datos librex</string>
+    <string name="libre_filter_length_title">Suavizar datos del Libre 3 cuando usamos el método xxx</string>
     <string name="enable_streaming_dialog_yes">Conectar a este sensor Libre2</string>
     <string name="enable_streaming_dialog_no">No conectar a este sensor Libre2 </string>
     <string name="enable_streaming_dialog_dont_ask_again">No volver a preguntarme</string>
@@ -1761,6 +1768,7 @@
     <string name="title_ymax">Ajustar el máximo del eje y</string>
     <string name="summary_ymin">Escoge yMin para cuando no hay lecturas inferiores.</string>
     <string name="summary_ymax">Escoge yMin para cuando no hay lecturas superiores.</string>
+    <string name="wait_to_connect">Verificar ajustes y esperar a la conectividad</string>
     <string name="close">Cerrar</string>
     <string name="title_advanced_settings_4_Lib2">Ajustes avanzados para Libre 2</string>
     <string name="title_Lib2_show_raw_values">Mostrar valores en bruto en el gráfico</string>
