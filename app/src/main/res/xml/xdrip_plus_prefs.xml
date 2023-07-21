@@ -66,14 +66,14 @@
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
-                    <com.eveningoutpost.dexdrip.UtilityModels.ColorPicker
+                    <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
                         android:defaultValue="#FAFAFA"
                         android:key="color_raw_values"
                         android:title="@string/raw_values"
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
-                    <com.eveningoutpost.dexdrip.UtilityModels.ColorPicker
+                    <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
                         android:defaultValue="#FFFF00"
                         android:key="color_oopcal_values"
                         android:title="@string/oopcal_values"
