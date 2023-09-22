@@ -1401,6 +1401,9 @@
     <string name="title_xdrip_plus_graph_display_settings">Graph Settings</string>
     <string name="summary_show_basal_line">Show TBR information from external status</string>
     <string name="title_show_basal_line">Show Basal TBR</string>
+    <string name="summary_use_absolute_basal">Use absolute basal insulin (U/h)</string>
+    <string name="title_use_absolute_basal">Use absolute Basal</string>
+    <string name="absolute_basal_Yscaling">Absolute basal Y-axis scaling (1U/h = ? mmol/mgdl)</string>
     <string name="summary_show_g_prediction">Show G6 predictive glucose dots</string>
     <string name="title_show_g_prediction">G6 Prediction</string>
     <string name="summary_show_smb_icons">Declutter graph with treatment icons for small boluses</string>

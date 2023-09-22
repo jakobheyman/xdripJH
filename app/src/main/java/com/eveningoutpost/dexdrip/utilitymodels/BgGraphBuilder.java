@@ -353,51 +353,71 @@ public class BgGraphBuilder {
             if (aplist.size() > 0) {
 
                 // divider line
+                if (!prefs.getBoolean("use_absolute_basal", false)) {
+                    final Line dividerLine = new Line();
+                    dividerLine.setTag("tbr"); // not quite true
+                    dividerLine.setHasPoints(false);
+                    dividerLine.setHasLines(true);
+                    dividerLine.setStrokeWidth(1);
+                    dividerLine.setColor(getCol(X.color_basal_tbr));
+                    dividerLine.setPathEffect(new DashPathEffect(new float[]{10.0f, 10.0f}, 0));
+                    // dividerLine.setReverseYAxis(true);
+                    dividerLine.setHasPoints(false);
 
-                final Line dividerLine = new Line();
-                dividerLine.setTag("tbr"); // not quite true
-                dividerLine.setHasPoints(false);
-                dividerLine.setHasLines(true);
-                dividerLine.setStrokeWidth(1);
-                dividerLine.setColor(getCol(X.color_basal_tbr));
-                dividerLine.setPathEffect(new DashPathEffect(new float[]{10.0f, 10.0f}, 0));
-                dividerLine.setReverseYAxis(true);
-                dividerLine.setHasPoints(false);
-
-                final float one_hundred_percent = (100 * yscale) / 100f;
-                final List<PointValue> divider_points = new ArrayList<>(2);
-                divider_points.add(new HPointValue(loaded_start / FUZZER, one_hundred_percent));
-                dividerLine.setPointRadius(0);
-                divider_points.add(new HPointValue(loaded_end / FUZZER, one_hundred_percent));
-                dividerLine.setValues(divider_points);
-                basalLines.add(dividerLine);
+                    final float one_hundred_percent = (100 * yscale) / 100f;
+                    final List<PointValue> divider_points = new ArrayList<>(2);
+                    divider_points.add(new HPointValue(loaded_start / FUZZER, one_hundred_percent));
+                    dividerLine.setPointRadius(0);
+                    divider_points.add(new HPointValue(loaded_end / FUZZER, one_hundred_percent));
+                    dividerLine.setValues(divider_points);
+                    basalLines.add(dividerLine);
+                }
 
                 final List<PointValue> points = new ArrayList<>(aplist.size());
-
-                int last_percent = -1;
-
                 int count = aplist.size();
-                for (APStatus item : aplist) {
-                    if (--count == 0 || (item.basal_percent != last_percent)) {
-                        final float this_ypos = (Math.min(item.basal_percent, 500) * yscale) / 100f; // capped at 500%
-                        points.add(new HPointValue((double) item.timestamp / FUZZER, this_ypos));
 
-                        last_percent = item.basal_percent;
+                // xdripJH: only include basals with a duration > 15 seconds
+                if (prefs.getBoolean("use_absolute_basal", false)) {
+                    float absolute_yscaling = (float) JoH.tolerantParseDouble(prefs.getString("absolute_basal_yscaling", "0.5"), 0.5d);
+                    if (count >= 2) {
+                        double last_absolute = -1;
+                        for (int i = 0; i < (count-1); i++) {
+                            if (((aplist.get(i+1).timestamp - aplist.get(i).timestamp) > 15000L) && (aplist.get(i).basal_absolute != last_absolute)) {
+                                final float this_ypos = ((float) aplist.get(i).basal_absolute * yscale * absolute_yscaling) + (float) defaultMinY;
+                                points.add(new HPointValue((double) aplist.get(i).timestamp / FUZZER, this_ypos));
+                                last_absolute = aplist.get(i).basal_absolute;
+                            }
+                        }
                     }
+                    final float this_ypos = ((float) aplist.get(count-1).basal_absolute * yscale * absolute_yscaling) + (float) defaultMinY;
+                    points.add(new HPointValue((double) aplist.get(count-1).timestamp / FUZZER, this_ypos));
+                } else {
+                    if (count >= 2) {
+                        int last_percent = -1;
+                        for (int i = 0; i < (count-1); i++) {
+                            if (((aplist.get(i+1).timestamp - aplist.get(i).timestamp) > 15000L) && (aplist.get(i).basal_percent != last_percent)) {
+                                final float this_ypos = (Math.min(aplist.get(i).basal_percent, 500) * yscale) / 100f; // capped at 500%
+                                points.add(new HPointValue((double) aplist.get(i).timestamp / FUZZER, this_ypos));
+                                last_percent = aplist.get(i).basal_percent;
+                            }
+                        }
+                    }
+                    final float this_ypos = (Math.min(aplist.get(count-1).basal_percent, 500) * yscale) / 100f; // capped at 500%
+                    points.add(new HPointValue((double) aplist.get(count-1).timestamp / FUZZER, this_ypos));
                 }
 
                 final Line line = new Line(points);
-                line.setFilled(true);
-                line.setFillFlipped(true);
-                line.setHasGradientToTransparent(true);
+                // line.setFilled(true);
+                // line.setFillFlipped(true);
+                // line.setHasGradientToTransparent(true);
                 line.setHasPoints(false);
                 line.setStrokeWidth(1);
                 line.setHasLines(true);
                 line.setSquare(true);
                 line.setPointRadius(1);
-                line.setReverseYAxis(true);
+                // line.setReverseYAxis(true);
                 line.setBackgroundUnclipped(true);
-                line.setGradientDivider(10f);
+                // line.setGradientDivider(10f);
                 line.setColor(getCol(X.color_basal_tbr));
                 basalLines.add(line);
             }

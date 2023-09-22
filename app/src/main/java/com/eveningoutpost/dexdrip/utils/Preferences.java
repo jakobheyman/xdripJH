@@ -1644,6 +1644,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("graph_max_y"));
             bindPreferenceSummaryToValue(findPreference("y_landscape_mult"));
             bindPreferenceSummaryToValue(findPreference("time_landscape_mult"));
+            bindPreferenceSummaryToValue(findPreference("absolute_basal_yscaling"));
             bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
             bindPreferenceSummaryToValue(findPreference("raw_addition"));
             bindPreferenceSummaryToValue(findPreference("calibration_weight_days"));

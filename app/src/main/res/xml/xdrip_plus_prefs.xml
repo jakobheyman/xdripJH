@@ -455,6 +455,18 @@
                     android:summary="@string/summary_show_basal_line"
                     android:title="@string/title_show_basal_line" />
                 <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="use_absolute_basal"
+                    android:summary="@string/summary_use_absolute_basal"
+                    android:title="@string/title_use_absolute_basal" />
+                <EditTextPreference
+                    android:key="absolute_basal_yscaling"
+                    android:title="@string/absolute_basal_Yscaling"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="0.5" />
+                <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="show_target_line"
                     android:summary="@string/display_ideal_glucose_target_line"
