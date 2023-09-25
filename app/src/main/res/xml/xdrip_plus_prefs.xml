@@ -288,6 +288,11 @@
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
+                    <CheckBoxPreference
+                        android:defaultValue="true"
+                        android:key="variable_smb_colors"
+                        android:summary=""
+                        android:title="@string/title_variable_smb_colors" />
                     <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
                         android:defaultValue="#D6597FCC"
                         android:key="color_smb_line"

@@ -1396,6 +1396,7 @@
     <string name="title_insulin_colors">Insulin Colors</string>
     <string name="title_color_basal_tbr">Basal TBR</string>
     <string name="title_color_smb_icon">SMB Icon</string>
+    <string name="title_variable_smb_colors">Variable SMB icon colors</string>
     <string name="title_color_smb_line">SMB Line</string>
     <string name="summary_xdrip_plus_graph_display_settings">Adjust chart items</string>
     <string name="title_xdrip_plus_graph_display_settings">Graph Settings</string>

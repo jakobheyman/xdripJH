@@ -183,6 +183,8 @@ public class BgGraphBuilder {
     private KeyStore keyStore = FastStore.getInstance();
 
     private final boolean showSMB = Pref.getBoolean("show_smb_icons", true);
+    private final String[] ICON_COLOR = {"#FFFF00", "#FBF200", "#F7E400", "#F4D700", "#F0C900", "#ECBC00", "#E8AE00", "#E4A100", "#E19400", "#DD8600", "#D97900", "#D56B00", "#D25E00", "#CE5100", "#CA4300", "#C63600", "#C22800", "#BF1B00", "#BB0D00", "#B70000"};
+    private final double[] MAX_INSULIN = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 3};
 
     public BgGraphBuilder(Context context) {
         this(context, new Date().getTime() + (60000 * 10));
@@ -1584,14 +1586,28 @@ public class BgGraphBuilder {
                         if (!treatment.hasContent()) continue;
 
                         if (showSMB && treatment.likelySMB()) {
-                            final Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, 10 + (100d * treatment.insulin));
+                            Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, Math.min(9 + (15d * treatment.insulin), 24d));
+                            // final Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, Math.min(9 + (21d * treatment.insulin), 30d));
                             if (yPositions.first > 0) {
-                                final PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
+                                PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
+                                // final PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
                                 pv.setPlumbPos(GraphTools.yposRatio(yPositions.second, yPositions.first, 0.1f));
                                 BitmapLoader.loadAndSetKey(pv, R.drawable.triangle, 180);
-                                pv.setBitmapTint(getCol(X.color_smb_icon));
-                                pv.setBitmapScale((float) (0.5f + (treatment.insulin * 5f))); // 0.1U == 100% 0.2U = 150%
-                                pv.note = "SMB: " + JoH.qs(treatment.insulin, 2) + "U" + (treatment.notes != null ? " " + treatment.notes : "");
+                                if (prefs.getBoolean("variable_smb_colors", true)) {
+                                    int icon_color_idx = 19;
+                                    for (int i = 0; i < 19; i++) {
+                                        if (treatment.insulin <= MAX_INSULIN[i]) {
+                                            icon_color_idx = i;
+                                            break;
+                                        }
+                                    }
+                                    pv.setBitmapTint(Color.parseColor(ICON_COLOR[icon_color_idx]));
+                                } else {
+                                    pv.setBitmapTint(getCol(X.color_smb_icon));
+                                }
+                                pv.setBitmapScale((float) (Math.min(0.96f + (treatment.insulin * 0.8f), 1.76f))); // 0.05U == 100% 1U = 176%
+                                pv.note = " " + JoH.qs(treatment.insulin, 2) + " U" + (treatment.notes != null ? " " + treatment.notes : "");
+                                // pv.note = "SMB: " + JoH.qs(treatment.insulin, 2) + "U" + (treatment.notes != null ? " " + treatment.notes : "");
                                 pv.real_timestamp = treatment.timestamp;
                                 smbValues.add(pv);
                                 continue;
@@ -2054,8 +2070,10 @@ public class BgGraphBuilder {
     }
 
     private List<Line> smbLines() {
-        final List<Line> lines = new LinkedList<>();
-        final Line line = new Line(smbValues);
+        List<Line> lines = new LinkedList<>();
+        Line line = new Line(smbValues);
+        // final List<Line> lines = new LinkedList<>();
+        // final Line line = new Line(smbValues);
         line.setTag("smb");
         line.setHasPoints(true);
         line.setHasLines(false);

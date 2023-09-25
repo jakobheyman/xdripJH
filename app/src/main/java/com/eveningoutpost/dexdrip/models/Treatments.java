@@ -1355,8 +1355,10 @@ public class Treatments extends Model {
         }
     }
 
-    private static final double MAX_SMB_UNITS = 0.3;
-    private static final double MAX_OPENAPS_SMB_UNITS = 0.4;
+    private static final double MAX_SMB_UNITS = 1000;
+    private static final double MAX_OPENAPS_SMB_UNITS = 1000;
+    // private static final double MAX_SMB_UNITS = 0.3;
+    // private static final double MAX_OPENAPS_SMB_UNITS = 0.4;
 
     public boolean likelySMB() {
         return (carbs == 0 && insulin > 0

@@ -12,7 +12,8 @@ public class GraphTools {
 
     // bgreadings must be in ascending time order
     // result first is offsetted position, second is matched
-    public static Pair<Float, Float> bestYPosition(final List<BgReading> readings, final long timestamp, final boolean mgdl, final boolean ascending, final double highMark, final double offset) {
+    public static Pair<Float, Float> bestYPosition(List<BgReading> readings, long timestamp, boolean mgdl, boolean ascending, double highMark, double offset) {
+    // public static Pair<Float, Float> bestYPosition(final List<BgReading> readings, final long timestamp, final boolean mgdl, final boolean ascending, final double highMark, final double offset) {
 
         final double unitsScale = (mgdl ? 1f : Constants.MGDL_TO_MMOLL);
         final float defaultPosition = (float) (7 * unitsScale);
@@ -22,12 +23,12 @@ public class GraphTools {
 
         if (readings != null && readings.size() > 0) {
 
-            final float offsetScaled = (float) (offset * unitsScale);
+            float offsetScaled = (float) (offset * unitsScale);
 
             BgReading before = null;
             BgReading after = null;
 
-            final int chopResult = runBinarySearchIteratively(readings, timestamp, ascending);
+            int chopResult = runBinarySearchIteratively(readings, timestamp, ascending);
 
             for (int i = chopResult; ascending ? (i < readings.size()) : (i >= 0); i = i + (ascending ? 1 : -1)) {
                 if (readings.get(i).timestamp <= timestamp) {
@@ -51,7 +52,8 @@ public class GraphTools {
             calculatedYpos = (float) (interpolateCalculatedValue(before, after, timestamp) * unitsScale);
 
             if (calculatedYpos >= highMark) {
-                offsetedYpos = calculatedYpos - offsetScaled;
+                offsetedYpos = calculatedYpos + offsetScaled;
+                // offsetedYpos = calculatedYpos - offsetScaled;
             } else {
                 offsetedYpos = calculatedYpos + offsetScaled;
             }
