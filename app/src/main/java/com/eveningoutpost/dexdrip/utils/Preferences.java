@@ -1257,6 +1257,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
             final Preference nsFollowDownload = findPreference("nsfollow_download_treatments");
             final Preference nsFollowUrl = findPreference("nsfollow_url");
+            final Preference nsFollowLag = findPreference("nsfollow_lag"); // Show the Nightscout follow wake delay setting only when NS follow is the data source
+            bindPreferenceSummaryToValue(findPreference("nsfollow_lag")); // Show the selected value as summary
             try {
                 nsFollowUrl.setOnPreferenceChangeListener((preference, newValue) -> {
                     NightscoutFollow.resetInstance();
@@ -1731,6 +1733,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                 try {
                     collectionCategory.removePreference(nsFollowUrl);
                     collectionCategory.removePreference(nsFollowDownload);
+                    collectionCategory.removePreference(nsFollowLag);
                 } catch (Exception e) {
                     //
                 }
@@ -2050,6 +2053,15 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                         if ((Boolean) newValue) {
                             Inevitable.task("check-health-connect", 300, () -> HealthGamut.init(getActivity()));
                         }
+                        return true;
+                    });
+                } catch (Exception e) {
+                    //
+                }
+
+                try {
+                    findPreference("health_connect_manage").setOnPreferenceClickListener((preference) -> {
+                        HealthGamut.init(getActivity()).openPermissionManager();
                         return true;
                     });
                 } catch (Exception e) {
@@ -2427,6 +2439,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     if (collectionType == DexCollectionType.NSFollow) {
                         collectionCategory.addPreference(nsFollowUrl);
                         collectionCategory.addPreference(nsFollowDownload);
+                        collectionCategory.addPreference(nsFollowLag);
                     }
 
 
