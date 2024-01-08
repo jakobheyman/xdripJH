@@ -1723,11 +1723,13 @@ public class JoH {
     public synchronized static void setBluetoothEnabled(Context context, boolean state) {
         try {
 
-            if (isAirplaneModeEnabled(context)) {
-                UserError.Log.e(TAG, "Airplane mode is enabled - trying to enable bluetooth");
-                //UserError.Log.e(TAG, "Not setting bluetooth to state: " + state + " due to airplane mode being enabled");
-                //return;
+           /*
+           // bluetooth is usually allowed on airplanes these days afaik
+                if (isAirplaneModeEnabled(context)) {
+                UserError.Log.e(TAG, "Not setting bluetooth to state: " + state + " due to airplane mode being enabled");
+                return;
             }
+            */
 
             if (android.os.Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2) {
 
