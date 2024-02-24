@@ -372,19 +372,19 @@
                 android:title="@string/title_xdrip_plus_graph_display_settings">
 
                 <EditTextPreference
-                    android:key="graph_min_y"
-                    android:title="Graph min Y"
-                    android:numeric="decimal"
-                    android:inputType="numberDecimal"
-                    android:summary=""
-                    android:defaultValue="2" />
-                <EditTextPreference
                     android:key="graph_max_y"
                     android:title="Graph max Y"
                     android:numeric="decimal"
                     android:inputType="numberDecimal"
                     android:summary=""
-                    android:defaultValue="10.4" />
+                    android:defaultValue="187.36224" />
+                <EditTextPreference
+                    android:key="graph_min_y"
+                    android:title="Graph min Y"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="36.0312" />
                 <EditTextPreference
                     android:key="y_landscape_mult"
                     android:title="Landscape-view Y multiplication"
