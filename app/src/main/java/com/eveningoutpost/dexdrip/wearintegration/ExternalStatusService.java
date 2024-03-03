@@ -126,7 +126,7 @@ public class ExternalStatusService extends IntentService {
     // extract a TBR percentage from a status line string.
     public static String getTBR(final String statusLine) {
         if (JoH.emptyString(statusLine)) return "";
-        val pattern = Pattern.compile(".*([^0-9]|^)([0-9]+ %)", Pattern.DOTALL); // match last of any number followed by %
+        val pattern = Pattern.compile(".*([^0-9]|^)([0-9]+%)", Pattern.DOTALL); // match last of any number followed by %
         val matcher = pattern.matcher(statusLine);
         val matches = matcher.find();       // was at least one found?
 
