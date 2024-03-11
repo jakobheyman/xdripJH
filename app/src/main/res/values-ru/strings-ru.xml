@@ -1170,6 +1170,7 @@
     <string name="use_mobile_data">Использовать мобильные данные</string>
     <string name="summary_cloud_storage_api_download_enable">Также пытаться загрузить данные из Nightscout</string>
     <string name="title_cloud_storage_api_download_enable">Загружать данные</string>
+    <string name="title_cloud_storage_api_download_from_xdrip"></string>
     <string name="summary_bluetooth_meter_for_calibrations_auto">Калибровать используя новые показания глюкозы без запроса подтверждения при благоприятных условиях (экспериментальная функция)</string>
     <string name="title_bluetooth_meter_for_calibrations_auto">Автоматическая калибровка</string>
     <string name="title_rest_api_extra_options">Дополнительные параметры</string>
@@ -1811,4 +1812,5 @@
     <string name="carelink_credential_status_access_expired">Срок доступа закончился! Будет обновлен!</string>
     <string name="carelink_credential_status_refresh_expired">Время входа закончилось! Пожалуйста, войдите!</string>
     <string name="data_source">Источник данных:</string>
+    <string name="reraise_alerts_before_snooze_time">Показывать повторные оповещения до истечения времени отсроченного срабатывания</string>
 </resources>
