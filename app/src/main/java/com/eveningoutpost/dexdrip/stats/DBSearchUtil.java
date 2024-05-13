@@ -217,6 +217,10 @@ public class DBSearchUtil {
                 case StatsActivity.D90:
                     start = getXDaysTimestamp(90);
                     break;
+                case StatsActivity.DD:
+                    start = StatsActivity.date1.getTimeInMillis();
+                    stop = StatsActivity.date2.getTimeInMillis();
+                    break;
             }
             return this;
         }

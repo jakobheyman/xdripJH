@@ -23,6 +23,7 @@
 * Optionally hide noise line (Graph Settings)
 * Calibration Graph uses the same unit (mg/dl or mmol/l) for raw and calibrated values
 * Modified basal TBR and micro bolus icons display
+* Statistics buttons added (DD) with custom start (D1) and stop (D2) dates
 * There may be issues/problems introduced by the modifications
 * There is no proper testing of the application
 

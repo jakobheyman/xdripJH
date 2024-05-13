@@ -3,6 +3,8 @@ package com.eveningoutpost.dexdrip.stats;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -23,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -38,6 +41,8 @@ import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import static com.eveningoutpost.dexdrip.models.JoH.goFullScreen;
 import static com.eveningoutpost.dexdrip.R.id.pager;
@@ -50,7 +55,12 @@ public class StatsActivity extends ActivityWithMenu {
     public static final int D7 = 2;
     public static final int D30 = 3;
     public static final int D90 = 4;
+    public static final int DD = 5;
+    public static final int D1 = 6;
+    public static final int D2 = 7;
     public static int state = D7;
+    public static GregorianCalendar date1;
+    public static GregorianCalendar date2;
     private static boolean swipeInfoNotNeeded = false; // don't show info if already swiped after startup.
     StatisticsPageAdapter mStatisticsPageAdapter;
     ViewPager mViewPager;
@@ -60,6 +70,9 @@ public class StatsActivity extends ActivityWithMenu {
     private Button button7d;
     private Button button30d;
     private Button button90d;
+    private Button buttonDD;
+    private Button buttonD1;
+    private Button buttonD2;
     MenuItem menuItem;
     MenuItem menuItem2;
     private View decorView;
@@ -79,6 +92,25 @@ public class StatsActivity extends ActivityWithMenu {
         initPagerAndIndicator();
         setButtonColors();
         registerButtonListeners();
+
+        long tenDaysBack = System.currentTimeMillis()-1000*60*60*24*10; //ten days back in time
+        long oneDayForward = System.currentTimeMillis()+1000*60*60*24; //one days forward in time
+        if (date1 == null) {
+            date1 = new GregorianCalendar();
+            date1.setTimeInMillis(tenDaysBack);
+            date1.set(Calendar.HOUR_OF_DAY, 0);
+            date1.set(Calendar.MINUTE, 0);
+            date1.set(Calendar.SECOND, 0);
+            date1.set(Calendar.MILLISECOND, 0);
+        }
+        if (date2 == null) {
+            date2 = new GregorianCalendar();
+            date2.setTimeInMillis(oneDayForward);
+            date2.set(Calendar.HOUR_OF_DAY, 0);
+            date2.set(Calendar.MINUTE, 0);
+            date2.set(Calendar.SECOND, 0);
+            date2.set(Calendar.MILLISECOND, 0);
+        }
 
         if (JoH.ratelimit("statistics-startup",5)) showStartupInfo();
 
@@ -141,6 +173,9 @@ public class StatsActivity extends ActivityWithMenu {
         button7d = (Button) findViewById(R.id.button_stats_7d);
         button30d = (Button) findViewById(R.id.button_stats_30d);
         button90d = (Button) findViewById(R.id.button_stats_90d);
+        buttonDD = (Button) findViewById(R.id.button_stats_DD);
+        buttonD1 = (Button) findViewById(R.id.button_stats_D1);
+        buttonD2 = (Button) findViewById(R.id.button_stats_D2);
     }
 
     private void initPagerAndIndicator() {
@@ -205,6 +240,9 @@ public class StatsActivity extends ActivityWithMenu {
             case D90:
                 stateString = "90 days";
                 break;
+            case DD:
+                stateString = "Day to day";
+                break;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -214,6 +252,9 @@ public class StatsActivity extends ActivityWithMenu {
             button7d.setBackgroundTintList(csl);
             button30d.setBackgroundTintList(csl);
             button90d.setBackgroundTintList(csl);
+            buttonDD.setBackgroundTintList(csl);
+            buttonD1.setBackgroundTintList(csl);
+            buttonD2.setBackgroundTintList(csl);
             csl = new ColorStateList(new int[][]{new int[0]}, new int[]{0xFFAA0000});
             switch (state) {
                 case TODAY:
@@ -231,6 +272,9 @@ public class StatsActivity extends ActivityWithMenu {
                 case D90:
                     button90d.setBackgroundTintList(csl);
                     break;
+                case DD:
+                    buttonDD.setBackgroundTintList(csl);
+                    break;
             }
         } else {
 
@@ -239,6 +283,9 @@ public class StatsActivity extends ActivityWithMenu {
             button7d.setAlpha(0.5f);
             button30d.setAlpha(0.5f);
             button90d.setAlpha(0.5f);
+            buttonDD.setAlpha(0.5f);
+            buttonD1.setAlpha(0.5f);
+            buttonD2.setAlpha(0.5f);
             switch (state) {
                 case TODAY:
                     buttonTD.setAlpha(1f);
@@ -254,6 +301,9 @@ public class StatsActivity extends ActivityWithMenu {
                     break;
                 case D90:
                     button90d.setAlpha(1f);
+                    break;
+                case DD:
+                    buttonDD.setAlpha(1f);
                     break;
             }
         }
@@ -390,6 +440,8 @@ public class StatsActivity extends ActivityWithMenu {
                     state = D30;
                 } else if (v == button90d) {
                     state = D90;
+                } else if (v == buttonDD) {
+                    state = DD;
                 }
 
                 Log.d("DrawStats", "button pressed, invalidating");
@@ -404,6 +456,32 @@ public class StatsActivity extends ActivityWithMenu {
         button7d.setOnClickListener(myListener);
         button30d.setOnClickListener(myListener);
         button90d.setOnClickListener(myListener);
+        buttonDD.setOnClickListener(myListener);
+        buttonD1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Dialog dialog = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        date1.set(year, monthOfYear, dayOfMonth);
+                    }
+                }, date1.get(Calendar.YEAR), date1.get(Calendar.MONTH), date1.get(Calendar.DAY_OF_MONTH));
+                dialog.show();
+            }
+        });
+        buttonD2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Dialog dialog = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        date2.set(year, monthOfYear, dayOfMonth);
+                    }
+                }, date2.get(Calendar.YEAR), date2.get(Calendar.MONTH), date2.get(Calendar.DAY_OF_MONTH));
+                date2.add(Calendar.DATE, 1);
+                dialog.show();
+            }
+        });
 
 
     }
