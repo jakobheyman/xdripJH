@@ -896,7 +896,6 @@ public class EditAlertActivity extends ActivityWithMenu {
         }
         vibPattern = vibPattern.replaceAll("[^0-9,]", "");
         String[] stringarray = vibPattern.split(",");
-        long[] vibPatLong = new long[stringarray.length];
         for (int i = 0; i < stringarray.length; i++) {
             if (stringarray[i].length() == 0) {
                 Toast.makeText(getApplicationContext(), "Input error in Custom vib!", Toast.LENGTH_LONG).show();
