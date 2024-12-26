@@ -1084,6 +1084,10 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     public BgReading appendSourceInfo(String info) {
+        return appendSourceInfo(info, false);
+    }
+
+    public BgReading appendSourceInfo(String info, final boolean autoSave) {
         if ((source_info == null) || (source_info.length() == 0)) {
             source_info = info;
         } else {
@@ -1092,6 +1096,9 @@ public class BgReading extends Model implements ShareUploadableBg {
             } else {
                 UserError.Log.e(TAG, "Ignoring duplicate source info " + source_info + " -> " + info);
             }
+        }
+        if (autoSave) {
+            save();
         }
         return this;
     }
@@ -1339,7 +1346,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         // TODO sanity check data!
 
         if ((value <= 0) || (timestamp <= 0)) {
-            Log.e(TAG, "Invalid data fed to InsertFromInt");
+            Log.e(TAG, "Invalid data fed to InsertFromInt " + value + " " + JoH.dateTimeText(timestamp));
             return;
         }
 
@@ -2370,7 +2377,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     public static Long getTimeSinceLastReading() {
         BgReading bgReading = BgReading.last();
         if (bgReading != null) {
-            return (new Date().getTime() - bgReading.timestamp);
+            return (new Date().getTime() - bgReading.timestamp); // TODO should be tsl
         }
         return (long) 0;
     }
