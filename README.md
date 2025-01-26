@@ -11,6 +11,7 @@
 * Use raw/calibrated data as blood glucose values if there is no calibration available
 * Display raw data (Graph Settings > Display raw data plot)
 * Display OOP calibrated data (Graph Settings > Display OOP calibrated data plot)
+* Display last raw value in home screen (Graph Settings > Display raw bg value)
 * Display last OOP calibrated value in home screen (Graph Settings > Display OOP calibrated bg value)
 * Optionally modify Libre-2 raw values with multiplication and/or +/- (Advanced settings for Libre 2)
 * Display mmol glucose values with two decimal digits

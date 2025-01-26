@@ -454,6 +454,11 @@
                     android:title="@string/display_raw_plot_data" />
                 <CheckBoxPreference
                     android:defaultValue="false"
+                    android:key="show_raw_bg_value"
+                    android:summary="@string/last_raw_bg_value"
+                    android:title="@string/display_raw_bg_value" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
                     android:key="show_oop_calibrated"
                     android:summary="@string/bg_value_calibrated_in_OOP"
                     android:title="@string/display_oop_calibrated_data" />

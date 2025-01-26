@@ -1605,6 +1605,20 @@ public class BgReading extends Model implements ShareUploadableBg {
         }
     }
 
+    public static double lastRawBg() {
+        BgReading bgReading = new Select()
+                .from(BgReading.class)
+                .where("raw_data > 0")
+                .where("timestamp > ?", JoH.tsl() - Constants.MINUTE_IN_MS * 10)
+                .orderBy("timestamp desc")
+                .executeSingle();
+        if (bgReading != null) {
+            return bgReading.raw_data;
+        } else {
+            return 0;
+        }
+    }
+
     public static BgReading byUUID(String uuid) {
         if (uuid == null) return null;
         return new Select()

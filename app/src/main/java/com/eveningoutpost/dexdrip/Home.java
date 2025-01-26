@@ -283,6 +283,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private TextView sensorAge;
     private TextView currentBgValueText;
     private TextView oopBgValueText;
+    private TextView rawBgValueText;
     private TextView notificationText;
     private TextView extraStatusLineText;
     private boolean alreadyDisplayedBgInfoCommon = false;
@@ -420,6 +421,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         this.extraStatusLineText = (TextView) findViewById(R.id.extraStatusLine);
         this.currentBgValueText = (TextView) findViewById(R.id.currentBgValueRealTime);
         this.oopBgValueText = (TextView) findViewById(R.id.oopBgValue);
+        this.rawBgValueText = (TextView) findViewById(R.id.rawBgValue);
         this.bpmButton = (Button) findViewById(R.id.bpmButton);
         this.stepsButton = (Button) findViewById(R.id.walkButton);
 
@@ -2255,6 +2257,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         staticRefreshBGCharts();
     }
 
+    public void toggleRawDataPlot(View v) {
+        Pref.setBoolean("show_raw_plot", !Pref.getBoolean("show_raw_plot", true));
+        staticRefreshBGCharts();
+    }
+
     public void toggleStepsVisibility(View v) {
         Pref.setBoolean("show_pebble_movement_line", !Pref.getBoolean("show_pebble_movement_line", true));
         staticRefreshBGCharts();
@@ -3001,6 +3008,16 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         } else {
             oopBgValueText.setText("");
             oopBgValueText.setVisibility(View.GONE);
+        }
+
+        final double lastRawBg = BgReading.lastRawBg();
+        if (Pref.getBoolean("show_raw_bg_value", false) && (lastRawBg != 0)) {
+            rawBgValueText.setText("raw: " + bgGraphBuilder.unitized_string(lastRawBg));
+            rawBgValueText.setVisibility(View.VISIBLE);
+            rawBgValueText.setTextColor(getCol(X.color_raw_values));
+        } else {
+            rawBgValueText.setText("");
+            rawBgValueText.setVisibility(View.GONE);
         }
 
         if ((currentBgValueText.getPaintFlags() & Paint.STRIKE_THRU_TEXT_FLAG) > 0) {
