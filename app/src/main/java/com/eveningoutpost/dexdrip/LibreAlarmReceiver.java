@@ -281,7 +281,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                         rawbg = convert_for_dex(gd.glucoseLevelRaw);
                         oopbg = gd.glucoseLevel;
                     }
-                    BgReading.bgReadingInsertJH(rawbg, oopbg, gd.realDate, gd.sensorTime, use_raw);
+                    BgReading.bgReadingInsertJH(rawbg, oopbg, gd.realDate, gd.sensorTime, use_raw, LIBRE_SOURCE_INFO);
                     trendSensortime.add(gd.sensorTime);
                     Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
                 }
@@ -305,7 +305,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
                         continue;
                     }
                     rawbg = convert_for_dex(gd.glucoseLevelRaw);
-                    BgReading.bgReadingInsertJH(rawbg, gd.glucoseLevel, gd.realDate, gd.sensorTime, use_raw);
+                    BgReading.bgReadingInsertJH(rawbg, gd.glucoseLevel, gd.realDate, gd.sensorTime, use_raw, LIBRE_SOURCE_INFO);
                     historySensortime.add(gd.sensorTime);
                     Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
                 }

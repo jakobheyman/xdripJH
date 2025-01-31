@@ -1398,7 +1398,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     // method for xdripJH bg insertion to get bg values in rapidly (slope and postprocess done in bgReadingPostprocessJH)
-    public static void bgReadingInsertJH(double raw_data, int oopbg, long timestamp, int sensortime, boolean use_raw) {
+    public static void bgReadingInsertJH(double raw_data, int oopbg, long timestamp, int sensortime, boolean use_raw, String source_info) {
         BgReading bgReading = new BgReading();
         final Sensor sensor = Sensor.currentSensor();
         if ((sensor == null) || (raw_data <= 0) || (timestamp <= 0)) {
@@ -1415,6 +1415,7 @@ public class BgReading extends Model implements ShareUploadableBg {
         bgReading.timestamp = timestamp;
         bgReading.uuid = UUID.randomUUID().toString();
         bgReading.time_since_sensor_started = bgReading.timestamp - sensor.started_at;
+        bgReading.source_info = source_info;
         Calibration calibration = Calibration.lastValid();
         double raw_val;
         if (use_raw) {
