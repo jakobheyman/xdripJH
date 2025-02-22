@@ -526,8 +526,10 @@ public class AlertPlayer {
             minsFromStartPlaying = MAX_ASCENDING_MINUTES;
         }
         final String highlow = (alert.above ? context.getString(R.string.high) : context.getString(R.string.low)).toUpperCase();
+        final String highlowLog = (alert.above ? "HIGH" : "LOW");
         String title = bgValue + " " + alert.name;
-        String content = "BG " + highlow + " ALERT: " + bgValue + "  (@" + JoH.hourMinuteString() + ")";
+        String content = context.getString(R.string.bg_alert, highlow, bgValue, JoH.hourMinuteString());
+        String contentLog = "BG " + highlowLog + " ALERT: " + bgValue + "  (@" + JoH.hourMinuteString() + ")";
         final Intent intent = new Intent(context, SnoozeActivity.class);
 
         boolean localOnly = (Home.get_forced_wear() && PersistentStore.getBoolean("bg_notifications_watch"));
@@ -600,7 +602,7 @@ public class AlertPlayer {
             //builder.setVibrate(new long[]{1, 0}); // changed to use customVibration as it appears to trigger the default notification vibration
             customVibration(context, "1,0");
         }
-        Log.ueh("Alerting", content);
+        Log.ueh("Alerting", contentLog);
         final NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         //mNotifyMgr.cancel(Notifications.exportAlertNotificationId); // this appears to confuse android wear version 2.0.0.141773014.gms even though it shouldn't - can we survive without this?
         mNotifyMgr.notify(Notifications.exportAlertNotificationId, XdripNotificationCompat.build(builder));
