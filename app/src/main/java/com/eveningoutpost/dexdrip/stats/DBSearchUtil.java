@@ -184,6 +184,24 @@ public class DBSearchUtil {
         return date.getTimeInMillis();
     }
 
+    public static long getStartTimestamp() {
+        Calendar date = StatsActivity.date1;
+        date.set(Calendar.HOUR_OF_DAY, 0);
+        date.set(Calendar.MINUTE, 0);
+        date.set(Calendar.SECOND, 0);
+        date.set(Calendar.MILLISECOND, 0);
+        return date.getTimeInMillis();
+    }
+
+    public static long getEndTimestamp() {
+        Calendar date = StatsActivity.date2;
+        date.set(Calendar.HOUR_OF_DAY, 23);
+        date.set(Calendar.MINUTE, 59);
+        date.set(Calendar.SECOND, 59);
+        date.set(Calendar.MILLISECOND, 999);
+        return date.getTimeInMillis();
+    }
+
     private static class Bounds {
         private long stop;
         private long start;
@@ -218,8 +236,8 @@ public class DBSearchUtil {
                     start = getXDaysTimestamp(90);
                     break;
                 case StatsActivity.DD:
-                    start = StatsActivity.date1.getTimeInMillis();
-                    stop = StatsActivity.date2.getTimeInMillis();
+                    start = getStartTimestamp();
+                    stop = getEndTimestamp();
                     break;
             }
             return this;

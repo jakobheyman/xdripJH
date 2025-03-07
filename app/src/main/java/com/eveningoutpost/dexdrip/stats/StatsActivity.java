@@ -56,8 +56,6 @@ public class StatsActivity extends ActivityWithMenu {
     public static final int D30 = 3;
     public static final int D90 = 4;
     public static final int DD = 5;
-    public static final int D1 = 6;
-    public static final int D2 = 7;
     public static int state = D7;
     public static GregorianCalendar date1;
     public static GregorianCalendar date2;
@@ -71,8 +69,6 @@ public class StatsActivity extends ActivityWithMenu {
     private Button button30d;
     private Button button90d;
     private Button buttonDD;
-    private Button buttonD1;
-    private Button buttonD2;
     MenuItem menuItem;
     MenuItem menuItem2;
     private View decorView;
@@ -94,7 +90,7 @@ public class StatsActivity extends ActivityWithMenu {
         registerButtonListeners();
 
         long tenDaysBack = System.currentTimeMillis()-1000*60*60*24*10; //ten days back in time
-        long oneDayForward = System.currentTimeMillis()+1000*60*60*24; //one days forward in time
+        long presentDay = System.currentTimeMillis(); //one days forward in time
         if (date1 == null) {
             date1 = new GregorianCalendar();
             date1.setTimeInMillis(tenDaysBack);
@@ -105,11 +101,11 @@ public class StatsActivity extends ActivityWithMenu {
         }
         if (date2 == null) {
             date2 = new GregorianCalendar();
-            date2.setTimeInMillis(oneDayForward);
-            date2.set(Calendar.HOUR_OF_DAY, 0);
-            date2.set(Calendar.MINUTE, 0);
-            date2.set(Calendar.SECOND, 0);
-            date2.set(Calendar.MILLISECOND, 0);
+            date2.setTimeInMillis(presentDay);
+            date2.set(Calendar.HOUR_OF_DAY, 23);
+            date2.set(Calendar.MINUTE, 59);
+            date2.set(Calendar.SECOND, 59);
+            date2.set(Calendar.MILLISECOND, 999);
         }
 
         if (JoH.ratelimit("statistics-startup",5)) showStartupInfo();
@@ -174,8 +170,6 @@ public class StatsActivity extends ActivityWithMenu {
         button30d = (Button) findViewById(R.id.button_stats_30d);
         button90d = (Button) findViewById(R.id.button_stats_90d);
         buttonDD = (Button) findViewById(R.id.button_stats_DD);
-        buttonD1 = (Button) findViewById(R.id.button_stats_D1);
-        buttonD2 = (Button) findViewById(R.id.button_stats_D2);
     }
 
     private void initPagerAndIndicator() {
@@ -253,8 +247,6 @@ public class StatsActivity extends ActivityWithMenu {
             button30d.setBackgroundTintList(csl);
             button90d.setBackgroundTintList(csl);
             buttonDD.setBackgroundTintList(csl);
-            buttonD1.setBackgroundTintList(csl);
-            buttonD2.setBackgroundTintList(csl);
             csl = new ColorStateList(new int[][]{new int[0]}, new int[]{0xFFAA0000});
             switch (state) {
                 case TODAY:
@@ -284,8 +276,6 @@ public class StatsActivity extends ActivityWithMenu {
             button30d.setAlpha(0.5f);
             button90d.setAlpha(0.5f);
             buttonDD.setAlpha(0.5f);
-            buttonD1.setAlpha(0.5f);
-            buttonD2.setAlpha(0.5f);
             switch (state) {
                 case TODAY:
                     buttonTD.setAlpha(1f);
@@ -441,6 +431,7 @@ public class StatsActivity extends ActivityWithMenu {
                 } else if (v == button90d) {
                     state = D90;
                 } else if (v == buttonDD) {
+                    setStartEndDates(v);
                     state = DD;
                 }
 
@@ -457,33 +448,50 @@ public class StatsActivity extends ActivityWithMenu {
         button30d.setOnClickListener(myListener);
         button90d.setOnClickListener(myListener);
         buttonDD.setOnClickListener(myListener);
-        buttonD1.setOnClickListener(new View.OnClickListener() {
+
+
+    }
+
+    private void setStartEndDates(View myitem) {
+        final Dialog dialog = new Dialog(StatsActivity.this);
+        dialog.setContentView(R.layout.dialog_stats_dates);
+
+        final Button startDateButton = (Button) dialog.findViewById(R.id.button_start_date);
+        final Button endDateButton = (Button) dialog.findViewById(R.id.button_end_date);
+        final Button updateDates = (Button) dialog.findViewById(R.id.button_update_dates);
+
+        startDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Dialog dialog = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
+                Dialog dialog1 = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         date1.set(year, monthOfYear, dayOfMonth);
                     }
                 }, date1.get(Calendar.YEAR), date1.get(Calendar.MONTH), date1.get(Calendar.DAY_OF_MONTH));
-                dialog.show();
+                dialog1.show();
             }
         });
-        buttonD2.setOnClickListener(new View.OnClickListener() {
+        endDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Dialog dialog = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
+                Dialog dialog2 = new DatePickerDialog(StatsActivity.this, new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                         date2.set(year, monthOfYear, dayOfMonth);
                     }
                 }, date2.get(Calendar.YEAR), date2.get(Calendar.MONTH), date2.get(Calendar.DAY_OF_MONTH));
-                date2.add(Calendar.DATE, 1);
-                dialog.show();
+                dialog2.show();
             }
         });
-
-
+        updateDates.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStatisticsPageAdapter.notifyDataSetChanged();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     @Override

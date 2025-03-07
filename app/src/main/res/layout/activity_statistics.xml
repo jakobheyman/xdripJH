@@ -94,36 +94,8 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DD"
+                android:text="D-D"
                 android:id="@+id/button_stats_DD"
-                android:layout_marginTop="1dp"
-                android:layout_marginBottom="1dp"
-                android:layout_marginLeft="1dp"
-                android:layout_marginRight="1dp"
-                android:paddingTop="1dp"
-                android:paddingBottom="1dp"
-                android:minHeight="1dp"
-                android:minWidth="1dp"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="D1"
-                android:id="@+id/button_stats_D1"
-                android:layout_marginTop="1dp"
-                android:layout_marginBottom="1dp"
-                android:layout_marginLeft="1dp"
-                android:layout_marginRight="1dp"
-                android:paddingTop="1dp"
-                android:paddingBottom="1dp"
-                android:minHeight="1dp"
-                android:minWidth="1dp"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="D2"
-                android:id="@+id/button_stats_D2"
                 android:layout_marginTop="1dp"
                 android:layout_marginBottom="1dp"
                 android:layout_marginLeft="1dp"
