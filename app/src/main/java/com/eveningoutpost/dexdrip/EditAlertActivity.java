@@ -212,6 +212,7 @@ public class EditAlertActivity extends ActivityWithMenu {
             ((TextView) findViewById(R.id.view_alert_time)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_time_between)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_custom_vibration)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+            ((TextView) findViewById(R.id.view_alert_vib_break_info)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
             ((TextView) findViewById(R.id.view_alert_disable)).setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
 
         }

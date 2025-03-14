@@ -600,7 +600,7 @@ public class AlertPlayer {
             // In order to still show on all android wear watches, either a sound or a vibrate pattern
             // seems to be needed. This pattern basically does not vibrate:
             //builder.setVibrate(new long[]{1, 0}); // changed to use customVibration as it appears to trigger the default notification vibration
-            customVibration(context, "1,0");
+            customVibration(context, "0");
         }
         Log.ueh("Alerting", contentLog);
         final NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -684,9 +684,10 @@ public class AlertPlayer {
         vibrator.cancel();
         // convert string vibration_pattern to long array vibPatternLong
         String[] stringarray = vibration_pattern.split(",");
-        long[] vibPatternLong = new long[stringarray.length];
+        long[] vibPatternLong = new long[stringarray.length+1];
+        vibPatternLong[0] = 0;
         for (int i = 0; i < stringarray.length; i++) {
-            vibPatternLong[i] = Long.parseLong(stringarray[i]);
+            vibPatternLong[i+1] = Long.parseLong(stringarray[i])*10;
         }
         final int indexInPatternToRepeat = -1;
         vibrator.vibrate(vibPatternLong, indexInPatternToRepeat);
