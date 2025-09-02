@@ -752,6 +752,32 @@ public class Notifications extends IntentService {
         player.start();
     }
 
+    // Private helper: returns true if the system may block sound for an alert
+    private static boolean isSoundBlockedBySystem(Context context) {
+        try {
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                int ringerMode = am.getRingerMode();
+                if (ringerMode == AudioManager.RINGER_MODE_SILENT ||
+                        ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+                    return true;
+                }
+            }
+
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                int filter = nm.getCurrentInterruptionFilter();
+                if (filter == NotificationManager.INTERRUPTION_FILTER_NONE ||
+                        filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            // If state cannot be determined, assume sound is not blocked
+        }
+        return false;
+    }
+
     // TODO move to BgGraphBuilder?
     private void reportNoiseChanges()
     {
@@ -974,6 +1000,7 @@ public class Notifications extends IntentService {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String otherAlertsSound = prefs.getString(type+"_sound",prefs.getString("other_alerts_sound", "content://settings/system/notification_sound"));
         Boolean otherAlertsOverrideSilent = prefs.getBoolean("other_alerts_override_silent", false);
+        Boolean extraAlertsOverrideSilent = prefs.getBoolean(type+"_override_silent", otherAlertsOverrideSilent); // Inherit from other alerts if the alert itself does not have a dedicated setting
 
         Log.d(TAG,"OtherAlert called " + type + " " + message + " reraiseSec = " + reraiseSec);
         UserNotification userNotification = UserNotification.GetNotificationByType(type); //"bg_unclear_readings_alert"
@@ -1013,10 +1040,13 @@ public class Notifications extends IntentService {
             mBuilder.setVibrate(vibratePattern);
             mBuilder.setLights(0xff00ff00, 300, 1000);
             if (AlertPlayer.notSilencedDueToCall()) {
-                if (otherAlertsOverrideSilent && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (extraAlertsOverrideSilent) {
                     mBuilder.setSound(Uri.parse(otherAlertsSound), AudioAttributes.USAGE_ALARM);
                 } else {
                     mBuilder.setSound(Uri.parse(otherAlertsSound));
+                    if (isSoundBlockedBySystem(context)) {
+                        Log.ueh(TAG, "No " + type + " in silent mode");
+                    }
                 }
             }
             NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
