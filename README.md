@@ -1,11 +1,4 @@
-# Patched version of Nightscout xDrip+
-
-Patched to enable 1 minute collection of data from JugGluco using the EverSense broadcast option.
-
-See https://www.juggluco.nl/Jugglucohelp/exchangehelp.html#eversense
-
----
-
+# Nightscout xDrip+
 > Enhanced personal research version of xDrip
 
  <img align="right" src="Documentation/images/download-xdrip-plus-qr-code.png">
