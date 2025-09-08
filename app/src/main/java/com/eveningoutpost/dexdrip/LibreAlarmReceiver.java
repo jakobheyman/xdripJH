@@ -21,6 +21,7 @@ import com.eveningoutpost.dexdrip.models.ReadingData;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
 import com.eveningoutpost.dexdrip.utilitymodels.Intents;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
+import com.eveningoutpost.dexdrip.utilitymodels.RawModification;
 import com.eveningoutpost.dexdrip.utils.CheckBridgeBattery;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.utils.LibreTrendUtil;
@@ -65,7 +66,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
     }
 
     private static double convert_for_dex(int lib_raw_value) {
-        return (lib_raw_value * LIBRE_MULTIPLIER); // to match (raw/8.5)*1000
+        return RawModification.raw_mod(lib_raw_value * LIBRE_MULTIPLIER); // to match (raw/8.5)*1000 --- modify raw value here
     }
 
     private static boolean useGlucoseAsRaw() {
@@ -221,7 +222,7 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
         if (Pref.getBooleanDefaultFalse("external_blukon_algorithm") != false) {
             Log.wtf(TAG, "Error external_blukon_algorithm should be false here");
         }
-        boolean use_raw = !Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("no_calibration");
+        boolean use_raw = Pref.getString("calibrate_external_libre_2_algorithm_type", "calibrate_raw").equals("calibrate_raw");
         CalculateFromDataTransferObject(readingData, use_smoothed_data, use_raw);
     }
 
@@ -230,6 +231,8 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
         // insert any recent data we can
         val segmentation_timeslice = DexCollectionType.getCurrentDeduplicationPeriod();
         final List<GlucoseData> mTrend = readingData.trend;
+        List<Integer> trendSensortime = new ArrayList<Integer>();
+        List<Integer> historySensortime = new ArrayList<Integer>();
         if (mTrend != null && mTrend.size() > 0) {
             Collections.sort(mTrend);
             final long thisSensorAge = mTrend.get(mTrend.size() - 1).sensorTime;
@@ -260,29 +263,62 @@ public class LibreAlarmReceiver extends BroadcastReceiver {
             if (d)
                 Log.d(TAG, "Oldest cmp: " + JoH.dateTimeText(oldest_cmp) + " Newest cmp: " + JoH.dateTimeText(newest_cmp));
             if (mTrend.size() > 0) {
-
-                // This function changes timeShiftNearest which is the latest value we have, so we are far enough from it.
-                getTimeShift(mTrend);
-
+                double rawbg;
+                int oopbg;
                 for (GlucoseData gd : mTrend) {
                     if (d) Log.d(TAG, "DEBUG: sensor time: " + gd.sensorTime);
-                    if ((timeShiftNearest > 0) && ((timeShiftNearest - gd.realDate) < segmentation_timeslice) && (timeShiftNearest - gd.realDate != 0)) {
-                        if (d)
-                            Log.d(TAG, "Skipping record due to closeness to the most recent value: " + JoH.dateTimeText(gd.realDate));
+                    if (!BgReading.is_new_JH(gd.sensorTime)) {
                         continue;
                     }
-                    if (use_raw) {
-                        createBGfromGD(gd, use_smoothed_data, false); // not quick for recent
-                    } else {
-                        BgReading.bgReadingInsertFromInt(use_smoothed_data ? gd.glucoseLevelSmoothed : gd.glucoseLevel, gd.realDate, segmentation_timeslice, true, LIBRE_SOURCE_INFO);
+                    if (gd.glucoseLevelRaw <= 0) {
+                        Log.e(TAG, "time: " + gd.sensorTime + "  raw: 0");
+                        continue;
                     }
+                    if (use_smoothed_data && gd.glucoseLevelRawSmoothed > 0) {
+                        rawbg = convert_for_dex(gd.glucoseLevelRawSmoothed);
+                        oopbg = gd.glucoseLevelSmoothed;
+                    } else {
+                        rawbg = convert_for_dex(gd.glucoseLevelRaw);
+                        oopbg = gd.glucoseLevel;
+                    }
+                    BgReading.bgReadingInsertJH(rawbg, oopbg, gd.realDate, gd.sensorTime, use_raw, LIBRE_SOURCE_INFO);
+                    trendSensortime.add(gd.sensorTime);
+                    Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
                 }
             } else {
                 Log.e(TAG, "Trend data was empty!");
             }
 
             // munge and insert the history data if any is missing
-            insertFromHistory(readingData.history, use_raw);
+            final List<GlucoseData> mHistory = readingData.history;
+            if ((mHistory != null) && (mHistory.size() > 1)) {
+                Collections.sort(mHistory);
+                double rawbg;
+                for (GlucoseData gd : mHistory) {
+                    if (d)
+                        Log.d(TAG, "history : " + JoH.dateTimeText(gd.realDate) + " " + gd.glucose(false));
+                    if (!BgReading.is_new_JH(gd.sensorTime)) {
+                        continue;
+                    }
+                    if (gd.glucoseLevelRaw <= 0) {
+                        Log.e(TAG, "time: " + gd.sensorTime + "  raw: 0");
+                        continue;
+                    }
+                    rawbg = convert_for_dex(gd.glucoseLevelRaw);
+                    BgReading.bgReadingInsertJH(rawbg, gd.glucoseLevel, gd.realDate, gd.sensorTime, use_raw, LIBRE_SOURCE_INFO);
+                    historySensortime.add(gd.sensorTime);
+                    Log.e(TAG, "time: " + gd.sensorTime + "  raw: " + gd.glucoseLevelRaw + "  oop: " + gd.glucoseLevel);
+                }
+            } else {
+                Log.e(TAG, "no librealarm history data");
+            }
+            // post process history and trend data
+            for (int i = 1; i <= historySensortime.size(); i++) {
+                BgReading.bgReadingPostprocessJH(historySensortime.get(i-1), true);
+            }
+            for (int i = 1; i <= trendSensortime.size(); i++) {
+                BgReading.bgReadingPostprocessJH(trendSensortime.get(i-1), false);
+            }
         } else {
             Log.d(TAG, "Trend data is null!");
         }

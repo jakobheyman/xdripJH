@@ -686,7 +686,7 @@ public class GcmActivity extends FauxActivity {
                 bgValue = bgValue * Constants.MMOLL_TO_MGDL;
             }
 
-            if ((bgValue < 40) || (bgValue > 400)) {
+            if ((bgValue < 10) || (bgValue > 1000)) {
                 Log.wtf(TAG, "Invalid out of range calibration glucose mg/dl value of: " + bgValue);
                 JoH.static_toast_long("Calibration out of range: " + bgValue + " mg/dl");
                 return;

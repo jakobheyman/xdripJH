@@ -234,6 +234,7 @@
     <string name="pref_was_less_than_min">%1$s määrati väärtusele, mis on väiksem kui lubatud miinimum. See on muudetud miinimumiks.</string>
     <string name="extrapolate_data_to_try_to_predict_lows">Ekstrapoleeri andmeid, et ennustada madalate suhkrute tekkimist</string>
     <string name="alarm_at_forecasted_low_mins">Alarm prognoositud madalal mins</string>
+    <string name="title_forecast_low_threshold">Piirmäär</string>
     <string name="other_xdrip_plus_alerts">Teised xDrip+ alarmid</string>
     <string name="xdrip_plus_display_settings">xDrip+ kuva seaded</string>
     <string name="display_customisations">Kuva kohandused</string>
@@ -254,6 +255,9 @@
     <string name="dexcom_transmitter_id">Dexcom saatja ID</string>
     <string name="run_collector_in_foreground">Jooksuta kogujat esiplaanil</string>
     <string name="shows_a_persistent_notification">Näitab järjepidevalt graafikut, on nähtav lukustusekraanil ja takistab Androidil selle teenuse peatamise.</string>
+    <string name="title_collector_in_foreground">Koguja esiplaanil</string>
+    <string name="summary_compact_ongoing_notification">Luba, et peita teavitusest graafik ja kuvada ainult jooksvat glükoosinäitu.</string>
+    <string name="title_compact_ongoing_notification">Kompaktne püsiv teavitus</string>
     <string name="list_of_receivers">Vastuvõtjate nimekiri</string>
     <string name="extra_tags_for_logging">Täiendavad märgised logimiseks</string>
     <string name="extra_tags_dialog_message">Siia sisestatud märgised salvestatakse xDrip sündmuste ajalukku. Formaat tag:level. Tase saab olla v,d,i. Näiteks bgreading:i,DexCollectionService:v.</string>
@@ -1490,6 +1494,8 @@
     <string name="summary_persistent_high_alert">Kui VS on üle kõrge taseme liiga kaua ja ei liigu allapoole</string>
     <string name="summary_persistent_high_threshold_link">Kui lubatud, on piirmääraks kõrge väärtus.\nKui keelatud, on piirmääraks allpool seadistatud väärtus.</string>
     <string name="title_persistent_high_threshold_link">Piirmäär: kõrge väärtus</string>
+    <string name="summary_forecast_low_threshold_link">Kui lubatud, on piirmääraks madal väärtus.\nKui keelatud, on piirmääraks allpool seadistatud väärtus.</string>
+    <string name="title_forecast_low_threshold_link">Piirmäär: madal väärtus</string>
     <string name="note_search_button">OTSI</string>
     <string name="all_note_button">KÕIK</string>
     <string name="title_full_screen_mode">Täisekraani režiim</string>
@@ -1912,4 +1918,15 @@
     <string name="default_xdrip_reminder_sound">Vaikimisi xDrip+ meeldetuletuse heli</string>
     <string name="custom_audio_file">Kohandatud helifail</string>
     <string name="android_ringtone_alarm">Androidi helin/alarm</string>
+    <string name="first_successful_connection_to_transmitter">"Esimene edukas ühendus saatjaga %1$s"</string>
+    <string name="first_successful_connection_to_transmitter_em">"Esimene edukas ühendus saatjaga %1$s MAC-aadressiga %2$s"</string>
+    <string name="sensor_expiring">Sensor aegumas</string>
+    <string name="sensor_will_expire_in">Sensor aegub %1$s</string>
+    <string name="xdrip_update">xDrip+ uuendus</string>
+    <string name="a_new_version_on_channel_1_s_is_available">Uus versioon on saadaval kanalis %1$s</string>
+    <string name="today">Täna</string>
+    <string name="yesterday">Eile</string>
+    <string name="last_7_days">Viimased 7 päeva</string>
+    <string name="last_30_days">Viimased 30 päeva</string>
+    <string name="last_90_days">Viimased 90 päeva</string>
 </resources>

@@ -66,6 +66,20 @@
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
+                    <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
+                        android:defaultValue="#FAFAFA"
+                        android:key="color_raw_values"
+                        android:title="@string/raw_values"
+                        app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
+                        app:colorpicker_selectNoneButtonText="@string/revert_to_default"
+                        app:colorpicker_showHex="false" />
+                    <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
+                        android:defaultValue="#FFFF00"
+                        android:key="color_oopcal_values"
+                        android:title="@string/oopcal_values"
+                        app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
+                        app:colorpicker_selectNoneButtonText="@string/revert_to_default"
+                        app:colorpicker_showHex="false" />
                 </PreferenceCategory>
 
                 <PreferenceCategory
@@ -274,6 +288,11 @@
                         app:colorpicker_noneSelectedSummaryText="@string/default_color_selected"
                         app:colorpicker_selectNoneButtonText="@string/revert_to_default"
                         app:colorpicker_showHex="false" />
+                    <CheckBoxPreference
+                        android:defaultValue="true"
+                        android:key="variable_smb_colors"
+                        android:summary=""
+                        android:title="@string/title_variable_smb_colors" />
                     <com.eveningoutpost.dexdrip.utilitymodels.ColorPicker
                         android:defaultValue="#D6597FCC"
                         android:key="color_smb_line"
@@ -352,6 +371,35 @@
                 android:summary="@string/summary_xdrip_plus_graph_display_settings"
                 android:title="@string/title_xdrip_plus_graph_display_settings">
 
+                <EditTextPreference
+                    android:key="graph_max_y"
+                    android:title="Graph max Y"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="187.36224" />
+                <EditTextPreference
+                    android:key="graph_min_y"
+                    android:title="Graph min Y"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="36.0312" />
+                <EditTextPreference
+                    android:key="y_landscape_mult"
+                    android:title="Landscape-view Y multiplication"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="0.65" />
+                <EditTextPreference
+                    android:key="time_landscape_mult"
+                    android:title="Landscape-view time multiplication"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="3" />
+
                 <PreferenceScreen
                     android:key="graph_smoothing_screen"
                     android:title="@string/graph_smoothing">
@@ -405,10 +453,37 @@
                     android:summary="@string/the_standard_xdrip_calculated_value"
                     android:title="@string/display_raw_plot_data" />
                 <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="show_raw_bg_value"
+                    android:summary="@string/last_raw_bg_value"
+                    android:title="@string/display_raw_bg_value" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="show_oop_calibrated"
+                    android:summary="@string/bg_value_calibrated_in_OOP"
+                    android:title="@string/display_oop_calibrated_data" />
+                <CheckBoxPreference
+                    android:defaultValue="false"
+                    android:key="show_oop_bg_value"
+                    android:summary="@string/last_oop_bg_value"
+                    android:title="@string/display_oop_calibrated_bg_value" />
+                <CheckBoxPreference
                     android:defaultValue="true"
                     android:key="show_basal_line"
                     android:summary="@string/summary_show_basal_line"
                     android:title="@string/title_show_basal_line" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="use_absolute_basal"
+                    android:summary="@string/summary_use_absolute_basal"
+                    android:title="@string/title_use_absolute_basal" />
+                <EditTextPreference
+                    android:key="absolute_basal_yscaling"
+                    android:title="@string/absolute_basal_Yscaling"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="0.5" />
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:key="show_target_line"
@@ -463,10 +538,15 @@
                     android:summary="@string/summary_widget_hide_graph"
                     android:title="@string/title_widget_hide_graph" />
                 <CheckBoxPreference
+                    android:key="hide_noise_line"
+                    android:summary="Hide the potential noise line"
+                    android:title="Hide noise line" />
+                <CheckBoxPreference
                     android:dependency="engineering_mode"
                     android:key="illustrate_remote_data"
                     android:summary="@string/summary_illustrate_remote_data"
                     android:title="@string/title_illustrate_remote_data" />
+<!--
                 <PreferenceScreen
                     android:key="Y_axis_range"
                     android:title="@string/title_yRange">
@@ -492,6 +572,7 @@
                         android:defaultValue="40"
                         android:dependency="Customize_yRange"/>
                 </PreferenceScreen>
+-->
             </PreferenceScreen>
 
             <CheckBoxPreference
@@ -1074,7 +1155,7 @@
         <SwitchPreference
             android:defaultValue="true"
             android:key="auto_update_download"
-            android:summaryOff="New releases often have bugs fixed. It is recommended to switch on update notifications!"
+            android:summaryOff="This will check for updates of the original xDrip+ version"
             android:summaryOn="@string/get_notified_of_new_apk_releases"
             android:switchTextOff="@string/short_off_text_for_switches"
             android:switchTextOn="@string/short_on_text_for_switches"
@@ -1098,6 +1179,8 @@
             android:key="enable_telemetry"
             android:summary="@string/send_data_to_developers"
             android:title="@string/enable_telemetry" />
+<!--
+No feedback as this is a modified version of xDrip
         <Preference
             android:key="send_feedback"
             android:summary="@string/web_feedback_form_for_sending_messages"
@@ -1107,6 +1190,7 @@
                 android:targetClass="com.eveningoutpost.dexdrip.utilitymodels.SendFeedBack"
                 android:targetPackage="@string/local_target_package" />
         </Preference>
+-->
     </PreferenceScreen>
 
     <PreferenceCategory

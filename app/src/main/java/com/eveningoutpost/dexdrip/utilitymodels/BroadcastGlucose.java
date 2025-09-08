@@ -44,7 +44,7 @@ public class BroadcastGlucose {
                     return;
                 }
 
-                if (Math.abs(bgReading.timestamp - lastTimestamp) < MINUTE_IN_MS) {
+                if (Math.abs(bgReading.timestamp - lastTimestamp) < MINUTE_IN_MS * 0.5) {
                     val msg = String.format("Refusing to broadcast a reading with close timestamp to last broadcast:  %s (%d) vs %s (%d) ", dateTimeText(lastTimestamp), lastTimestamp, dateTimeText(bgReading.timestamp), bgReading.timestamp);
                     if (bgReading.timestamp == lastTimestamp) {
                         UserError.Log.d(TAG, msg);
@@ -102,7 +102,7 @@ public class BroadcastGlucose {
                 bundle.putString(Intents.EXTRA_NS_NOISE_LEVEL, bgReading.noise);
                 if ((Pref.getBoolean("broadcast_data_use_best_glucose", false))
                         && !bgReading.isBackfilled()
-                        && (msSince(bgReading.timestamp) < MINUTE_IN_MS * 5)
+                        && (msSince(bgReading.timestamp) < MINUTE_IN_MS)
                         && ((dg = BestGlucose.getDisplayGlucose()) != null)) {
 
                     bundle.putDouble(Intents.EXTRA_NOISE, dg.noise);

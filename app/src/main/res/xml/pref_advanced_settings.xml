@@ -1315,6 +1315,27 @@
                     android:key="bypass_calibration_quality_check"
                     android:summary="@string/summary_Allow_initial_calibration_no_good_enough_data"
                     android:title="@string/title_Bypass_quality_check" />
+                <EditTextPreference
+                    android:key="calibration_weight_days"
+                    android:title="Calibration weight days"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="5" />
+                <EditTextPreference
+                    android:key="calibration_weight_days_initial"
+                    android:title="Calibration weight days initial"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="1" />
+                <EditTextPreference
+                    android:key="calibration_weight_days_initial_transition"
+                    android:title="Calibration weight days initial transition"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="2" />
             </PreferenceScreen>
 
             <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
@@ -1463,6 +1484,20 @@
                     android:switchTextOff="@string/short_off_text_for_switches"
                     android:switchTextOn="@string/short_on_text_for_switches"
                     android:title="@string/title_Lib2_show_sense_on_status" />
+                <EditTextPreference
+                    android:key="raw_multiplier"
+                    android:title="Raw multiplier"
+                    android:numeric="decimal"
+                    android:inputType="numberDecimal"
+                    android:summary=""
+                    android:defaultValue="1" />
+                <EditTextPreference
+                    android:key="raw_addition"
+                    android:title="Raw addition +/- (mmol or mgdl)"
+                    android:numeric="decimal"
+                    android:inputType="numberSigned|numberDecimal"
+                    android:summary=""
+                    android:defaultValue="0" />
             </PreferenceScreen>
 
             <CheckBoxPreference
@@ -1536,11 +1571,20 @@
                 android:key="xdrip_other_misc_extra_screen"
                 android:summary=""
                 android:title="@string/title_Other_misc_options">
-                <CheckBoxPreference
-                    android:defaultValue="true"
-                    android:key="run_service_in_foreground"
-                    android:summary="@string/shows_a_persistent_notification"
-                    android:title="@string/run_collector_in_foreground" />
+                <PreferenceScreen
+                    android:key="collector_in_foreground"
+                    android:title="@string/title_collector_in_foreground">
+                    <CheckBoxPreference
+                        android:defaultValue="true"
+                        android:key="run_service_in_foreground"
+                        android:summary="@string/shows_a_persistent_notification"
+                        android:title="@string/run_collector_in_foreground" />
+                    <CheckBoxPreference
+                        android:defaultValue="false"
+                        android:key="compact_persistent_notification"
+                        android:summary="@string/summary_compact_ongoing_notification"
+                        android:title="@string/title_compact_ongoing_notification" />
+                </PreferenceScreen>
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="engineering_mode"
@@ -1602,6 +1646,7 @@
                     android:summary="@string/retrieve_blukon_history_summary"
                     android:title="@string/retrieve_blukon_history_title" />
 
+<!--
                 <CheckBoxPreference
                     android:defaultValue="false"
                     android:dependency="engineering_mode"
@@ -1609,6 +1654,7 @@
                     android:key="libre_one_minute"
                     android:summary="Accept data at one minute intervals from Libre source. WARNING: This feature is still under development and may break different things. Currently only for patched app data source. Please report anything you notice not working and to activate changes to this setting you need to reboot your phone. Requires engineering mode to be enabled to change setting."
                     android:title="Libre one minute" />
+-->
 
                 <CheckBoxPreference
                     android:defaultValue="false"

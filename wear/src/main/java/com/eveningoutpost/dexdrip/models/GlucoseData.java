@@ -42,7 +42,7 @@ public class GlucoseData implements Comparable<GlucoseData> {
     }
 
     public static String glucose(int mgdl, boolean mmol) {
-        return mmol ? new DecimalFormat("##.0").format(mgdl / Constants.MMOLL_TO_MGDL) : String.valueOf(mgdl);
+        return mmol ? new DecimalFormat("##.00").format(mgdl / Constants.MMOLL_TO_MGDL) : String.valueOf(mgdl);
     }
 
     @Override

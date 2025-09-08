@@ -156,7 +156,7 @@ public class BGHistory extends ActivityWithMenu {
         chart = (LineChartView) findViewById(R.id.chart);
         chart.setZoomType(ZoomType.HORIZONTAL);
         previewChart = (PreviewLineChartView) findViewById(R.id.chart_preview);
-        previewChart.setZoomType(ZoomType.HORIZONTAL);
+        previewChart.setZoomType(ZoomType.VERTICAL);
 
         chart.setLineChartData(bgGraphBuilder.lineData());
         chart.setOnValueTouchListener(bgGraphBuilder.getOnValueSelectTooltipListener(this));
@@ -241,7 +241,7 @@ public class BGHistory extends ActivityWithMenu {
         public void onViewportChanged(Viewport newViewport) {
             if (!updatingPreviewViewport) {
                 updatingChartViewport = true;
-                previewChart.setZoomType(ZoomType.HORIZONTAL);
+                previewChart.setZoomType(ZoomType.VERTICAL);
                 previewChart.setCurrentViewport(newViewport);
                 updatingChartViewport = false;
             }

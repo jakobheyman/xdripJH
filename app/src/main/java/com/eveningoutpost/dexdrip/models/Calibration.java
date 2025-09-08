@@ -400,7 +400,7 @@ public class Calibration extends Model {
             calibration.uuid = UUID.randomUUID().toString();
             calibration.save();
             JoH.clearCache();
-            calculate_w_l_s();
+            calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
             newFingerStickData();
             CalibrationSendQueue.addToQueue(calibration, context);
         }
@@ -510,8 +510,20 @@ public class Calibration extends Model {
                 .where("Sensor = ? ", sensor.getId())
                 .where("slope_confidence != 0")
                 .where("sensor_confidence != 0")
-                .where("timestamp < ?", timestamp)
+                .where("timestamp <= ?", (timestamp + (30 * 1000))) // 30 seconds padding
                 .orderBy("timestamp desc")
+                .executeSingle();
+    }
+
+    public static Calibration getAfterTimestamp(double timestamp) {
+        Sensor sensor = Sensor.currentSensor();
+        return new Select()
+                .from(Calibration.class)
+                .where("Sensor = ? ", sensor.getId())
+                .where("slope_confidence != 0")
+                .where("sensor_confidence != 0")
+                .where("timestamp >= ?", timestamp)
+                .orderBy("timestamp asc")
                 .executeSingle();
     }
 
@@ -532,7 +544,7 @@ public class Calibration extends Model {
         if (unit.compareTo("mgdl") != 0) {
             bg = bg * Constants.MMOLL_TO_MGDL;
         }
-        if ((bg < 40) || (bg > 400)) {
+        if ((bg < 10) || (bg > 1000)) {
             return null;
         }
         return bg;
@@ -541,7 +553,6 @@ public class Calibration extends Model {
     // without timeoffset
     public static Calibration create(double bg, Context context) {
         return create(bg, 0, context);
-
     }
 
     public static Calibration create(double bg, long timeoffset, Context context) {
@@ -549,6 +560,7 @@ public class Calibration extends Model {
     }
 
     // regular calibration
+    // changed from original xDrip+
     public static Calibration create(double bg, long timeoffset, Context context, boolean note_only, long estimatedInterstitialLagSeconds) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final String unit = prefs.getString("units", "mgdl");
@@ -591,18 +603,12 @@ public class Calibration extends Model {
                     calibration.raw_value = bgReading.raw_data;
                     calibration.adjusted_raw_value = bgReading.age_adjusted_raw_value;
                     calibration.sensor_uuid = sensor.uuid;
-                    calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0), 1);
-
-                    double estimated_raw_bg = BgReading.estimated_raw_bg(new Date().getTime());
+                    calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0.01), 1);
                     calibration.raw_timestamp = bgReading.timestamp;
-                    if (Math.abs(estimated_raw_bg - bgReading.age_adjusted_raw_value) > 20) {
-                        calibration.estimate_raw_at_time_of_calibration = bgReading.age_adjusted_raw_value;
-                    } else {
-                        calibration.estimate_raw_at_time_of_calibration = estimated_raw_bg;
-                    }
+                    calibration.estimate_raw_at_time_of_calibration = bgReading.age_adjusted_raw_value;
                     calibration.distance_from_estimate = Math.abs(calibration.bg - bgReading.calculated_value);
                     if (!note_only) {
-                        calibration.sensor_confidence = Math.max(((-0.0018 * bg * bg) + (0.6657 * bg) + 36.7505) / 100, 0);
+                        calibration.sensor_confidence = Math.max(((-0.0018 * bg * bg) + (0.6657 * bg) + 36.7505) / 100, 0.01);
                     } else {
                         calibration.sensor_confidence = 0; // exclude from calibrations but show on graph
                         calibration.slope_confidence = note_only_marker; // this is a bit ugly
@@ -627,15 +633,17 @@ public class Calibration extends Model {
 
                     if ((!is_follower) && (!note_only)) {
                         BgSendQueue.handleNewBgReading(bgReading, "update", context);
-                        // TODO probably should add a more fine grained prefs option in future
-                        calculate_w_l_s(prefs.getBoolean("infrequent_calibration", false));
+                        if (adjustPast) {
+                            calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+                        } else {
+                            calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
+                            Log.e(TAG, "Calibrated 1 point");
+                        }
                         CalibrationSendQueue.addToQueue(calibration, context);
                         BgReading.pushBgReadingSyncToWatch(bgReading, false);
-                        if (!Ob1G5CollectionService.usingNativeMode()) {
-                            adjustRecentBgReadings(adjustPast ? 30 : 2);
+                        if (adjustPast && !Ob1G5CollectionService.usingNativeMode()) {
+                            adjustBgReadings(calibration.sensor_age_at_time_of_estimation);
                         }
-                        Notifications.start();
-                        Calibration.requestCalibrationIfRangeTooNarrow();
                         newFingerStickData();
                     } else {
                         Log.d(TAG, "Follower mode or note so not processing calibration deeply");
@@ -672,11 +680,20 @@ public class Calibration extends Model {
                 .execute();
     }
 
-    private synchronized static void calculate_w_l_s() {
-        calculate_w_l_s(false);
+    private synchronized static void calculate_w_l_s_multiple(double calib_point_in_time) {
+        List<Calibration> calibrations = allForSensorWithWeightX(0, 1, calib_point_in_time);
+        for (Calibration calibration : calibrations) {
+            calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
+        }
+        if (calibrations.size() > 1) {
+            Log.e(TAG, "Calibrated " + calibrations.size() + " points");
+        } else if (calibrations.size() == 1) {
+            Log.e(TAG, "Calibrated 1 point");
+        }
     }
 
-    private synchronized static void calculate_w_l_s(boolean extended) {
+    // changed from original xDrip+
+    private synchronized static void calculate_w_l_s(double calib_point_in_time, double calib_point_in_time_fulltime) {
         if (Sensor.isActive()) {
             double l = 0;
             double m = 0;
@@ -685,37 +702,26 @@ public class Calibration extends Model {
             double q = 0;
             double w;
 
-            final SlopeParameters sParams = getSlopeParameters();
             ActiveAndroid.clearCache();
-            List<Calibration> calibrations = allForSensorInLastFourDays(); //5 days was a bit much, dropped this to 4
-
+            List<Calibration> calibrations = allForSensorWithWeightX(0, 1, calib_point_in_time);
+            
             if (calibrations == null) {
                 Log.e(TAG, "Somehow ended up with null calibration list!");
                 Home.toaststatic("Somehow ended up with null calibration list!");
                 return;
             }
 
-            // less than 5 calibrations in last 4 days? cast the net wider if in extended mode
-            final int ccount = calibrations.size();
-            if ((ccount < 5) && extended) {
-                ActiveAndroid.clearCache();
-                calibrations = allForSensorLimited(5);
-                if (calibrations.size() > ccount) {
-                    Home.toaststaticnext("Calibrated using data beyond last 4 days");
-                }
-            }
             ActiveAndroid.clearCache();
-            if (calibrations.size() <= 1) {
-                final Calibration calibration = Calibration.last();
+            if (calibrations.size() == 1) {
+                final Calibration calibration = Calibration.getForTimestamp(calib_point_in_time_fulltime);
                 ActiveAndroid.clearCache();
                 calibration.slope = 1;
-                calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.raw_value * calibration.slope));
+                calibration.intercept = calibration.bg - (calibration.raw_value * calibration.slope);
                 calibration.save();
-                CalibrationRequest.createOffset(calibration.bg, 25);
                 newFingerStickData();
             } else {
                 for (Calibration calibration : calibrations) {
-                    w = calibration.calculateWeight();
+                    w = calibration.calculateWeight(calib_point_in_time);
                     l += (w);
                     m += (w * calibration.estimate_raw_at_time_of_calibration);
                     n += (w * calibration.estimate_raw_at_time_of_calibration * calibration.estimate_raw_at_time_of_calibration);
@@ -723,43 +729,12 @@ public class Calibration extends Model {
                     q += (w * calibration.estimate_raw_at_time_of_calibration * calibration.bg);
                 }
 
-                final Calibration last_calibration = Calibration.last();
-                if (last_calibration != null) {
-                    ActiveAndroid.clearCache();
-                    w = (last_calibration.calculateWeight() * (calibrations.size() * 0.14));
-                    l += (w);
-                    m += (w * last_calibration.estimate_raw_at_time_of_calibration);
-                    n += (w * last_calibration.estimate_raw_at_time_of_calibration * last_calibration.estimate_raw_at_time_of_calibration);
-                    p += (w * last_calibration.bg);
-                    q += (w * last_calibration.estimate_raw_at_time_of_calibration * last_calibration.bg);
-                }
-
                 double d = (l * n) - (m * m);
-                final Calibration calibration = Calibration.last();
+                final Calibration calibration = Calibration.getForTimestamp(calib_point_in_time_fulltime);
                 ActiveAndroid.clearCache();
-                calibration.intercept = sParams.restrictIntercept(((n * p) - (m * q)) / d);
+                calibration.intercept = ((n * p) - (m * q)) / d;
                 calibration.slope = ((l * q) - (m * p)) / d;
                 Log.d(TAG, "Calibration slope debug: slope:" + calibration.slope + " q:" + q + " m:" + m + " p:" + p + " d:" + d);
-                if ((calibrations.size() == 2 && calibration.slope < sParams.getLowSlope1()) || (calibration.slope < sParams.getLowSlope2())) { // I have not seen a case where a value below 7.5 proved to be accurate but we should keep an eye on this
-                    Log.d(TAG, "calibration.slope 1 : " + calibration.slope);
-                    calibration.slope = calibration.slopeOOBHandler(0);
-                    Log.d(TAG, "calibration.slope 2 : " + calibration.slope);
-                    if (calibrations.size() > 2) {
-                        calibration.possible_bad = true;
-                    }
-                    calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
-                    CalibrationRequest.createOffset(calibration.bg, 25);
-                }
-                if ((calibrations.size() == 2 && calibration.slope > sParams.getHighSlope1()) || (calibration.slope > sParams.getHighSlope2())) {
-                    Log.d(TAG, "calibration.slope 3 : " + calibration.slope);
-                    calibration.slope = calibration.slopeOOBHandler(1);
-                    Log.d(TAG, "calibration.slope 4 : " + calibration.slope);
-                    if (calibrations.size() > 2) {
-                        calibration.possible_bad = true;
-                    }
-                    calibration.intercept = sParams.restrictIntercept(calibration.bg - (calibration.estimate_raw_at_time_of_calibration * calibration.slope));
-                    CalibrationRequest.createOffset(calibration.bg, 25);
-                }
                 Log.d(TAG, "Calculated Calibration Slope: " + calibration.slope);
                 Log.d(TAG, "Calculated Calibration intercept: " + calibration.intercept);
 
@@ -781,19 +756,6 @@ public class Calibration extends Model {
                     Home.toaststaticnext("Got invalid zero slope calibration!");
                     calibration.save(); // Save nulled record, lastValid should protect from bad calibrations
                     newFingerStickData();
-                } else if (calibration.intercept > CalibrationAbstract.getHighestSaneIntercept()) {
-                 /*
-                    calibration.sensor_confidence = 0;
-                    calibration.slope_confidence = 0;
-                    final String msg = "Got invalid non-sane intercept calibration! ";
-                    Home.toaststaticnext(msg);
-                    UserError.Log.wtf(TAG, msg + calibration.toS());
-                */
-                    // Just log the error but store the calibration so we can use it in a plugin situation. lastValid() will filter it from calculations.
-                    UserError.Log.e(TAG, "Got invalid intercept value in xDrip classic algorithm: " + calibration.intercept);
-                    calibration.save(); // save record, lastValid should protect from bad calibrations
-                    newFingerStickData();
-
                 } else {
                     calibration.save();
                     newFingerStickData();
@@ -876,15 +838,97 @@ public class Calibration extends Model {
                 .execute();
     }
 
-    private double calculateWeight() {
-        double firstTimeStarted = Calibration.first().sensor_age_at_time_of_estimation;
-        double lastTimeStarted = Calibration.last().sensor_age_at_time_of_estimation;
-        double time_percentage = Math.min(((sensor_age_at_time_of_estimation - firstTimeStarted) / (lastTimeStarted - firstTimeStarted)) / (.85), 1);
-        time_percentage = (time_percentage + .01);
-        Log.i(TAG, "CALIBRATIONS TIME PERCENTAGE WEIGHT: " + time_percentage);
-        return Math.max((((((slope_confidence + sensor_confidence) * (time_percentage))) / 2) * 100), 1);
+    // changed from original xDrip+
+    private double calculateWeight(double calib_point_in_time) {
+        // calibration weight decreases linearly with time from calibration point
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+        double calibw_days = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days", "5"), 5d);
+        double calibw_days_init = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial", "1"), 1d);
+        double calibw_days_init_trans = JoH.tolerantParseDouble(prefs.getString("calibration_weight_days_initial_transition", "2"), 2d);
+        // calib_timespan1 and calib_timespan2 used to enable historical re-calculations with subsequent calibration points added
+        double calib_timespan1 = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * calib_point_in_time / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
+        double calib_timespan2 = 60000 * 60 * 24 * calibw_days - Math.max(60000 * 60 * 24 * (calibw_days - calibw_days_init) - (60000 * 60 * 24 * (calibw_days - calibw_days_init) * sensor_age_at_time_of_estimation / (60000 * 60 * 24 * calibw_days_init_trans)), 0);
+        double calib_timespan = Math.min(calib_timespan1, calib_timespan2);
+        return Math.max(1 - (Math.abs(calib_point_in_time - sensor_age_at_time_of_estimation) / calib_timespan), 0);
     }
 
+    public static void adjustBgReadings(double calib_point_in_time) {
+        // use raw or OOP-calibrated data?
+        boolean use_raw = Pref.getBoolean("calibrate_external_libre_2_algorithm", true);
+        // pick out all calibrations with weight > 0
+        List<Calibration> calibrations = allForSensorWithWeightX(0, 1, calib_point_in_time);
+        if (calibrations == null) {
+            BgReading.clearCalibrationsForSensor(use_raw);
+            Log.e(TAG, "Cleared all calibrations for sensor");
+            return;
+        }
+        int recalc_n = 0;
+        // if there are bg points beyond the last calibration point in time
+        if (BgReading.last().timestamp > calibrations.get(0).timestamp) {
+            // use one subsequent calibration point if existing or use the last calibration for all bg points past the last calibration
+            Calibration postcalibration = getAfterTimestamp((double) (calibrations.get(0).timestamp + 60000)); 
+            if (postcalibration == null) {
+                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, JoH.tsl(), calibrations.get(0).slope, calibrations.get(0).slope, calibrations.get(0).intercept, calibrations.get(0).intercept, use_raw);
+            } else {
+                recalc_n = recalc_n + recalcBgReadings(calibrations.get(0).timestamp, postcalibration.timestamp, calibrations.get(0).slope, postcalibration.slope, calibrations.get(0).intercept, postcalibration.intercept, use_raw);
+            }
+        }
+        // go through pair of calibration points for all bg points within recalibrated points
+        int caln = calibrations.size();
+        for (int i = 1; i < caln; i++) {
+            recalc_n = recalc_n + recalcBgReadings(calibrations.get(i).timestamp, calibrations.get(i-1).timestamp, calibrations.get(i).slope, calibrations.get(i-1).slope, calibrations.get(i).intercept, calibrations.get(i-1).intercept, use_raw);
+        }
+        // use one prior calibration point if existing or use the first calibration for all initial bg points of the sensor
+        Calibration precalibration = getForTimestamp((double) (calibrations.get(caln-1).timestamp - 60000));
+        if (precalibration != null) {
+            recalc_n = recalc_n + recalcBgReadings(precalibration.timestamp, calibrations.get(caln-1).timestamp, precalibration.slope, calibrations.get(caln-1).slope, precalibration.intercept, calibrations.get(caln-1).intercept, use_raw);
+        } else {
+            recalc_n = recalc_n + recalcBgReadings(Sensor.currentSensor().started_at, calibrations.get(caln-1).timestamp, calibrations.get(caln-1).slope, calibrations.get(caln-1).slope, calibrations.get(caln-1).intercept, calibrations.get(caln-1).intercept, use_raw);
+        }
+        Log.e(TAG, "Recalculated " + recalc_n + " bg points");
+    }
+
+    public static int recalcBgReadings(long time1, long time2, double slope1, double slope2, double intercept1, double intercept2, boolean use_raw) {
+        // pick out bg data based on time1 and time2
+        final List<BgReading> bgReadings = BgReading.latestForGraph(25000, time1, time2);
+        // convert time1 and time2 to doubles
+        double time1d = (double) time1;
+        double time2d = (double) time2;
+        // go through bg points, calculate slope and intercept (linear interpolation over time), and calculate new bg values
+        for (BgReading bgReading : bgReadings) {
+            double time_fraction = ((double) bgReading.timestamp - time1d) / (time2d - time1d);
+            double slope = slope1 + (time_fraction * (slope2 - slope1));
+            double intercept = intercept1 + (time_fraction * (intercept2 - intercept1));
+            if (use_raw) {
+                bgReading.calculated_value = (slope * bgReading.raw_data) + intercept;
+            } else {
+                bgReading.calculated_value = (slope * bgReading.oop_calibrated_value) + intercept;
+            }
+            bgReading.filtered_calculated_value = bgReading.calculated_value;
+            bgReading.save();
+        }
+        return bgReadings.size();
+    }
+
+    public synchronized static void reenable(Calibration calibration) {
+        // first calculate slope_confidence and sensor_confidence to include the calibration point in allForSensorWithWeightX
+        BgReading bgReading = null;
+        bgReading = BgReading.getForPreciseTimestamp(calibration.timestamp, (15 * 60 * 1000));
+        calibration.slope_confidence = Math.min(Math.max(((4 - Math.abs((bgReading.calculated_value_slope) * 60000)) / 4), 0.01), 1);
+        calibration.sensor_confidence = Math.max(((-0.0018 * calibration.bg * calibration.bg) + (0.6657 * calibration.bg) + 36.7505) / 100, 0.01);
+        calibration.save();
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+        if (prefs.getBoolean("rewrite_history", false)) {
+            // recalibrate calibration points
+            calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+            // recalculate bg data
+            adjustBgReadings(calibration.sensor_age_at_time_of_estimation);
+        } else {
+            // recalibrate calibration point
+            calculate_w_l_s(calibration.sensor_age_at_time_of_estimation, (double) calibration.timestamp);
+            Log.e(TAG, "Calibrated 1 point");
+        }
+    }
 
     public static void adjustRecentBgReadings(int adjustCount) {
         //TODO: add some handling around calibration overrides as they come out looking a bit funky
@@ -961,7 +1005,8 @@ public class Calibration extends Model {
     public void rawValueOverride(double rawValue, Context context) {
         estimate_raw_at_time_of_calibration = rawValue;
         save();
-        calculate_w_l_s();
+        final Calibration latestCalibration = Calibration.lastValid();
+        calculate_w_l_s(latestCalibration.sensor_age_at_time_of_estimation, (double) latestCalibration.timestamp);
         CalibrationSendQueue.addToQueue(this, context);
     }
 
@@ -1002,6 +1047,12 @@ public class Calibration extends Model {
             calibration.invalidate();
             CalibrationSendQueue.addToQueue(calibration, xdrip.getAppContext());
             newFingerStickData();
+            // recalculate bg data
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+            if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+                adjustBgReadings(calibration.sensor_age_at_time_of_estimation);
+            }
         }
     }
 
@@ -1013,6 +1064,12 @@ public class Calibration extends Model {
             calibration.invalidate();
             CalibrationSendQueue.addToQueue(calibration, xdrip.getAppContext());
             newFingerStickData();
+            // recalculate bg data
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+            if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+                adjustBgReadings(calibration.sensor_age_at_time_of_estimation);
+            }
         } else {
             Log.d(TAG,"Could not find calibration to clear: "+uuid);
         }
@@ -1054,6 +1111,12 @@ public class Calibration extends Model {
             newFingerStickData();
             if (from_interactive) {
                 GcmActivity.clearLastCalibration(uuid);
+            }
+            // recalculate bg data
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+            if (prefs.getBoolean("rewrite_history", false)) {
+                calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
+                adjustBgReadings(calibration.sensor_age_at_time_of_estimation);
             }
         }
     }
@@ -1136,7 +1199,8 @@ public class Calibration extends Model {
                 .where("slope_confidence != 0")
                 .where("sensor_confidence != 0")
                 .where("slope != 0")
-                .where("intercept <= ?", CalibrationAbstract.getHighestSaneIntercept())
+                // no limit for intercept
+                //.where("intercept <= ?", CalibrationAbstract.getHighestSaneIntercept())
                 .orderBy("timestamp desc")
                 .executeSingle();
     }
@@ -1283,6 +1347,34 @@ public class Calibration extends Model {
                 .execute();
     }
 
+    public static List<Calibration> allForSensorWithWeightX(double min_weight, double max_weight) {
+        return allForSensorWithWeightX(min_weight, max_weight, Calibration.lastValid().sensor_age_at_time_of_estimation);
+    }
+
+    public static List<Calibration> allForSensorWithWeightX(double min_weight, double max_weight, double calib_point_in_time) {
+        Sensor sensor = Sensor.currentSensor();
+        if (sensor == null) {
+            return null;
+        }
+        // pick out all valid calibrations from sensor
+        List<Calibration> cal1 = new Select()
+                .from(Calibration.class)
+                .where("Sensor = ? ", sensor.getId())
+                .where("slope_confidence != 0")
+                .where("sensor_confidence != 0")
+                .orderBy("timestamp desc")
+                .execute();
+        // pick out calibrations based on min_weight and max_weight
+        List<Calibration> cal2 = new ArrayList<Calibration>();
+        for (Calibration cal : cal1) {
+            double calib_weight = cal.calculateWeight(calib_point_in_time);
+            if (calib_weight > min_weight && calib_weight <= max_weight) {
+                cal2.add(cal);
+            }
+        }
+        return cal2;
+    }
+
     public static List<Calibration> allForSensorLimited(int limit) {
         Sensor sensor = Sensor.currentSensor();
         if (sensor == null) {
@@ -1354,6 +1446,17 @@ public class Calibration extends Model {
         if (cals != null) {
             for (Calibration cal : cals) {
                 cal.invalidate();
+            }
+            // recalculate bg data
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(xdrip.getAppContext());
+            if (prefs.getBoolean("rewrite_history", false)) {
+                final List<BgReading> bgReadings = BgReading.latestForGraph(25000, Sensor.currentSensor().started_at, JoH.tsl());
+                for (BgReading bgReading : bgReadings) {
+                    bgReading.calculated_value = bgReading.age_adjusted_raw_value;
+                    bgReading.filtered_calculated_value = bgReading.filtered_data;
+                    bgReading.save();
+                }
+                Log.e(TAG, "Recalculated " + bgReadings.size() + " bg points");
             }
         }
         JoH.clearCache();

@@ -78,9 +78,9 @@ public class BgReading extends Model implements ShareUploadableBg {
     //TODO: Have these as adjustable settings!!
     public final static double BESTOFFSET = (60000 * 0); // Assume readings are about x minutes off from actual!
 
-    public static final int BG_READING_ERROR_VALUE = 38; // error marker
-    public static final int BG_READING_MINIMUM_VALUE = 39;
-    public static final int BG_READING_MAXIMUM_VALUE = 400;
+    public static final int BG_READING_ERROR_VALUE = 0; // error marker
+    public static final int BG_READING_MINIMUM_VALUE = 6;
+    public static final int BG_READING_MAXIMUM_VALUE = 700;
 
     private static volatile long earliest_backfill = 0;
 
@@ -195,11 +195,21 @@ public class BgReading extends Model implements ShareUploadableBg {
     @Column(name = "source_info")
     public volatile String source_info;
 
+    @Expose
+    @Column(name = "sensor_time")
+    public int sensor_time;
+
+    @Expose
+    @Column(name = "oop_calibrated_value")
+    public double oop_calibrated_value;
+
     public synchronized static void updateDB() {
         final String[] updates = new String[]{"ALTER TABLE BgReadings ADD COLUMN dg_mgdl REAL;",
                 "ALTER TABLE BgReadings ADD COLUMN dg_slope REAL;",
                 "ALTER TABLE BgReadings ADD COLUMN dg_delta_name TEXT;",
-                "ALTER TABLE BgReadings ADD COLUMN source_info TEXT;"};
+                "ALTER TABLE BgReadings ADD COLUMN source_info TEXT;",
+                "ALTER TABLE BgReadings ADD COLUMN sensor_time INTEGER;",
+                "ALTER TABLE BgReadings ADD COLUMN oop_calibrated_value DOUBLE;"};
         for (String patch : updates) {
             try {
                 SQLiteUtils.execSql(patch);
@@ -262,14 +272,14 @@ public class BgReading extends Model implements ShareUploadableBg {
         final String unit = Pref.getString("units", "mgdl");
         final DecimalFormat df = new DecimalFormat("#");
         final double this_value = getDg_mgdl();
-        if (this_value >= 400) {
+        if (this_value >= 1000) {
             return "HIGH";
-        } else if (this_value >= 40) {
+        } else if (this_value >= 6) {
             if (unit.equals("mgdl")) {
                 df.setMaximumFractionDigits(0);
                 return df.format(this_value);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
                 return df.format(mmolConvert(this_value));
             }
         } else {
@@ -403,7 +413,7 @@ public class BgReading extends Model implements ShareUploadableBg {
             BgReading bgReading = new Select()
                     .from(BgReading.class)
                     .where("Sensor = ? ", sensor.getId())
-                    .where("timestamp <= ?", (timestamp + (60 * 1000))) // 1 minute padding (should never be that far off, but why not)
+                    .where("timestamp <= ?", (timestamp + (30 * 1000))) // 30 seconds padding (should never be that far off, but why not)
                     .where("calculated_value = 0")
                     .where("raw_calculated = 0")
                     .orderBy("timestamp desc")
@@ -467,10 +477,10 @@ public class BgReading extends Model implements ShareUploadableBg {
             BgReading bgReading = new Select()
                     .from(BgReading.class)
                     .where("Sensor = ? ", sensor.getId())
-                    .where("timestamp <= ?", (timestamp + (60 * 1000))) // 1 minute padding (should never be that far off, but why not)
+                    .where("timestamp <= ?", (timestamp + (45 * 1000))) // 45 seconds padding (should never be that far off, but why not)
                     .orderBy("timestamp desc")
                     .executeSingle();
-            if (bgReading != null && Math.abs(bgReading.timestamp - timestamp) < (3 * 60 * 1000)) { //cool, so was it actually within 4 minutes of that bg reading?
+            if (bgReading != null && Math.abs(bgReading.timestamp - timestamp) < (45 * 1000)) { //cool, so was it actually within 0.75 minutes of that bg reading?
                 Log.i(TAG, "isNew; Old Reading");
                 return false;
             }
@@ -1384,6 +1394,235 @@ public class BgReading extends Model implements ShareUploadableBg {
             }
         } else {
             Log.e(TAG, "Got null bgr from create");
+        }
+    }
+
+    // method for xdripJH bg insertion to get bg values in rapidly (slope and postprocess done in bgReadingPostprocessJH)
+    public static void bgReadingInsertJH(double raw_data, int oopbg, long timestamp, int sensortime, boolean use_raw, String source_info) {
+        BgReading bgReading = new BgReading();
+        final Sensor sensor = Sensor.currentSensor();
+        if ((sensor == null) || (raw_data <= 0) || (timestamp <= 0)) {
+            Log.e(TAG, "Error in bgReadingInsertJH");
+            return;
+        }
+        bgReading.sensor = sensor;
+        bgReading.sensor_uuid = sensor.uuid;
+        bgReading.sensor_time = sensortime;
+        bgReading.raw_data = (raw_data / 1000);
+        bgReading.filtered_data = bgReading.raw_data;
+        bgReading.age_adjusted_raw_value = bgReading.raw_data;
+        bgReading.oop_calibrated_value = oopbg;
+        bgReading.timestamp = timestamp;
+        bgReading.uuid = UUID.randomUUID().toString();
+        bgReading.time_since_sensor_started = bgReading.timestamp - sensor.started_at;
+        bgReading.source_info = source_info;
+        Calibration calibration = Calibration.lastValid();
+        double raw_val;
+        if (use_raw) {
+            raw_val = bgReading.raw_data;
+        } else {
+            raw_val = bgReading.oop_calibrated_value;
+        }
+        if (calibration == null) {
+            Log.d(TAG, "create: No calibration yet - using raw values");
+            bgReading.calibration_flag = false;
+            bgReading.calculated_value = raw_val;
+            bgReading.filtered_calculated_value = raw_val;
+        } else {
+            Log.d(TAG, "Calibrations, so doing everything: " + calibration.uuid);
+            bgReading.calibration = calibration;
+            bgReading.calibration_uuid = calibration.uuid;
+            // calculate glucose number from raw
+            final CalibrationAbstract.CalibrationData pcalibration;
+            final CalibrationAbstract plugin = getCalibrationPluginFromPreferences(); // make sure do this only once
+            if ((plugin != null) && ((pcalibration = plugin.getCalibrationData()) != null) && (Pref.getBoolean("use_pluggable_alg_as_primary", false))) {
+                Log.d(TAG, "USING CALIBRATION PLUGIN AS PRIMARY!!!");
+                if (plugin.isCalibrationSane(pcalibration)) {
+                    bgReading.calculated_value = (pcalibration.slope * raw_val) + pcalibration.intercept;
+                    bgReading.filtered_calculated_value = (pcalibration.slope * raw_val) + pcalibration.intercept;
+                } else {
+                    UserError.Log.wtf(TAG, "Calibration plugin failed intercept sanity check: " + pcalibration.toS());
+                    Home.toaststaticnext("Calibration plugin failed intercept sanity check");
+                }
+            } else {
+                bgReading.calculated_value = ((calibration.slope * raw_val) + calibration.intercept);
+                bgReading.filtered_calculated_value = ((calibration.slope * raw_val) + calibration.intercept);
+            }
+            updateCalculatedValueToWithinMinMax(bgReading);
+        }
+        bgReading.save();
+    }
+
+    // method for xdripJH insertion to get bg values in rapidly
+    public static void bgReadingPostprocessJH(int sensortime, boolean quick) {
+        final Sensor sensor = Sensor.currentSensor();
+        BgReading bgReading = null;
+        bgReading = BgReading.getForSensortime(sensortime);
+        bgReading.find_slope_JH();
+        bgReading.postProcess(quick);
+    }
+
+    public static BgReading getForSensortime(int sensortime) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            final BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time = ?", sensortime)
+                    .where("calculated_value != 0")
+                    .where("raw_data != 0")
+                    .executeSingle();
+            if (bgReading != null) {
+                return bgReading;
+            }
+        }
+        Log.d(TAG, "getForSensortime: No luck finding a BG sensortime match: " + "sensortime:" + sensortime + " Sensor: " + ((sensor == null) ? "null" : sensor.getId()));
+        return null;
+    }
+
+    public static BgReading getPriorSensortime(int sensortime, int maxmins) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            final BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time < ?", sensortime)
+                    .where("sensor_time >= ?", (sensortime - maxmins))
+                    .where("calculated_value != 0")
+                    .where("raw_data != 0")
+                    .orderBy("sensor_time desc")
+                    .executeSingle();
+            if (bgReading != null) {
+                return bgReading;
+            }
+        }
+        return null;
+    }
+
+    public static boolean is_new_JH(int sensortime) {
+        Sensor sensor = Sensor.currentSensor();
+        if (sensor != null) {
+            BgReading bgReading = new Select()
+                    .from(BgReading.class)
+                    .where("Sensor = ? ", sensor.getId())
+                    .where("sensor_time = ?", sensortime)
+                    .executeSingle();
+            if (bgReading != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void find_slope_JH() {
+        BgReading priorBg = null;
+        priorBg = BgReading.getPriorSensortime(sensor_time, 15);
+        if (priorBg != null) {
+            calculated_value_slope = calculateSlope(this, priorBg);
+            save();
+        }
+    }
+
+    public static long getPossibleCaptures(long startTime, long endTime) {
+        long margin = Constants.MINUTE_IN_MS * 30;
+        final DecimalFormat df = new DecimalFormat("#");
+        df.setMaximumFractionDigits(1);
+        BgReading bgReadingFrom = new Select()
+                .from(BgReading.class)
+                .where("timestamp >= " + df.format(startTime))
+                .where("timestamp <= " + df.format(startTime + margin))
+                .where("sensor_time >= 5")
+                .orderBy("sensor_time asc")
+                .executeSingle();
+        BgReading bgReadingTo = new Select()
+                .from(BgReading.class)
+                .where("timestamp >= " + df.format(endTime - margin))
+                .where("timestamp <= " + df.format(endTime))
+                .where("sensor_time >= 5")
+                .orderBy("sensor_time desc")
+                .executeSingle();
+        if (bgReadingFrom == null || bgReadingTo == null) {
+            return ((endTime - startTime) / Constants.MINUTE_IN_MS);
+        } else {
+            if (bgReadingFrom.sensor == bgReadingTo.sensor) {
+                return ((endTime - startTime) / ((bgReadingTo.timestamp - bgReadingFrom.timestamp) / (long) (bgReadingTo.sensor_time - bgReadingFrom.sensor_time)));
+            } else {
+                BgReading bgReadingTo1 = new Select()
+                        .from(BgReading.class)
+                        .where("sensor = ?", bgReadingFrom.sensor)
+                        .where("sensor_time > ?", bgReadingFrom.sensor_time)
+                        .orderBy("sensor_time desc")
+                        .executeSingle();
+                BgReading bgReadingFrom2 = new Select()
+                        .from(BgReading.class)
+                        .where("sensor = ?", bgReadingTo.sensor)
+                        .where("sensor_time < ?", bgReadingTo.sensor_time)
+                        .orderBy("sensor_time asc")
+                        .executeSingle();
+                if (bgReadingTo1 != null && bgReadingFrom2 != null) {
+                    final long period1 = bgReadingTo1.timestamp - bgReadingFrom.timestamp;
+                    final long measurementPeriod1 = period1 / (long) (bgReadingTo1.sensor_time - bgReadingFrom.sensor_time);
+                    final long period2 = bgReadingTo.timestamp - bgReadingFrom2.timestamp;
+                    final long measurementPeriod2 = period2 / (long) (bgReadingTo.sensor_time - bgReadingFrom2.sensor_time);
+                    return ((endTime - startTime) / (((measurementPeriod1 * period1) + (measurementPeriod2 * period2)) / (period1 + period2)));
+                } else if (bgReadingTo1 != null) {
+                    return ((endTime - startTime) / ((bgReadingTo1.timestamp - bgReadingFrom.timestamp) / (long) (bgReadingTo1.sensor_time - bgReadingFrom.sensor_time)));
+                } else if (bgReadingFrom2 != null) {
+                    return ((endTime - startTime) / ((bgReadingTo.timestamp - bgReadingFrom2.timestamp) / (long) (bgReadingTo.sensor_time - bgReadingFrom2.sensor_time)));
+                }
+                return ((endTime - startTime) / Constants.MINUTE_IN_MS);
+            }
+        }
+    }
+
+    public static void clearCalibrationsForSensor(boolean use_raw) {
+        final Sensor sensor = Sensor.currentSensor();
+        if (sensor == null) {
+            return;
+        }
+        List<BgReading> bgReadings = new Select()
+                .from(BgReading.class)
+                .where("Sensor = ? ", sensor.getId())
+                .where("raw_data != 0")
+                .orderBy("timestamp desc")
+                .execute();
+        for (BgReading bgReading : bgReadings) {
+            if (use_raw) {
+                bgReading.calculated_value = bgReading.raw_data;
+            } else {
+                bgReading.calculated_value = bgReading.oop_calibrated_value;
+            }
+            bgReading.filtered_calculated_value = bgReading.calculated_value;
+            bgReading.save();
+        }
+    }
+
+    public static double lastOopBg() {
+        BgReading bgReading = new Select()
+                .from(BgReading.class)
+                .where("oop_calibrated_value > 0")
+                .where("raw_data != 0")
+                .where("timestamp > ?", JoH.tsl() - Constants.MINUTE_IN_MS * 10)
+                .orderBy("timestamp desc")
+                .executeSingle();
+        if (bgReading != null) {
+            return bgReading.oop_calibrated_value;
+        } else {
+            return 0;
+        }
+    }
+
+    public static double lastRawBg() {
+        BgReading bgReading = new Select()
+                .from(BgReading.class)
+                .where("raw_data > 0")
+                .where("timestamp > ?", JoH.tsl() - Constants.MINUTE_IN_MS * 10)
+                .orderBy("timestamp desc")
+                .executeSingle();
+        if (bgReading != null) {
+            return bgReading.raw_data;
+        } else {
+            return 0;
         }
     }
 

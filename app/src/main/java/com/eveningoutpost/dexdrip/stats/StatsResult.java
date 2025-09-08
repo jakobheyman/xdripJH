@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.Cache;
+import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.utilitymodels.Constants;
@@ -89,9 +90,10 @@ public class StatsResult {
             avg = 0;
         }
 
-        possibleCaptures = (to - from) / (5*60*1000);
-        //while already in the next 5 minutes, a package could already have arrived.
-        if ((to - from) % (5*60*1000) != 0) possibleCaptures += 1;
+        possibleCaptures = BgReading.getPossibleCaptures(from, to);
+        //~ possibleCaptures = (to - from) / (5*60*1000);
+        //~ //while already in the next 5 minutes, a package could already have arrived.
+        //~ if ((to - from) % (5*60*1000) != 0) possibleCaptures += 1;
 
     }
 
@@ -264,7 +266,9 @@ public class StatsResult {
     }
 
     public String getCapturePercentage(boolean extended) {
-        String result = "Cap:" + ((possibleCaptures > 0) ? Math.round(getTotalReadings() * 100d / possibleCaptures) + "%" : "-%");
+        //~ String result = "Cap:" + ((possibleCaptures > 0) ? Math.round(getTotalReadings() * 100d / possibleCaptures) + "%" : "-%");
+        DecimalFormat df = new DecimalFormat("#.0");
+        String result = "Cap:" + ((possibleCaptures > 0) ? df.format(getTotalReadings() * 100d / possibleCaptures) + "%" : "-%");
 
         if (extended) {
             result += " (" + getTotalReadings() + "/" + getPossibleCaptures() + ")";

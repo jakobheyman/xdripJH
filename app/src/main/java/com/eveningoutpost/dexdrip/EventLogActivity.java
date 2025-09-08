@@ -294,6 +294,7 @@ public class EventLogActivity extends BaseAppCompatActivity {
         }
     }
 
+    /* Don't send logs as this is a modified version of xDrip
     public synchronized void uploadEventLogs(View v) { // Send events log to JamOrHam
         startActivity(new Intent(getApplicationContext(), SendFeedBack.class).putExtra("generic_text", packLogs()));
     }
@@ -321,6 +322,7 @@ public class EventLogActivity extends BaseAppCompatActivity {
 
         return builder.toString();
     }
+    */
 
     // View model container - accessible binding methods must be declared public
     public class ViewModel implements View.OnTouchListener {

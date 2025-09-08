@@ -173,6 +173,9 @@
     <string name="waiting_for_packet">Waiting for packet</string>
     <string name="persistent_high_for_greater_than">Persistent High for > </string>
     <string name="space_mins">" mins"</string>
+    <string name="space_min_space">" min "</string>
+    <string name="space_sec">" sec"</string>
+    <string name="space_min">" min"</string>
     <string name="till">till</string>
     <string name="low_predicted">Low predicted</string>
     <string name="in">in</string>
@@ -211,12 +214,12 @@
     <string name="general_settings">General Settings</string>
     <string name="high_value">High Value</string>
     <string name="low_value">Low Value</string>
-    <string name="stats_range_settings">Range Settings: </string>
-    <string name="end_user_license_agreement">End User License Agreement</string>
+    <string name="stats_range_settings">low - high: </string>
+    <string name="end_user_license_agreement">Info</string>
     <string name="save">Save</string>
     <string name="view_important_warning">View Important Warning</string>
     <string name="view_google_licenses">View Google Licenses</string>
-    <string name="not_for_medical_use">Not for medical use - research tool only</string>
+    <string name="not_for_medical_use">Use as you wish!</string>
     <string name="deel_settings_for_algs">Deep settings for algorithms</string>
     <string name="low_level_prediction_values">Low level prediction values</string>
     <string name="glucose_drop_for_one_unit">Glucose drop for 1 Unit</string>
@@ -226,7 +229,7 @@
     <string name="xdrip_plus_update_settings">xDrip+ Update Settings</string>
     <string name="automatic_update_check">Automatic update check</string>
     <string name="update_channel">Update Channel</string>
-    <string name="send_crash_errors_to_developer">Send crash errors to developer</string>
+    <string name="send_crash_errors_to_developer">Send crash errors to developer (original xDrip+)</string>
     <string name="automatic_crash_reporting">Automatic Crash Reporting</string>
     <string name="send_feedback_message">Send Feedback Message</string>
     <string name="copying_settings">Copying Settings</string>
@@ -252,6 +255,7 @@
     <string name="pref_was_less_than_min">%1$s was set to a value less than minimum allowed.  It has been changed to minimum.</string>
     <string name="extrapolate_data_to_try_to_predict_lows">Extrapolate data to try to predict lows</string>
     <string name="alarm_at_forecasted_low_mins">Alarm at Forecasted Low mins</string>
+    <string name="title_forecast_low_threshold">Threshold</string>
     <string name="other_xdrip_plus_alerts">Other xDrip+ alerts</string>
     <string name="xdrip_plus_display_settings">xDrip+ Display Settings</string>
     <string name="display_customisations">Display customizations</string>
@@ -272,6 +276,9 @@
     <string name="dexcom_transmitter_id">Dexcom Transmitter ID</string>
     <string name="run_collector_in_foreground">Run Collector in foreground</string>
     <string name="shows_a_persistent_notification">Shows a persistent notification graph, visible on lock-screen and prevents Android killing the service.</string>
+    <string name="title_collector_in_foreground">Collector in foreground</string>
+    <string name="summary_compact_ongoing_notification">Enable to hide the graph in the notification and display only the current glucose value.</string>
+    <string name="title_compact_ongoing_notification">Compact Persistent Notification</string>
     <string name="list_of_receivers">List of receivers</string>
     <string name="extra_tags_for_logging">Extra tags for logging</string>
     <string name="extra_tags_dialog_message">The tags entered here will be logged into xDrip. Format is tag:level. Level can be v,d,i. For example bgreading:i,DexCollectionService:v. These tags will be logged with low priority to Error and event list.</string>
@@ -413,18 +420,18 @@
     <string name="reset_all_language_data">Reset ALL language data</string>
     <string name="show_only_customized_entries">Show only customized entries</string>
     <string name="settings_on_external_storage">Load/Save settings</string>
-    <string name="get_notified_of_new_apk_releases">Get notified of new apk releases</string>
+    <string name="get_notified_of_new_apk_releases">Get notified of new apk releases of original xDrip+</string>
     <string name="choose_stable_beta_or_alpha_releases">Choose Stable, Beta or Alpha releases</string>
-    <string name="web_feedback_form_for_sending_messages">Web feedback form for sending messages and ratings of xDrip+ to the developers</string>
+    <string name="web_feedback_form_for_sending_messages">Web feedback form for sending messages and ratings of original xDrip+ to the developers</string>
     <string name="be_master_for_followers">Be master for followers</string>
     <string name="this_device_will_send_data_to_followers">This device will send data to followers</string>
     <string name="send_parakeet_map_location_to_followers">Send Parakeet map location to followers</string>
     <string name="sync_parakeet_geolocation">Sync Parakeet Geolocation</string>
     <string name="disable_all_sync_features">Disable all sync features</string>
     <string name="temporary_work_around_disable_all_sync_detail">Temporary work-around option, completely stops all synchronization. May need reboot after being re-enabled. Use with care!</string>
-    <string name="automatic_updates_crash_reports_and_feedback">Automatic Updates, crash reports and Feedback to Developer</string>
+    <string name="automatic_updates_crash_reports_and_feedback">Automatic Updates and crash reports to developer (original xDrip+)</string>
     <string name="crowd_sourced_translation">Crowd-sourced translation</string>
-    <string name="please_enter_your_question_or_comments_here">Please enter your question or comments here.\n\nIf you supply an email address you may get a response.\n\n</string>
+    <string name="please_enter_your_question_or_comments_here">Please enter your question or comments here.\n\nIf you supply an email address you may get a response.\n\nNOTE!\nYou are using xdripJH which is a modified version of xDrip+\n\n</string>
     <string name="optional_contact_info_here_eg_email">Optional contact info here, e.g. email</string>
     <string name="send_message">Send Message</string>
     <string name="save_logs">Save Logs</string>
@@ -508,6 +515,8 @@
     <string name="bad_glucose_values">Bad Glucose Values</string>
     <string name="revert_to_default">Revert to Default</string>
     <string name="filtered_values">Filtered Values</string>
+    <string name="raw_values">Raw Values</string>
+    <string name="oopcal_values">OOP Calibrated Values</string>
     <string name="treatment_color">Insulin on Board</string>
     <string name="treatment_color_dark">Insulin Activity</string>
     <string name="predictive_color">Glucose Prediction</string>
@@ -532,6 +541,9 @@
     <string name="show_graph_glucose_lines">Show Graph grid glucose lines</string>
     <string name="display_filtered_plot">Display filtered plot</string>
     <string name="display_raw_plot_data">Display raw data plot</string>
+    <string name="display_raw_bg_value">Display raw bg value</string>
+    <string name="display_oop_calibrated_data">Display OOP calibrated data plot</string>
+    <string name="display_oop_calibrated_bg_value">Display OOP calibrated bg value</string>
     <string name="show_graph_target_line">Show Graph target line</string>
     <string name="show_graph_recent_average">Show Graph recent average</string>
     <string name="show_graph_total_average">Show Graph total average</string>
@@ -555,6 +567,8 @@
     <string name="tap_to_change">(tap to change)</string>
     <string name="override_phone_silent_mode_colon">Override phone Silent Mode:</string>
     <string name="vibrate_on_alert">Vibrate on alert</string>
+    <string name="custom_vib_colon">Custom vib:</string>
+    <string name="vib_break_info">(vib,break,vib,break,vib...) [1/100 sec]</string>
     <string name="test_alert">Test alert</string>
     <string name="disable_alert">Disable alert</string>
     <string name="save_alert">Save alert</string>
@@ -572,12 +586,15 @@
     <string name="xbridge_battery">xBridge Battery</string>
     <string name="limitter_battery">Libre Battery</string>
     <string name="parakeet_battery">Parakeet Battery</string>
-    <string name="after_calibration_rewrite_history">After calibration, adjust recent raw graph to smooth to the new calibration</string>
+    <string name="after_calibration_rewrite_history">After calibration, recalculate all bg values affected by the new calibration</string>
     <string name="rewrite_history">Rewrite History</string>
     <string name="grid_time_lines_visible">Grid time lines visible</string>
     <string name="grid_glucose_lines_visible">Grid glucose lines visible</string>
     <string name="useful_for_noise_and_missed_readings">Useful for noise and missed readings</string>
     <string name="the_standard_xdrip_calculated_value">The standard xDrip calculated values</string>
+    <string name="bg_value_calibrated_in_OOP">BG values calibrated in OOP</string>
+    <string name="last_raw_bg_value">Last raw BG value</string>
+    <string name="last_oop_bg_value">Last OOP calibrated BG value</string>
     <string name="display_ideal_glucose_target_line">Display ideal glucose target line</string>
     <string name="display_eight_hour_average_line">Display 8-hour average line</string>
     <string name="display_twenty_four_hour_average_line">Display 24-hour average line</string>
@@ -662,8 +679,8 @@
     <string name="use_external_blukon_algorithm">Out of process Libre algorithm.</string>
     <string name="calibrate_external_libre_algorithm_summary">Apply xDrip calibration methods on OOP data.</string>
     <string name="calibrate_external_libre_algorithm_title">OOP algorithm calibration.</string>
-    <string name="calibrate_external_libre_2_algorithm_summary">Apply xDrip calibration methods on OOP2 data.</string>
-    <string name="calibrate_external_libre_2_algorithm_title">OOP2 algorithm calibration.</string>
+    <string name="calibrate_external_libre_2_algorithm_summary">Which data to use as is or for calibration</string>
+    <string name="calibrate_external_libre_2_algorithm_title">OOP2: raw or OOP-calib data?</string>
     <string name="libre_use_smoothed_data_summary">Use average of 5 points to get smoother Libre data.</string>
     <string name="libre_use_smoothed_data_title">Smooth Libre data.</string>
     <string name="retrieve_blukon_history_title">Retrieve Libre history</string>
@@ -803,7 +820,7 @@
     <string name="calibrations_request_time_time_difference">How many hours between calibration requests</string>
     <string name="hours_between_calibrations">Hours between calibrations</string>
     <string name="calibrations_sound">Set sound used for calibration requests.</string>
-    <string name="override_silent_mode">Override Silent mode</string>
+    <string name="override_silent_mode">Override Silent Mode</string>
     <string name="even_when_charging">Even when charging</string>
     <string name="no_calibration_requests_charging">Uncheck to not ask for calibrations when phone is charging</string>
     <string name="keep_alert_no_calibration">Keep alerting if no calibration is performed</string>
@@ -897,7 +914,7 @@
     <string name="repeat_notification_every_90_minutes">Repeat notification sound every 90 minutes if still in vehicle mode</string>
     <string name="repeat_sound">Repeat sound</string>
     <string name="enable_telemetry">Enable Telemetry</string>
-    <string name="send_data_to_developers">Send data to developers about success rates of different devices</string>
+    <string name="send_data_to_developers">Send data to developers (original xDrip+) about success rates of different devices</string>
     <string name="try_to_work_around_noisy_readings_ultrasensitive">Start to work around noisy readings even on very low noise levels (engineering mode only)</string>
     <string name="sidiary_date_title">Export starting from when?</string>
     <string name="blukon">BluCon</string>
@@ -923,7 +940,7 @@
     <string name="bluetooth_scan">Bluetooth Scan</string>
     <string name="level_alerts">Level Alerts</string>
     <string name="override_calibration">Override Calibration</string>
-    <string name="only_stop_your_sensor_when_you_actually_plan">Only stop your sensor when you actually plan to remove it, otherwise leave it running!</string>
+    <string name="only_stop_your_sensor_when_you_actually_plan">Only stop your sensor when you actually plan to remove it, otherwise leave it running! If resetting all calibrations with Rewrite History checked (Graph Settings) raw values will be used for all bg values of the present sensor</string>
     <string name="restart_collector">Restart Collector</string>
     <string name="forget_device">Forget Device</string>
     <string name="other_notes">Other Notes:</string>
@@ -1428,11 +1445,15 @@
     <string name="title_insulin_colors">Insulin Colors</string>
     <string name="title_color_basal_tbr">Basal TBR</string>
     <string name="title_color_smb_icon">SMB Icon</string>
+    <string name="title_variable_smb_colors">Variable SMB icon colors</string>
     <string name="title_color_smb_line">SMB Line</string>
     <string name="summary_xdrip_plus_graph_display_settings">Adjust chart items</string>
     <string name="title_xdrip_plus_graph_display_settings">Graph Settings</string>
     <string name="summary_show_basal_line">Show TBR information from external status</string>
     <string name="title_show_basal_line">Show Basal TBR</string>
+    <string name="summary_use_absolute_basal">Use absolute basal insulin (U/h)</string>
+    <string name="title_use_absolute_basal">Use absolute Basal</string>
+    <string name="absolute_basal_Yscaling">Absolute basal Y-axis scaling (1U/h = ? mmol/mgdl)</string>
     <string name="summary_show_g_prediction">Show Dex predictive glucose dots</string>
     <string name="title_show_g_prediction">Dex Prediction</string>
     <string name="summary_show_smb_icons">Declutter graph with treatment icons for small boluses</string>
@@ -1536,6 +1557,8 @@
     <string name="summary_persistent_high_alert">When above threshold and not falling for long</string>
     <string name="summary_persistent_high_threshold_link">When enabled, High Value is the threshold.\nWhen disabled, the threshold is the value specified below.</string>
     <string name="title_persistent_high_threshold_link">Threshold: High Value</string>
+    <string name="summary_forecast_low_threshold_link">When enabled, Low Value is the threshold.\nWhen disabled, the threshold is the value specified below.</string>
+    <string name="title_forecast_low_threshold_link">Threshold: Low Value</string>
     <string name="note_search_button">SEARCH</string>
     <string name="all_note_button">ALL</string>
     <string name="title_full_screen_mode">Full Screen mode</string>
@@ -1574,7 +1597,7 @@
     <string name="top">Top</string>
     <string name="connect_device_usb_otg">Please connect your device via USB OTG cable.</string>
     <string name="connection_status">Connection Status:</string>
-    <string name="range_in_high_low">Range: (in/high/low)</string>
+    <string name="range_in_high_low">In/high/low:</string>
     <string name="absolute_s">Absolute #s:</string>
     <string name="median_bg">Median BG:</string>
     <string name="mean_bg">Mean BG:</string>
@@ -1763,12 +1786,12 @@
     <string name="expires_unknown">Expires: ???</string>
     <string name="sensor_expired">EXPIRED!</string>
     <plurals name="sensor_expires">
-        <item quantity="one">Expires: %sd</item>
-        <item quantity="other">Expires: %sd</item>
+        <item quantity="one">Expires: %s d</item>
+        <item quantity="other">Expires: %s d</item>
     </plurals>
     <plurals name="sensor_age">
-        <item quantity="one">Age: %sd</item>
-        <item quantity="other">Age: %sd</item>
+        <item quantity="one">Age: %s d</item>
+        <item quantity="other">Age: %s d</item>
     </plurals>
     <string name="external_status_strings_eg_tbr">External status strings, eg TBR from AAPS</string>
     <string name="accept_external_status">Accept External Status</string>
@@ -1801,7 +1824,7 @@
     <string name="show_time_buttons">Show Time Buttons</string>
     <string name="source_wizard_button">Source Wizard Button</string>
     <string name="please_wait_seconds_before_trying_to_start_sensor">Please wait %d seconds before trying to start sensor</string>
-    <string name="please_update_OOP2_or_move_to_calibrate_based_on_raw_mode">please update OOP2 or move to calibrate based on raw mode</string>
+    <string name="please_update_OOP2_or_move_to_calibrate_based_on_raw_mode">please update OOP2 or move to use raw mode</string>
     <string name="reminder">Reminder</string>
     <string name="notification">Notification</string>
     <string name="TX_EOL_reminder">When Transmitter Days on system status page reaches %1$d, it will be the last opportunity to start a sensor on this transmitter. Currently at %2$d days.</string>
@@ -1879,6 +1902,7 @@
     <string name="format_string_ago">%s ago</string>
     <string name="use_background_scans">Use Background Scans</string>
     <string name="android_8_background_scanning">Use Android 8+ background scanning feature</string>
+<!--
     <string name="title_yRange">Customize y axis range</string>
     <string name="titleInside_yRange">Enable</string>
     <string name="summaryInside_yRange">You can adjust the vertical (y) axis range here.\nHowever, if you have readings outside that range, it will automatically extend, for several hours, to allow those readings to show.</string>
@@ -1886,6 +1910,7 @@
     <string name="title_ymax">Adjust y axis maximum</string>
     <string name="summary_ymin">Choose yMin for when there are no smaller readings.</string>
     <string name="summary_ymax">Choose yMax for when there are no greater readings.</string>
+-->
     <string name="wait_to_connect">Verify settings and wait for connectivity.</string>
     <string name="summary_sens_expiry_notify">Raise notifications when the sensor gets close to expiry.</string>
     <string name="title_sens_expiry">Sensor Expiry Notifications</string>
@@ -1966,4 +1991,10 @@
     <string name="sensor_will_expire_in">Sensor will expire in %1$s</string>
     <string name="xdrip_update">xDrip+ Update</string>
     <string name="a_new_version_on_channel_1_s_is_available">A new version on channel %1$s is available</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="last_7_days">Last 7 days</string>
+    <string name="last_30_days">Last 30 days</string>
+    <string name="last_90_days">Last 90 days</string>
+    <string name="day_to_day">Day to day</string>
 </resources>

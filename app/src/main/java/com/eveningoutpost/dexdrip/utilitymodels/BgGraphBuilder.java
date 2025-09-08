@@ -76,6 +76,7 @@ import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.ValueShape;
+import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.util.ChartUtils;
 
 import lombok.Getter;
@@ -87,8 +88,8 @@ import static com.eveningoutpost.dexdrip.utilitymodels.ColorCache.X;
 import static com.eveningoutpost.dexdrip.utilitymodels.ColorCache.getCol;
 
 public class BgGraphBuilder {
-    public static final int FUZZER = (int) (30 * Constants.SECOND_IN_MS);
-    public final static long DEXCOM_PERIOD = 300_000; // 5 minutes
+    public static final int FUZZER = 1000; // 1 second
+    public final static long DEXCOM_PERIOD = 60_000; // 1 minute
     public final static double NOISE_TRIGGER = 10;
     public final static double NOISE_TRIGGER_ULTRASENSITIVE = 1;
     public final static double NOISE_TOO_HIGH_FOR_PREDICT = 60;
@@ -129,8 +130,11 @@ public class BgGraphBuilder {
     private SharedPreferences prefs;
     public double highMark;
     public double lowMark;
+    public double forecastLowMark; // Marker used for forecast low analysis
     public double defaultMinY;
     public double defaultMaxY;
+    public double landscapeYMult;
+    public double landscapeTimeMult;
     public boolean doMgdl;
     public static double capturePercentage = -1;
     @Getter
@@ -155,6 +159,7 @@ public class BgGraphBuilder {
     private final List<PointValue> lowValues = new ArrayList<>();
     private final List<PointValue> badValues = new ArrayList<>();
     private final List<PointValue> pluginValues = new ArrayList<PointValue>();
+    private final List<PointValue> oopCalibratedValues = new ArrayList<PointValue>();
     private final List<PointValue> rawInterpretedValues = new ArrayList<PointValue>();
     private final List<PointValue> filteredValues = new ArrayList<PointValue>();
     private final List<PointValue> bloodTestValues = new ArrayList<PointValue>();
@@ -179,6 +184,8 @@ public class BgGraphBuilder {
     private KeyStore keyStore = FastStore.getInstance();
 
     private final boolean showSMB = Pref.getBoolean("show_smb_icons", true);
+    private final String[] ICON_COLOR = {"#FFFF00", "#FBF200", "#F7E400", "#F4D700", "#F0C900", "#ECBC00", "#E8AE00", "#E4A100", "#E19400", "#DD8600", "#D97900", "#D56B00", "#D25E00", "#CE5100", "#CA4300", "#C63600", "#C22800", "#BF1B00", "#BB0D00", "#B70000"};
+    private final double[] MAX_INSULIN = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 3};
 
     public BgGraphBuilder(Context context) {
         this(context, new Date().getTime() + (60000 * 10));
@@ -243,16 +250,25 @@ public class BgGraphBuilder {
         this.context = context;
         this.highMark = tolerantParseDouble(prefs.getString("highValue", "170"), 170);
         this.lowMark = tolerantParseDouble(prefs.getString("lowValue", "70"), 70);
-        this.doMgdl = (prefs.getString("units", "mgdl").equals("mgdl"));
-        defaultMinY = unitized(40);
-        defaultMaxY = unitized(250);
-        if (custimze_y_range) { // If Customize y axis range is enabled
-            defaultMinY = unitized(Pref.getStringToInt("default_ymin", 40)); // Use the user-defined ymin
-            defaultMaxY = unitized(Pref.getStringToInt("default_ymax", 250)); // Use the user-defined ymax
+        this.forecastLowMark = this.lowMark; // Set the forecast low marker to match the low value marker
+        if (!Pref.getBoolean("low_value_is_forecast_low_threshold", true)) { // If the user has chosen not to use the Low Value as the Forecast Low threshold
+            this.forecastLowMark = tolerantParseDouble(prefs.getString("forecast_low_threshold", "70"), 70); // Set the forecast low marker to match the forecast low threshold specified by the user
         }
+        this.doMgdl = (prefs.getString("units", "mgdl").equals("mgdl"));
+        // Graph min and max Y can be set under Display Settings > Graph Settings
+        defaultMinY = tolerantParseDouble(prefs.getString("graph_min_y", "2"), 2d);
+        defaultMaxY = tolerantParseDouble(prefs.getString("graph_max_y", "10.4"), 10.4d);
+        landscapeYMult = tolerantParseDouble(prefs.getString("y_landscape_mult", "0.65"), 0.65d);
+        landscapeTimeMult = tolerantParseDouble(prefs.getString("time_landscape_mult", "3"), 3d);
+        //~ defaultMinY = unitized(40);
+        //~ defaultMaxY = unitized(250);
+        //~ if (custimze_y_range) { // If Customize y axis range is enabled
+            //~ defaultMinY = unitized(Pref.getStringToInt("default_ymin", 40)); // Use the user-defined ymin
+            //~ defaultMaxY = unitized(Pref.getStringToInt("default_ymax", 250)); // Use the user-defined ymax
+        //~ }
         pointSize = isXLargeTablet(context) ? 5 : 3;
         axisTextSize = isXLargeTablet(context) ? 20 : Axis.DEFAULT_TEXT_SIZE_SP;
-        previewAxisTextSize = isXLargeTablet(context) ? 12 : 5;
+        previewAxisTextSize = isXLargeTablet(context) ? 12 : 6;
         hoursPreviewStep = isXLargeTablet(context) ? 2 : 1;
     }
 
@@ -344,51 +360,71 @@ public class BgGraphBuilder {
             if (aplist.size() > 0) {
 
                 // divider line
+                if (!prefs.getBoolean("use_absolute_basal", false)) {
+                    final Line dividerLine = new Line();
+                    dividerLine.setTag("tbr"); // not quite true
+                    dividerLine.setHasPoints(false);
+                    dividerLine.setHasLines(true);
+                    dividerLine.setStrokeWidth(1);
+                    dividerLine.setColor(getCol(X.color_basal_tbr));
+                    dividerLine.setPathEffect(new DashPathEffect(new float[]{10.0f, 10.0f}, 0));
+                    // dividerLine.setReverseYAxis(true);
+                    dividerLine.setHasPoints(false);
 
-                final Line dividerLine = new Line();
-                dividerLine.setTag("tbr"); // not quite true
-                dividerLine.setHasPoints(false);
-                dividerLine.setHasLines(true);
-                dividerLine.setStrokeWidth(1);
-                dividerLine.setColor(getCol(X.color_basal_tbr));
-                dividerLine.setPathEffect(new DashPathEffect(new float[]{10.0f, 10.0f}, 0));
-                dividerLine.setReverseYAxis(true);
-                dividerLine.setHasPoints(false);
-
-                final float one_hundred_percent = (100 * yscale) / 100f;
-                final List<PointValue> divider_points = new ArrayList<>(2);
-                divider_points.add(new HPointValue(loaded_start / FUZZER, one_hundred_percent));
-                dividerLine.setPointRadius(0);
-                divider_points.add(new HPointValue(loaded_end / FUZZER, one_hundred_percent));
-                dividerLine.setValues(divider_points);
-                basalLines.add(dividerLine);
+                    final float one_hundred_percent = (100 * yscale) / 100f;
+                    final List<PointValue> divider_points = new ArrayList<>(2);
+                    divider_points.add(new HPointValue(loaded_start / FUZZER, one_hundred_percent));
+                    dividerLine.setPointRadius(0);
+                    divider_points.add(new HPointValue(loaded_end / FUZZER, one_hundred_percent));
+                    dividerLine.setValues(divider_points);
+                    basalLines.add(dividerLine);
+                }
 
                 final List<PointValue> points = new ArrayList<>(aplist.size());
-
-                int last_percent = -1;
-
                 int count = aplist.size();
-                for (APStatus item : aplist) {
-                    if (--count == 0 || (item.basal_percent != last_percent)) {
-                        final float this_ypos = (Math.min(item.basal_percent, 500) * yscale) / 100f; // capped at 500%
-                        points.add(new HPointValue((double) item.timestamp / FUZZER, this_ypos));
 
-                        last_percent = item.basal_percent;
+                // xdripJH: only include basals with a duration > 15 seconds
+                if (prefs.getBoolean("use_absolute_basal", false)) {
+                    float absolute_yscaling = (float) JoH.tolerantParseDouble(prefs.getString("absolute_basal_yscaling", "0.5"), 0.5d);
+                    if (count >= 2) {
+                        double last_absolute = -1;
+                        for (int i = 0; i < (count-1); i++) {
+                            if (((aplist.get(i+1).timestamp - aplist.get(i).timestamp) > 15000L) && (aplist.get(i).basal_absolute != last_absolute)) {
+                                final float this_ypos = ((float) aplist.get(i).basal_absolute * yscale * absolute_yscaling) + (float) defaultMinY;
+                                points.add(new HPointValue((double) aplist.get(i).timestamp / FUZZER, this_ypos));
+                                last_absolute = aplist.get(i).basal_absolute;
+                            }
+                        }
                     }
+                    final float this_ypos = ((float) aplist.get(count-1).basal_absolute * yscale * absolute_yscaling) + (float) defaultMinY;
+                    points.add(new HPointValue((double) aplist.get(count-1).timestamp / FUZZER, this_ypos));
+                } else {
+                    if (count >= 2) {
+                        int last_percent = -1;
+                        for (int i = 0; i < (count-1); i++) {
+                            if (((aplist.get(i+1).timestamp - aplist.get(i).timestamp) > 15000L) && (aplist.get(i).basal_percent != last_percent)) {
+                                final float this_ypos = (Math.min(aplist.get(i).basal_percent, 500) * yscale) / 100f; // capped at 500%
+                                points.add(new HPointValue((double) aplist.get(i).timestamp / FUZZER, this_ypos));
+                                last_percent = aplist.get(i).basal_percent;
+                            }
+                        }
+                    }
+                    final float this_ypos = (Math.min(aplist.get(count-1).basal_percent, 500) * yscale) / 100f; // capped at 500%
+                    points.add(new HPointValue((double) aplist.get(count-1).timestamp / FUZZER, this_ypos));
                 }
 
                 final Line line = new Line(points);
-                line.setFilled(true);
-                line.setFillFlipped(true);
-                line.setHasGradientToTransparent(true);
+                // line.setFilled(true);
+                // line.setFillFlipped(true);
+                // line.setHasGradientToTransparent(true);
                 line.setHasPoints(false);
                 line.setStrokeWidth(1);
                 line.setHasLines(true);
                 line.setSquare(true);
                 line.setPointRadius(1);
-                line.setReverseYAxis(true);
+                // line.setReverseYAxis(true);
                 line.setBackgroundUnclipped(true);
-                line.setGradientDivider(10f);
+                // line.setGradientDivider(10f);
                 line.setColor(getCol(X.color_basal_tbr));
                 basalLines.add(line);
             }
@@ -469,8 +505,7 @@ public class BgGraphBuilder {
 
             final List<HeartRate> heartRates = HeartRate.latestForGraph(2000, loaded_start, loaded_end);
 
-//            final long condenseCutoffMs = Pref.getBooleanDefaultFalse("smooth_heartrate") ? (10 * Constants.MINUTE_IN_MS) : FUZZER;
-            final long condenseCutoffMs = Pref.getBooleanDefaultFalse("smooth_heartrate") ? (10 * Constants.MINUTE_IN_MS) : 1000 * 30 * 5;
+            final long condenseCutoffMs = Pref.getBooleanDefaultFalse("smooth_heartrate") ? (10 * Constants.MINUTE_IN_MS) : FUZZER;
             final List<HeartRate> condensedHeartRateList = new ArrayList<>();
             for (HeartRate thisHeartRateRecord : heartRates) {
                 final int condensedListSize = condensedHeartRateList.size();
@@ -607,7 +642,7 @@ public class BgGraphBuilder {
             if (d) Log.d(TAG, "Cloned preview chart data");
         }
 
-        previewLineData.setAxisYLeft(yAxis());
+        previewLineData.setAxisYLeft(previewYAxis());
         previewLineData.setAxisXBottom(previewXAxis());
 
         // reduce complexity of preview chart by removing some lines
@@ -626,6 +661,10 @@ public class BgGraphBuilder {
 
                 lline.setPointRadius(3); // preserve size for treatments
                 lline.setPointColor(Color.parseColor("#FFFFFF"));
+            } else if (lline.getPointColor() == getCol(X.color_calibration_dot_background)) {
+                lline.setPointRadius(3);
+            } else if (lline.getPointRadius() == 3) {
+                lline.setPointRadius(2);
             } else if (lline.getPointRadius() > 0) {
                 lline.setPointRadius(unlabledLinesSize);
             }
@@ -714,6 +753,7 @@ public class BgGraphBuilder {
                     lines.add(thisline);
                 }
             }
+            lines.add(oopCalibratedLine());
             lines.add(rawInterpretedLine());
 
             lines.add(remoteValuesLine()); // TODO conditional ?
@@ -887,10 +927,20 @@ public class BgGraphBuilder {
         return linearray;
     }
 
+    public Line oopCalibratedLine() {
+        Line line = new Line(oopCalibratedValues);
+        line.setColor(getCol(X.color_oopcal_values));
+        line.setHasLines(false);
+        line.setPointRadius(2);
+        line.setHasPoints(true);
+        return line;
+    }
+
     public Line rawInterpretedLine() {
         Line line = new Line(rawInterpretedValues);
+        line.setColor(getCol(X.color_raw_values));
         line.setHasLines(false);
-        line.setPointRadius(1);
+        line.setPointRadius(2);
         line.setHasPoints(true);
         return line;
     }
@@ -928,7 +978,8 @@ public class BgGraphBuilder {
         lines[0] = new Line(calibrationValues);
         lines[0].setColor(getCol(X.color_calibration_dot_background));
         lines[0].setHasLines(false);
-        lines[0].setPointRadius(pointSize * 3 / 2);
+        //lines[0].setPointRadius(pointSize * 3 / 2);
+        lines[0].setPointRadius(pointSize + 2);
         lines[0].setHasPoints(true);
         lines[1] = new Line(calibrationValues);
         lines[1].setColor(getCol(X.color_calibration_dot_foreground));
@@ -1061,6 +1112,7 @@ public class BgGraphBuilder {
             }
 
             filteredValues.clear();
+            oopCalibratedValues.clear();
             rawInterpretedValues.clear();
             iobValues.clear();
             activityValues.clear();
@@ -1197,7 +1249,8 @@ public class BgGraphBuilder {
             final boolean has_filtered = DexCollectionType.hasFiltered();
             final boolean predict_use_momentum = prefs.getBoolean("predict_use_momentum", true);
             final boolean show_moment_working_line = prefs.getBoolean("show_momentum_working_line", false);
-            final boolean interpret_raw = prefs.getBoolean("interpret_raw", false);
+            final boolean show_oop_calibrated = prefs.getBoolean("show_oop_calibrated", false);
+            final boolean show_raw_plot = prefs.getBoolean("show_raw_plot", false);
             final boolean show_filtered = prefs.getBoolean("show_filtered_curve", false) && has_filtered;
             final boolean predict_lows = prefs.getBoolean("predict_lows", true);
             final boolean show_plugin = prefs.getBoolean("plugin_plot_on_graph", false);
@@ -1260,8 +1313,11 @@ public class BgGraphBuilder {
                         filteredValues.add(new HPointValue((double) ((bgReading.timestamp + rollingOffset) / FUZZER), (float) unitized(Math.min(rollingValue, BgReading.BG_READING_MAXIMUM_VALUE))));
                     }
                 }
-                if ((interpret_raw && (bgReading.raw_calculated > 0))) {
-                    rawInterpretedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.raw_calculated, BgReading.BG_READING_MAXIMUM_VALUE))));
+                if ((show_oop_calibrated && (bgReading.oop_calibrated_value > 0))) {
+                    oopCalibratedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.oop_calibrated_value, BgReading.BG_READING_MAXIMUM_VALUE))));
+                }
+                if ((show_raw_plot && (bgReading.raw_data > 0))) {
+                    rawInterpretedValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(bgReading.raw_data, BgReading.BG_READING_MAXIMUM_VALUE))));
                 }
                 if ((!glucose_from_plugin) && (plugin != null) && (cd != null)) {
                     pluginValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(Math.min(plugin.getGlucoseFromBgReading(bgReading, cd), BgReading.BG_READING_MAXIMUM_VALUE))));
@@ -1277,16 +1333,16 @@ public class BgGraphBuilder {
                 } else if (unitized(bgReading.calculated_value) >= lowMark) {
                     val ppx = new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value));
                     inRangeValues.add(ppx);
-                } else if (bgReading.calculated_value >= 40) {
+                } else if (bgReading.calculated_value >= 6) {
                     lowValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(bgReading.calculated_value)));
-                } else if (bgReading.calculated_value > 13) {
+                } else if (bgReading.calculated_value > 0) {
                     lowValues.add(new HPointValue((double) (bgReading.timestamp / FUZZER), (float) unitized(40)));
                 }
 
-                if (illustrate_backfilled_data && bgReading.calculated_value > 13 && bgReading.calculated_value < 400 && bgReading.isBackfilled()) {
+                if (illustrate_backfilled_data && bgReading.calculated_value > 5 && bgReading.calculated_value < 1000 && bgReading.isBackfilled()) {
                     backfillValues.add(bgReadingToPoint(bgReading));
                 }
-                if (illustrate_remote_data && bgReading.calculated_value > 13 && bgReading.calculated_value < 400 && bgReading.isRemote()) {
+                if (illustrate_remote_data && bgReading.calculated_value > 5 && bgReading.calculated_value < 1000 && bgReading.isRemote()) {
                     remoteValues.add(bgReadingToPoint(bgReading));
                 }
 
@@ -1370,7 +1426,7 @@ public class BgGraphBuilder {
                 try {
                     if (d) Log.d(TAG, "noise Poly list size: " + noise_polyxList.size());
                     // TODO Impossible to satisfy noise evaluation size with only raw data do we want it with raw only??
-                    if (noise_polyxList.size() > 5) {
+                    if ((noise_polyxList.size() > 5) && !Pref.getBooleanDefaultFalse("hide_noise_line")) {
                         noisePoly = new PolyTrendLine(2);
                         final double[] noise_polyys = PolyTrendLine.toPrimitiveFromList(noise_polyyList);
                         final double[] noise_polyxs = PolyTrendLine.toPrimitiveFromList(noise_polyxList);
@@ -1461,15 +1517,15 @@ public class BgGraphBuilder {
                         double polyPredicty = poly.predict(plow_timestamp);
                         Log.d(TAG, "Low predictor at max lookahead is: " + JoH.qs(polyPredicty));
                         low_occurs_at_processed_till_timestamp = highest_bgreading_timestamp; // store that we have processed up to this timestamp
-                        if (polyPredicty <= (lowMark + offset)) {
+                        if (polyPredicty <= (forecastLowMark + offset)) {
                             low_occurs_at = plow_timestamp;
-                            final double lowMarkIndicator = (lowMark - (lowMark / 4));
+                            final double lowMarkIndicator = (forecastLowMark - (forecastLowMark / 4));
                             //if (d) Log.d(TAG, "Poly predict: "+JoH.qs(polyPredict)+" @ "+JoH.qsz(iob.timestamp));
                             while (plow_timestamp > plow_now) {
-//                                plow_timestamp = plow_timestamp - FUZZER;
-                                plow_timestamp = plow_timestamp - (1000 * 30 * 5); // TODO check this! 2.5 minute accuracy on dots and low mark intercept for low_occurs at
+                                plow_timestamp = plow_timestamp - FUZZER;
+//                                plow_timestamp = plow_timestamp - (1000 * 30 * 5); // TODO check this! 2.5 minute accuracy on dots and low mark intercept for low_occurs at
                                 polyPredicty = poly.predict(plow_timestamp);
-                                if (polyPredicty > (lowMark + offset)) {
+                                if (polyPredicty > (forecastLowMark + offset)) {
                                     PointValue zv = new HPointValue((double) (plow_timestamp / FUZZER), (float) polyPredicty);
                                     polyBgValues.add(zv);
                                 } else {
@@ -1535,14 +1591,28 @@ public class BgGraphBuilder {
                         if (!treatment.hasContent()) continue;
 
                         if (showSMB && treatment.likelySMB()) {
-                            final Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, 10 + (100d * treatment.insulin));
+                            Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, Math.min(9 + (15d * treatment.insulin), 24d));
+                            // final Pair<Float, Float> yPositions = GraphTools.bestYPosition(bgReadings, treatment.timestamp, doMgdl, false, highMark, Math.min(9 + (21d * treatment.insulin), 30d));
                             if (yPositions.first > 0) {
-                                final PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
+                                PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
+                                // final PointValueExtended pv = new PointValueExtended(treatment.timestamp / FUZZER, yPositions.first); // TEST VALUES
                                 pv.setPlumbPos(GraphTools.yposRatio(yPositions.second, yPositions.first, 0.1f));
                                 BitmapLoader.loadAndSetKey(pv, R.drawable.triangle, 180);
-                                pv.setBitmapTint(getCol(X.color_smb_icon));
-                                pv.setBitmapScale((float) (0.5f + (treatment.insulin * 5f))); // 0.1U == 100% 0.2U = 150%
-                                pv.note = "SMB: " + JoH.qs(treatment.insulin, 2) + "U" + (treatment.notes != null ? " " + treatment.notes : "");
+                                if (prefs.getBoolean("variable_smb_colors", true)) {
+                                    int icon_color_idx = 19;
+                                    for (int i = 0; i < 19; i++) {
+                                        if (treatment.insulin <= MAX_INSULIN[i]) {
+                                            icon_color_idx = i;
+                                            break;
+                                        }
+                                    }
+                                    pv.setBitmapTint(Color.parseColor(ICON_COLOR[icon_color_idx]));
+                                } else {
+                                    pv.setBitmapTint(getCol(X.color_smb_icon));
+                                }
+                                pv.setBitmapScale((float) (Math.min(0.96f + (treatment.insulin * 0.8f), 1.76f))); // 0.05U == 100% 1U = 176%
+                                pv.note = " " + JoH.qs(treatment.insulin, 2) + " U" + (treatment.notes != null ? " " + treatment.notes : "");
+                                // pv.note = "SMB: " + JoH.qs(treatment.insulin, 2) + "U" + (treatment.notes != null ? " " + treatment.notes : "");
                                 pv.real_timestamp = treatment.timestamp;
                                 smbValues.add(pv);
                                 continue;
@@ -1952,10 +2022,10 @@ public class BgGraphBuilder {
         lowLineValues.add(new HPointValue((double) end_time, (float) lowMark));
         Line lowLine = new Line(lowLineValues);
         lowLine.setHasPoints(false);
-        lowLine.setAreaTransparency(50);
+        //lowLine.setAreaTransparency(50);
         lowLine.setColor(getCol(X.color_low_values));
         lowLine.setStrokeWidth(1);
-        lowLine.setFilled(true);
+        //lowLine.setFilled(true);
         return lowLine;
     }
 
@@ -1965,10 +2035,10 @@ public class BgGraphBuilder {
         lowLineValues.add(new HPointValue((double) predictive_end_time, (float) lowMark));
         Line lowLine = new Line(lowLineValues);
         lowLine.setHasPoints(false);
-        lowLine.setAreaTransparency(40);
+        //lowLine.setAreaTransparency(40);
         lowLine.setColor(ChartUtils.darkenColor(ChartUtils.darkenColor(ChartUtils.darkenColor(getCol(X.color_low_values)))));
         lowLine.setStrokeWidth(1);
-        lowLine.setFilled(true);
+        //lowLine.setFilled(true);
         return lowLine;
     }
 
@@ -2005,8 +2075,10 @@ public class BgGraphBuilder {
     }
 
     private List<Line> smbLines() {
-        final List<Line> lines = new LinkedList<>();
-        final Line line = new Line(smbValues);
+        List<Line> lines = new LinkedList<>();
+        Line line = new Line(smbValues);
+        // final List<Line> lines = new LinkedList<>();
+        // final Line line = new Line(smbValues);
         line.setTag("smb");
         line.setHasPoints(true);
         line.setHasLines(false);
@@ -2061,6 +2133,12 @@ public class BgGraphBuilder {
         yAxis.setTextSize(axisTextSize);
         yAxis.setHasLines(prefs.getBoolean("show_graph_grid_glucose", true));
         return yAxis;
+    }
+
+    public Axis previewYAxis() {
+        Axis previewYaxis = yAxis();
+        previewYaxis.setTextSize(previewAxisTextSize);
+        return previewYaxis;
     }
 
     @NonNull
@@ -2130,6 +2208,63 @@ public class BgGraphBuilder {
         return new SimpleDateFormat(DateFormat.is24HourFormat(context) ? "HH" : "h a");
     }
 
+    public Viewport fixViewport(Viewport viewport, float hours_to_show, double hour_width) {
+        // if in landscape view: change Y and X view based on landscapeYMult and landscapeTimeMult
+        int orientation = context.getResources().getConfiguration().orientation;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            double Yrange = defaultMaxY - defaultMinY;
+            defaultMaxY = defaultMaxY - ((Yrange - (Yrange * landscapeYMult)) * 0.8);
+            defaultMinY = defaultMinY + ((Yrange - (Yrange * landscapeYMult)) * 0.2);
+            hours_to_show = hours_to_show * (float) landscapeTimeMult;
+        }
+
+        // keep viewport Y-range constant
+        viewport.top = (float) defaultMaxY;
+        viewport.bottom = (float) defaultMinY;
+        // pick out max and min bg over the last 1 hours and use to move viewport up/down
+        long endtime = (long) (new Date().getTime());
+        long starttime = endtime - Constants.HOUR_IN_MS;
+        List<BgReading> bgReadings_1h = BgReading.latestForGraph(61, starttime, endtime);
+        if (bgReadings_1h != null && bgReadings_1h.size() > 0) {
+            int i = 0;
+            int max_i = 0;
+            int min_i = 0;
+            double Yheight = defaultMaxY - defaultMinY;
+            double present_bg = bgReadings_1h.get(i).calculated_value;
+            double max_1h_bg = present_bg;
+            double min_1h_bg = present_bg;
+            while (++i < bgReadings_1h.size()) {
+                if (bgReadings_1h.get(i).calculated_value > max_1h_bg) {
+                    max_1h_bg = bgReadings_1h.get(i).calculated_value;
+                    max_i = i;
+                }
+                if (bgReadings_1h.get(i).calculated_value < min_1h_bg) {
+                    min_1h_bg = bgReadings_1h.get(i).calculated_value;
+                    min_i = i;
+                }
+            }
+            if ((unitized(max_1h_bg) > defaultMaxY) || (unitized(min_1h_bg) < defaultMinY)) {
+                if (unitized(max_1h_bg) - unitized(min_1h_bg) <= Yheight) {
+                    if (unitized(max_1h_bg) > defaultMaxY) {
+                        viewport.top = (float) unitized(max_1h_bg);
+                    } else if (unitized(min_1h_bg) < defaultMinY) {
+                        viewport.top = (float) (unitized(min_1h_bg) + Yheight);
+                    }
+                } else if (max_i < min_i) {
+                    viewport.top = (float) Math.min(unitized(max_1h_bg), (unitized(present_bg) + Yheight));
+                } else {
+                    viewport.top = (float) Math.max((unitized(min_1h_bg) + Yheight), unitized(present_bg));
+                }
+                viewport.bottom = viewport.top - (float) Yheight;
+            }
+        }
+
+        // set left edge of viewport
+        viewport.left = viewport.right - hour_width * hours_to_show;
+
+        return viewport;
+    }
+
     public double unitized(double value) {
         if (doMgdl) {
             return value;
@@ -2171,26 +2306,31 @@ public class BgGraphBuilder {
         if (domgdl) {
             df.setMaximumFractionDigits(0);
         } else {
-            df.setMaximumFractionDigits(1);
+            df.setMaximumFractionDigits(2);
         }
         return df.format(unitized(value, domgdl)) + " " + (domgdl ? "mgdl" : "mmol");
     }
 
     public static String unitized_string(double value, boolean doMgdl) {
         final DecimalFormat df = new DecimalFormat("#");
-        if (value >= 400) {
+        if (value >= 1000) {
             return "HIGH";
-        } else if (value >= 40) {
+        } else if (value >= 6) {
             if (doMgdl) {
                 df.setMaximumFractionDigits(0);
                 return df.format(value);
             } else {
-                df.setMaximumFractionDigits(1);
+                // one digit if 10 or higher to keep bg on lock screen
+                if (mmolConvert(value) < 10) {
+                    df.setMaximumFractionDigits(2);
+                } else {
+                    df.setMaximumFractionDigits(1);
+                }
                 //next line ensures mmol/l value is XX.x always.  Required by PebbleWatchSync, and probably not a bad idea.
                 df.setMinimumFractionDigits(1);
                 return df.format(mmolConvert(value));
             }
-        } else if (value > 12) {
+        } else if (value > 0) {
             return "LOW";
         } else {
             switch ((int) value) {
@@ -2270,11 +2410,11 @@ public class BgGraphBuilder {
 
             return delta_sign + df.format(unitized(value, doMgdl)) + (showUnit ? " mg/dl" : "");
         } else {
-            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l
+            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l  // always show 2 decimals (1 -> 2 under else)
             if (highGranularity && (Math.abs(value) < (Constants.MMOLL_TO_MGDL * 0.1))) {
                 df.setMaximumFractionDigits(2);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
             }
 
             df.setMinimumFractionDigits(1);
@@ -2320,7 +2460,7 @@ public class BgGraphBuilder {
                 PointValueExtended pve = (PointValueExtended) pointValue;
                 type = pve.type;
                 if (pve.calculatedFilteredValue != -1) {
-                    filtered = " (" + Math.round(pve.calculatedFilteredValue * 10) / 10d + ")";
+                    filtered = " (" + Math.round(pve.calculatedFilteredValue * 100) / 100d + ")";
                 }
                 if (pve.note != null) {
                     alternate = pve.note;
@@ -2348,7 +2488,7 @@ public class BgGraphBuilder {
             if (alternate.length() > 0) {
                 message = timeFormat.format(time) + "    " + alternate;
             } else {
-                message = timeFormat.format(time) + "      " + (Math.round(pointValue.getY() * 10) / 10d) + " " + unit() + filtered;
+                message = timeFormat.format(time) + "      " + (Math.round(pointValue.getY() * 100) / 100d) + " " + unit() + filtered;
             }
             final String fuuid = uuid;
             switch (type) {
@@ -2370,7 +2510,7 @@ public class BgGraphBuilder {
                     final View.OnClickListener mOnClickListener = new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Home.startHomeWithExtra(xdrip.getAppContext(), Home.CREATE_TREATMENT_NOTE, time.toString(), Double.toString(ypos));
+                            Home.startHomeWithExtra(xdrip.getAppContext(), Home.CREATE_TREATMENT_NOTE, time.toString(), "-1"); // Let's not enter a y position to avoid having to worry about the BG units
                         }
                     };
                     Home.snackBar(R.string.add_note, message, mOnClickListener, callerActivity);

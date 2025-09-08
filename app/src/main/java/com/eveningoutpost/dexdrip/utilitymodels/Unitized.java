@@ -54,26 +54,26 @@ public class Unitized {
         if (domgdl) {
             df.setMaximumFractionDigits(0);
         } else {
-            df.setMaximumFractionDigits(1);
+            df.setMaximumFractionDigits(2);
         }
         return df.format(unitized(value, domgdl)) + " " + (domgdl ? "mgdl" : "mmol");
     }
 
     public static String unitized_string(double value, boolean doMgdl) {
         final DecimalFormat df = new DecimalFormat("#");
-        if (value >= 400) {
+        if (value >= 1000) {
             return "HIGH";
-        } else if (value >= 40) {
+        } else if (value >= 6) {
             if (doMgdl) {
                 df.setMaximumFractionDigits(0);
                 return df.format(value);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
                 //next line ensures mmol/l value is XX.x always.  Required by PebbleWatchSync, and probably not a bad idea.
                 df.setMinimumFractionDigits(1);
                 return df.format(mmolConvert(value));
             }
-        } else if (value > 12) {
+        } else if (value > 0) {
             return "LOW";
         } else {
             switch ((int) value) {
@@ -138,11 +138,11 @@ public class Unitized {
 
             return delta_sign + df.format(unitized(value,doMgdl)) + (showUnit ? " mg/dl" : "");
         } else {
-            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l
+            // only show 2 decimal places on mmol/l delta when less than 0.1 mmol/l  // always show 2 decimals (1 -> 2 under else)
             if (highGranularity && (Math.abs(value) < (Constants.MMOLL_TO_MGDL * 0.1))) {
                 df.setMaximumFractionDigits(2);
             } else {
-                df.setMaximumFractionDigits(1);
+                df.setMaximumFractionDigits(2);
             }
 
             df.setMinimumFractionDigits(1);

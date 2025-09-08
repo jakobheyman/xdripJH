@@ -17,6 +17,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
@@ -586,14 +587,20 @@ public class AlertPlayer {
         }
         if (profile != ALERT_PROFILE_SILENT && alert.vibrate) {
             if (notSilencedDueToCall()) {
-                builder.setVibrate(Notifications.vibratePattern);
+                // if using custom vibration...
+                if (alert.vibration_pattern.length() > 0) {
+                    customVibration(context, alert.vibration_pattern);
+                } else {
+                    builder.setVibrate(Notifications.vibratePattern);
+                }
             } else {
                 Log.i(TAG, "Vibration silenced due to ongoing call");
             }
         } else {
             // In order to still show on all android wear watches, either a sound or a vibrate pattern
             // seems to be needed. This pattern basically does not vibrate:
-            builder.setVibrate(new long[]{1, 0});
+            //builder.setVibrate(new long[]{1, 0}); // changed to use customVibration as it appears to trigger the default notification vibration
+            customVibration(context, "0");
         }
         Log.ueh("Alerting", contentLog);
         final NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -666,5 +673,23 @@ public class AlertPlayer {
         }
         // unknown mode, not sure let's play just in any case.
         return true;
+    }
+
+    private static void customVibration(Context ctx, String vibration_pattern) {
+        // fix vibrator first
+        final Vibrator vibrator = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+        if ((vibrator == null) || (!vibrator.hasVibrator())) {
+            return;
+        }
+        vibrator.cancel();
+        // convert string vibration_pattern to long array vibPatternLong
+        String[] stringarray = vibration_pattern.split(",");
+        long[] vibPatternLong = new long[stringarray.length+1];
+        vibPatternLong[0] = 0;
+        for (int i = 0; i < stringarray.length; i++) {
+            vibPatternLong[i+1] = Long.parseLong(stringarray[i])*10;
+        }
+        final int indexInPatternToRepeat = -1;
+        vibrator.vibrate(vibPatternLong, indexInPatternToRepeat);
     }
 }

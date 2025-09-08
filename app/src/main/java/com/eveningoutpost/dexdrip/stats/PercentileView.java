@@ -170,11 +170,21 @@ public class PercentileView extends View {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
         boolean mgdl = "mgdl".equals(settings.getString("units", "mgdl"));
         if (mgdl) {
-            levels = new double[]{50, 100, 150, 200, 250, 300, 350};
-            labels = new String[]{"50", "100", "150", "200", "250", "300", "350"};
+            if (canvas.getHeight() > canvas.getWidth()) {
+                levels = new double[]{25, 50, 75, 100, 125, 150, 175, 200, 225, 250};
+                labels = new String[]{"25", "50", "75", "100", "125", "150", "175", "200", "225", "250"};
+            } else {
+                levels = new double[]{25, 50, 75, 100, 125, 150, 175};
+                labels = new String[]{"25", "50", "75", "100", "125", "150", "175"};
+            }
         } else {
-            levels = new double[]{2.8, 5.5, 8.3, 11, 14, 17, 20};
-            labels = new String[]{"2.8", "5.5", "8.3", "11", "14", "17", "20"};
+            if (canvas.getHeight() > canvas.getWidth()) {
+                levels = new double[]{2, 4, 6, 8, 10, 12, 14};
+                labels = new String[]{"2", "4", "6", "8", "10", "12", "14"};
+            } else {
+                levels = new double[]{2, 4, 6, 8, 10};
+                labels = new String[]{"2", "4", "6", "8", "10"};
+            }
             for (int i = 0; i < levels.length; i++) {
                 levels[i] *= Constants.MMOLL_TO_MGDL;
             }
@@ -208,7 +218,7 @@ public class PercentileView extends View {
         myPaint.setColor(Color.RED);
         myPaint.setStrokeWidth(dp2px(3));
         canvas.drawLine(dpOffset, lowPosition, canvas.getWidth(), lowPosition, myPaint);
-        myPaint.setColor(Color.YELLOW);
+        //myPaint.setColor(Color.YELLOW);
         canvas.drawLine(dpOffset, highPosition, canvas.getWidth(), highPosition, myPaint);
     }
 
@@ -235,7 +245,12 @@ public class PercentileView extends View {
     }
 
     private int getYfromBG(double bgValue, Canvas canvas) {
-        return (int) (canvas.getHeight() - dpOffset - bgValue * (canvas.getHeight() - dpOffset) / 400);
+        if (canvas.getHeight() > canvas.getWidth()) {
+            return (int) (canvas.getHeight() - dpOffset - bgValue * (canvas.getHeight() - dpOffset) / (15 * Constants.MMOLL_TO_MGDL));
+        } else {
+            return (int) (canvas.getHeight() - dpOffset - bgValue * (canvas.getHeight() - dpOffset) / (11 * Constants.MMOLL_TO_MGDL));
+        }
+        //return (int) (canvas.getHeight() - dpOffset - bgValue * (canvas.getHeight() - dpOffset) / 400);
     }
 
     private int dp2px(float dp) {

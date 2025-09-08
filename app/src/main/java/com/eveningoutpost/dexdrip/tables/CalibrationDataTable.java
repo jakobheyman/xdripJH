@@ -18,6 +18,7 @@ import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.NavigationDrawerFragment;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.utilitymodels.BgGraphBuilder;
+import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,9 +98,10 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
 
         void bindView(View view, final Context context, final Calibration calibration) {
             final CalibrationDataCursorAdapterViewHolder tag = (CalibrationDataCursorAdapterViewHolder) view.getTag();
+            final boolean domgdl = Pref.getString("units", "mgdl").equals("mgdl");
             tag.raw_data_id.setText(JoH.qs(calibration.bg, 4) + "    "+ BgGraphBuilder.unitized_string_static(calibration.bg));
-            tag.raw_data_value.setText("raw: " + JoH.qs(calibration.estimate_raw_at_time_of_calibration, 4));
-            tag.raw_data_slope.setText("slope: " + JoH.qs(calibration.slope, 4) + " intercept: " + JoH.qs(calibration.intercept, 4));
+            tag.raw_data_value.setText("raw: " + JoH.qs(BgGraphBuilder.unitized(calibration.estimate_raw_at_time_of_calibration, domgdl), 4));
+            tag.raw_data_slope.setText("slope: " + JoH.qs(calibration.slope, 4) + " intercept: " + JoH.qs(BgGraphBuilder.unitized(calibration.intercept, domgdl), 4));
             tag.raw_data_timestamp.setText(JoH.dateTimeText(calibration.timestamp) + "  (" + JoH.dateTimeText(calibration.raw_timestamp) + ")");
 
             if (calibration.isNote()) {
@@ -122,8 +124,13 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    calibration.clear_byuuid(calibration.uuid, false);
-                                    notifyDataSetChanged();
+                                    if (calibration.isValid()) {
+                                        calibration.clear_byuuid(calibration.uuid, false);
+                                        notifyDataSetChanged();
+                                    } else if (!calibration.isNote()) {
+                                        Calibration.reenable(calibration);
+                                        notifyDataSetChanged();
+                                    }
                                     break;
 
                                 case DialogInterface.BUTTON_NEGATIVE:
@@ -133,8 +140,13 @@ public class CalibrationDataTable extends BaseListActivity implements Navigation
                     };
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setMessage("Disable this calibration?\nFlagged calibrations will no longer have an effect.").setPositiveButton(gs(R.string.yes), dialogClickListener)
-                            .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    if (calibration.isValid()) {
+                        builder.setMessage("Disable this calibration?\nFlagged calibrations will no longer have an effect.").setPositiveButton(gs(R.string.yes), dialogClickListener)
+                                .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    } else if (!calibration.isNote()) {
+                        builder.setMessage("Re-enable this calibration?").setPositiveButton(gs(R.string.yes), dialogClickListener)
+                                .setNegativeButton(gs(R.string.no), dialogClickListener).show();
+                    }
                     return true;
                 }
             });

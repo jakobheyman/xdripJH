@@ -84,12 +84,13 @@ public class FirstPageFragment extends Fragment {
             if (total == 0) {
                 total = Long.MAX_VALUE;
             }
-            int abovePercent = (int) (aboveRange * 100.0 / total + 0.5);
-            int belowPercent = (int) (belowRange * 100.0 / total + 0.5);
-            int inPercent = 100 - abovePercent - belowPercent;
+            //~ int abovePercent = (int) (aboveRange * 100.0 / total + 0.5);
+            //~ int belowPercent = (int) (belowRange * 100.0 / total + 0.5);
+            //~ int inPercent = 100 - abovePercent - belowPercent;
 
             TextView rangespercent = (TextView) localView.findViewById(R.id.textView_ranges_percent);
-            updateText(localView, rangespercent, inPercent + "%/" + abovePercent + "%/" + belowPercent + "%");
+            //~ updateText(localView, rangespercent, inPercent + "%/" + abovePercent + "%/" + belowPercent + "%"); // changed to display 1 decimal digit
+            updateText(localView, rangespercent, Math.round(inRange*1000d/total) / 10d + "%/" + Math.round(aboveRange*1000d/total) / 10d + "%/" + Math.round(belowRange*1000d/total) / 10d + "%");
 
             // Let's put the range settings on screen so that this becomes a self-contained page.
             // Navid200

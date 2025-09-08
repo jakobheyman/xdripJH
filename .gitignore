@@ -21,6 +21,8 @@ scripts/
 app/defunct
 app/src/main/java/com/eveningoutpost/dexdrip/spike/
 app/src/test/java/com/eveningoutpost/dexdrip/spike/
+app/prod
+apk/
 
 # Gradle files
 .gradle/
@@ -29,6 +31,8 @@ app/release
 localeapi/gradle/
 localeapi/lint.xml
 
+# key file
+keystore.properties
 
 # Local configuration file (sdk path, etc)
 local.properties

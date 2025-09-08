@@ -105,8 +105,8 @@ public class DexCollectionService extends Service implements BtCallBack {
     private static final String PREF_DEX_COLLECTION_POLLING = "pref_dex_collection_polling";
     private static final long POLLING_PERIOD = (Constants.MINUTE_IN_MS * 5) - Constants.SECOND_IN_MS;
     // TODO different pre-connect timeout windows for different hardware
-    //private static final long RETRY_PERIOD = DEXCOM_PERIOD - (Constants.SECOND_IN_MS * 35);
-    private static final long RETRY_PERIOD = DEXCOM_PERIOD - (Constants.SECOND_IN_MS * 95);
+    private static final long RETRY_PERIOD = DEXCOM_PERIOD - (Constants.SECOND_IN_MS * 35);
+    //private static final long RETRY_PERIOD = DEXCOM_PERIOD - (Constants.SECOND_IN_MS * 95);
     private static final long TOLERABLE_JITTER = 10000;
     private static long last_time_seen = 0;
     public static String lastState = "Not running";

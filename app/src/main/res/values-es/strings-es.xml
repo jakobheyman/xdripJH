@@ -233,6 +233,7 @@
     <string name="pref_was_less_than_min">%1$s se estableció a un valor menor que el mínimo permitido. Se ha cambiado al mínimo.</string>
     <string name="extrapolate_data_to_try_to_predict_lows">Extrapolar datos para tratar de predecir bajadas</string>
     <string name="alarm_at_forecasted_low_mins">Alarma en minutos bajas predichas</string>
+    <string name="title_forecast_low_threshold">Límite</string>
     <string name="other_xdrip_plus_alerts">Otras alertas xDrip+</string>
     <string name="xdrip_plus_display_settings">xDrip+ Ajustes de pantalla</string>
     <string name="display_customisations">Personalizaciones de pantalla</string>
@@ -253,6 +254,9 @@
     <string name="dexcom_transmitter_id">ID del transmisor Dexcom</string>
     <string name="run_collector_in_foreground">Ejecutar Colector en primer plano</string>
     <string name="shows_a_persistent_notification">Muestra un gráfico de notificación permanente, visible en la pantalla de bloqueo y evita que Android elimine el servicio.</string>
+    <string name="title_collector_in_foreground">Colector en primer plano</string>
+    <string name="summary_compact_ongoing_notification">Activar para ocultar el gráfico en la notificación y mostrar solo el valor actual de glucosa.</string>
+    <string name="title_compact_ongoing_notification">Notificación persistente comprimida</string>
     <string name="list_of_receivers">Lista de Receptores</string>
     <string name="extra_tags_for_logging">Etiquetas extra para el registro</string>
     <string name="extra_tags_dialog_message">Las etiquetas introducidas aquí serán registradas en xDrip. El formato es \'etiqueta:nivel\'. El nivel puede ser v,d,i. Por ejemplo bgreading:i, DexCollectionService:v. Éstas etiquetas serán registradas con prioridad baja en las listas de errores y de eventos.</string>
@@ -771,7 +775,7 @@
     <string name="calibrations_request_time_time_difference">Cuántas horas entre las solicitudes de calibración</string>
     <string name="hours_between_calibrations">Horas entre calibraciones</string>
     <string name="calibrations_sound">Establece el sonido utilizado para las solicitudes de calibración.</string>
-    <string name="override_silent_mode">Anular modo silencioso</string>
+    <string name="override_silent_mode">Cancelar modo silencio</string>
     <string name="even_when_charging">Incluso durante la carga</string>
     <string name="no_calibration_requests_charging">Desmarcar para no solicitar calibraciones cuando el teléfono se está cargando</string>
     <string name="keep_alert_no_calibration">Mantener alertas si no se realiza ninguna calibración</string>
@@ -1473,6 +1477,8 @@
     <string name="summary_persistent_high_alert">Cuando está por encima del nivel alto durante mucho tiempo y no baja</string>
     <string name="summary_persistent_high_threshold_link">Cuando se activa, el valor alto es el límite.\nCuando se desactiva, el límite es el valor especificado a continuación.</string>
     <string name="title_persistent_high_threshold_link">Límite: Valor alto</string>
+    <string name="summary_forecast_low_threshold_link">Cuando se activa, el valor bajo es el límite.\nCuando se desactiva, el límite es el valor especificado a continuación.</string>
+    <string name="title_forecast_low_threshold_link">Límite: Valor bajo</string>
     <string name="note_search_button">BUSCAR</string>
     <string name="all_note_button">TODO</string>
     <string name="title_full_screen_mode">Modo de pantalla completa</string>
@@ -1894,4 +1900,15 @@
     <string name="default_xdrip_reminder_sound">Sonido de recordatorio xDrip+ por defecto</string>
     <string name="custom_audio_file">Archivo de audio por defecto</string>
     <string name="android_ringtone_alarm">Tono de Android / Alarma</string>
+    <string name="first_successful_connection_to_transmitter">"Primera conexión exitosa con el transmisor %1$s"</string>
+    <string name="first_successful_connection_to_transmitter_em">"Primera conexión exitosa con el transmisor %1$s con mac %2$s"</string>
+    <string name="sensor_expiring">Sensor caduca</string>
+    <string name="sensor_will_expire_in">El sensor caducará en %1$s</string>
+    <string name="xdrip_update">actualizar xDrip+</string>
+    <string name="a_new_version_on_channel_1_s_is_available">Una nueva versión en el canal %1$s está disponible</string>
+    <string name="today">Hoy</string>
+    <string name="yesterday">Ayer</string>
+    <string name="last_7_days">Últimos 7 días</string>
+    <string name="last_30_days">Últimos 30 días</string>
+    <string name="last_90_days">Últimos 90 días</string>
 </resources>

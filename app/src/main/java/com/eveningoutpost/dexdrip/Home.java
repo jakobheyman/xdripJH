@@ -282,6 +282,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     private TextView parakeetBattery;
     private TextView sensorAge;
     private TextView currentBgValueText;
+    private TextView oopBgValueText;
+    private TextView rawBgValueText;
     private TextView notificationText;
     private TextView extraStatusLineText;
     private boolean alreadyDisplayedBgInfoCommon = false;
@@ -418,6 +420,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         this.sensorAge = (TextView) findViewById(R.id.libstatus);
         this.extraStatusLineText = (TextView) findViewById(R.id.extraStatusLine);
         this.currentBgValueText = (TextView) findViewById(R.id.currentBgValueRealTime);
+        this.oopBgValueText = (TextView) findViewById(R.id.oopBgValue);
+        this.rawBgValueText = (TextView) findViewById(R.id.rawBgValue);
         this.bpmButton = (Button) findViewById(R.id.bpmButton);
         this.stepsButton = (Button) findViewById(R.id.walkButton);
 
@@ -618,7 +622,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         PlusSyncService.startSyncService(getApplicationContext(), "HomeOnCreate");
         ParakeetHelper.notifyOnNextCheckin(false);
 
-        if (checkedeula && (!getString(R.string.app_name).equals("xDrip+"))) {
+        if (checkedeula && (!getString(R.string.app_name).equals("xdripJH"))) {
             showcasemenu(SHOWCASE_VARIANT);
         }
 
@@ -1007,6 +1011,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 }
                 final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
                 JoH.showNotification(bundle.getString(SHOW_NOTIFICATION), bundle.getString("notification_body"), pendingIntent, notification_id, true, true, true);
+                UserError.Log.uel(TAG, bundle.getString("notification_body"));
             } else if (bundle.getString(Home.BLUETOOTH_METER_CALIBRATION) != null) {
                 try {
                     processFingerStickCalibration(JoH.tolerantParseDouble(bundle.getString(Home.BLUETOOTH_METER_CALIBRATION), 0d),
@@ -2086,7 +2091,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         chart.setOnValueTouchListener(bgGraphBuilder.getOnValueSelectTooltipListener(mActivity));
 
         previewChart.setBackgroundColor(getCol(X.color_home_chart_background));
-        previewChart.setZoomType(ZoomType.HORIZONTAL);
+        previewChart.setZoomType(ZoomType.VERTICAL);
+        previewChart.setMaxZoom(50f);
         previewChart.setLineChartData(bgGraphBuilder.previewLineData(chart.getLineChartData()));
         previewChart.setViewportCalculationEnabled(true);
         previewChart.setViewportChangeListener(new PreviewChartViewportListener());
@@ -2247,6 +2253,16 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         return Home.is_holo;
     }
 
+    public void toggleOopCalibratedDataPlot(View v) {
+        Pref.setBoolean("show_oop_calibrated", !Pref.getBoolean("show_oop_calibrated", true));
+        staticRefreshBGCharts();
+    }
+
+    public void toggleRawDataPlot(View v) {
+        Pref.setBoolean("show_raw_plot", !Pref.getBoolean("show_raw_plot", true));
+        staticRefreshBGCharts();
+    }
+
     public void toggleStepsVisibility(View v) {
         Pref.setBoolean("show_pebble_movement_line", !Pref.getBoolean("show_pebble_movement_line", true));
         staticRefreshBGCharts();
@@ -2289,8 +2305,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             case "time tick":
                 if (msSince(lastViewPortPan) < 45 * SECOND_IN_MS) {
                     UserError.Log.d(TAG, "Skipping VIEWPORT adjustment as panning and data just arrived: " + holdViewport.toString());
-                    holdViewport.top = maxViewPort.top;
-                    holdViewport.bottom = maxViewPort.bottom;
+                    // xdripJH: don't change top and bottom
+                    // holdViewport.top = maxViewPort.top;
+                    // holdViewport.bottom = maxViewPort.bottom;
                     chart.setCurrentViewport(holdViewport); // reuse existing
                     return;
                 }
@@ -2308,10 +2325,18 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         UserError.Log.d(TAG, "VIEWPORT " + source + " moveviewport in setHours: asked " + hours + " vs auto " + ideal_hours_to_show + " = " + hours_to_show + " full chart width: " + bgGraphBuilder.hoursShownOnChart());
 
         double hour_width = maxViewPort.width() / bgGraphBuilder.hoursShownOnChart();
-        holdViewport.left = maxViewPort.right - hour_width * hours_to_show;
-        holdViewport.right = maxViewPort.right;
-        holdViewport.top = maxViewPort.top;
-        holdViewport.bottom = maxViewPort.bottom;
+
+        // xdripJH: viewport modifications done here ===============================================
+        Viewport viewportfix = bgGraphBuilder.fixViewport(maxViewPort,hours_to_show,hour_width);
+        holdViewport.left = viewportfix.left;
+        holdViewport.right = viewportfix.right;
+        holdViewport.top = viewportfix.top;
+        holdViewport.bottom = viewportfix.bottom;
+        //~ holdViewport.left = maxViewPort.right - hour_width * hours_to_show;
+        //~ holdViewport.right = maxViewPort.right;
+        //~ holdViewport.top = maxViewPort.top;
+        //~ holdViewport.bottom = maxViewPort.bottom;
+        //~ ========================================================================================
 
         // if locked, center display on current bg values, not predictions
         if (homeShelf.get("time_locked_always")) {
@@ -2675,6 +2700,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             return;
         }
 
+        /*  // Don't display please wait info at the start of a new sensor
         if (!BgReading.doWeHaveRecentUsableData()) {
             long startedAt = Sensor.currentSensor().started_at;
             long computedStartedAt = SensorDays.get().getStart();
@@ -2691,6 +2717,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 return;
             }
         }
+        */
 
         if (DexCollectionType.isLibreOOPNonCalibratebleAlgorithm(collector)) {
             // Rest of this function deals with initial calibration. Since we currently don't have a way to calibrate,
@@ -2701,8 +2728,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             return;
         }
 
+        if (DexCollectionType.hasLibre()) {
+            // Don't use initial calibration
+            displayCurrentInfo();
+            if (screen_forced_on) dontKeepScreenOn();
         // TODO this logic needed a rework even a year ago, now its a lot more confused with the additional complexity of native mode
-        if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
+        } else if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
             // TODO use format string
             notificationText.setText(String.format(gs(R.string.state_not_currently_known), (Ob1G5StateMachine.usingG6() ? (shortTxId() ? "G7" : "G6") : "G5")));
             showUncalibratedSlope();
@@ -2943,7 +2974,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (sensor_age > 0 && (DexCollectionType.hasLibre() || hasLibreblock())) {
             final String age_problem = (Pref.getBooleanDefaultFalse("nfc_age_problem") ? " \u26A0\u26A0\u26A0" : "");
             if (Pref.getBoolean("nfc_show_age", true)) {
-                sensorAge.setText(getResources().getQuantityString(R.plurals.sensor_age, sensor_age / 1440, JoH.qs(((double) sensor_age) / 1440, 1)) + age_problem);
+                sensorAge.setText(getResources().getQuantityString(R.plurals.sensor_age, sensor_age / 1440, JoH.qs(((double) sensor_age) / 1440, 2)) + age_problem);
             } else {
                 try {
                     final double expires = JoH.tolerantParseDouble(Pref.getString("nfc_expiry_days", "14.5"), 14.5d) - ((double) sensor_age) / 1440;
@@ -2968,6 +2999,26 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             sensorAge.setText("SCANNING.. DISPLAY LOCKED!");
             sensorAge.setVisibility(View.VISIBLE);
             sensorAge.setTextColor(Color.GREEN);
+        }
+
+        final double lastOopBg = BgReading.lastOopBg();
+        if (Pref.getBoolean("show_oop_bg_value", false) && (lastOopBg != 0)) {
+            oopBgValueText.setText("OOP: " + bgGraphBuilder.unitized_string(lastOopBg));
+            oopBgValueText.setVisibility(View.VISIBLE);
+            oopBgValueText.setTextColor(getCol(X.color_oopcal_values));
+        } else {
+            oopBgValueText.setText("");
+            oopBgValueText.setVisibility(View.GONE);
+        }
+
+        final double lastRawBg = BgReading.lastRawBg();
+        if (Pref.getBoolean("show_raw_bg_value", false) && (lastRawBg != 0)) {
+            rawBgValueText.setText("raw: " + bgGraphBuilder.unitized_string(lastRawBg));
+            rawBgValueText.setVisibility(View.VISIBLE);
+            rawBgValueText.setTextColor(getCol(X.color_raw_values));
+        } else {
+            rawBgValueText.setText("");
+            rawBgValueText.setVisibility(View.GONE);
         }
 
         if ((currentBgValueText.getPaintFlags() & Paint.STRIKE_THRU_TEXT_FLAG) > 0) {
@@ -3086,15 +3137,27 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             if (extrastring.length() > 0)
                 currentBgValueText.setText(extrastring + currentBgValueText.getText());
         }
+        int seconds = (int) (System.currentTimeMillis() - lastBgReading.timestamp) / 1000;
         int minutes = (int) (System.currentTimeMillis() - lastBgReading.timestamp) / (60 * 1000);
 
         if ((!small_width) || (notificationText.length() > 0)) notificationText.append("\n");
         if (!small_width) {
-            final String fmt = getString(R.string.minutes_ago);
-            notificationText.append(MessageFormat.format(fmt, minutes));
+            if (minutes == 0) {
+                notificationText.append(seconds + getString(R.string.space_sec));
+            } else {
+                seconds = seconds - (minutes * 60);
+                notificationText.append(minutes + getString(R.string.space_min_space) + seconds + getString(R.string.space_sec));
+            }
+            //~ final String fmt = getString(R.string.minutes_ago);
+            //~ notificationText.append(MessageFormat.format(fmt, minutes));
         } else {
             // small screen
-            notificationText.append(minutes + getString(R.string.space_mins));
+            if (minutes == 0) {
+                notificationText.append(seconds + getString(R.string.space_sec));
+            } else {
+                notificationText.append(minutes + getString(R.string.space_min));
+            }
+            //~ notificationText.append(minutes + getString(R.string.space_mins));
             currentBgValueText.setPadding(0, 0, 0, 0);
         }
 
@@ -3519,7 +3582,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
             if (treatment_text.length() > 0) {
                 // display snackbar of the snackbar
-                final View.OnClickListener mOnClickListener = v -> Home.startHomeWithExtra(xdrip.getAppContext(), Home.CREATE_TREATMENT_NOTE, Long.toString(timestamp), Double.toString(position));
+                final View.OnClickListener mOnClickListener = v -> Home.startHomeWithExtra(xdrip.getAppContext(), Home.CREATE_TREATMENT_NOTE, Long.toString(timestamp), "-1"); // Let's not enter a y position to avoid having to worry about BG units
                 Home.snackBar(R.string.add_note, getString(R.string.added) + ":    " + treatment_text, mOnClickListener, mActivity);
             }
 
@@ -3533,7 +3596,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             }
 
         });
-        if (Treatments.byTimestamp(timestamp, (int) (2.5 * MINUTE_IN_MS)) != null) {
+        if (Treatments.byTimestamp(timestamp, (int) (0.5 * MINUTE_IN_MS)) != null) {
             dialogBuilder.setNeutralButton(R.string.delete, (dialog, whichButton) -> {
                 // are you sure?
                 final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
@@ -3541,7 +3604,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 builder.setMessage(gs(R.string.are_you_sure_you_want_to_delete_this_treatment));
                 builder.setPositiveButton(gs(R.string.yes_delete), (dialog1, which) -> {
                     dialog1.dismiss();
-                    Treatments.delete_by_timestamp(timestamp, (int) (2.5 * MINUTE_IN_MS), true); // 2.5 min resolution
+                    Treatments.delete_by_timestamp(timestamp, (int) (0.5 * MINUTE_IN_MS), true); // 0.5 min resolution
                     staticRefreshBGCharts();
                     JoH.static_toast_short(gs(R.string.deleted));
                 });
@@ -3674,7 +3737,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         public synchronized void onViewportChanged(Viewport newViewport) {
             if (!updatingPreviewViewport) {
                 updatingChartViewport = true;
-                previewChart.setZoomType(ZoomType.HORIZONTAL);
+                previewChart.setZoomType(ZoomType.VERTICAL);
                 previewChart.setCurrentViewport(newViewport);
                 updatingChartViewport = false;
             }

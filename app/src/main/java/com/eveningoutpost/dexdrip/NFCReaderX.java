@@ -162,7 +162,7 @@ public class NFCReaderX {
                 return;
 
             } else if (!mNfcAdapter.isEnabled()) {
-                JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
+                //JoH.static_toast_long(gs(R.string.nfc_is_not_enabled));
                 return;
             }
         } catch (NullPointerException e) {
@@ -668,9 +668,13 @@ public class NFCReaderX {
                             Log.d(TAG, "Not using addressed mode since not a libre 1 sensor");
                             addressed = false;
                         }
-                        if (sensorType == SensorType.Libre2) {
+                        if (sensorType == SensorType.Libre2 || sensorType == SensorType.Libre2Plus) {
                             startLibre2Streaming(nfcvTag, patchUid, patchInfo);
+                        }
+                        if (sensorType == SensorType.Libre2) {
                             PersistentStore.setString("LibreVersion", "2");
+                        } else if (sensorType == SensorType.Libre2Plus) {
+                            PersistentStore.setString("LibreVersion", "3");
                         } else {
                             PersistentStore.setString("LibreVersion", "1");
                         }
@@ -680,7 +684,7 @@ public class NFCReaderX {
                             for (int i = 0; i < 43; i = i + 3) {
                                 int read_blocks = 3;
                                 int correct_reply_size = addressed ? 28 : 25;
-                                if (i == 42 && sensorType == SensorType.Libre2) {
+                                if (i == 42 && (sensorType == SensorType.Libre2 || sensorType == SensorType.Libre2Plus)) {
                                     read_blocks = 1;
                                     correct_reply_size = 9;
                                 }
@@ -757,7 +761,8 @@ public class NFCReaderX {
                                 Long time = System.currentTimeMillis();
                                 while (true) {
                                     try {
-                                        Log.e(TAG, "sending command " + HexDump.toHexString(cmd));
+                                        // avoid long list in log
+                                        //Log.e(TAG, "sending command " + HexDump.toHexString(cmd));
                                         oneBlock = nfcvTag.transceive(cmd);
                                         break;
                                     } catch (IOException | SecurityException e) {
@@ -854,12 +859,16 @@ public class NFCReaderX {
             glucoseData.source = GlucoseData.DataSource.FRAM;
 
             int time = Math.max(0, Math.abs((sensorTime - 3) / 15) * 15 - index * 15);
+            // only add data at least 5 min old from start of sensor
+            if(time < 5) {
+                break;
+            }
 
             glucoseData.realDate = sensorStartTime + time * MINUTE;
             glucoseData.sensorTime = time;
             if (verifyTime(time, "parseData history", data)) {
                 historyList.add(glucoseData);
-            }
+            }            
         }
         return historyList;
     }
@@ -884,6 +893,10 @@ public class NFCReaderX {
             glucoseData.temp = LibreOOPAlgorithm.readBits(data, i * FRAM_RECORD_SIZE + TREND_START, 0x1a, 0xc);
             glucoseData.source = GlucoseData.DataSource.FRAM;
             int time = Math.max(0, sensorTime - index);
+            // only add data at least 5 min old from start of sensor
+            if(time < 5) {
+                break;
+            }
 
             glucoseData.realDate = sensorStartTime + time * MINUTE;
             glucoseData.sensorTime = time;
@@ -955,11 +968,11 @@ public class NFCReaderX {
                 && history_bg_vals.length == historyList.size()) {
             for (int i = 0; i < trend_bg_vals.length; i++) {
                 trendList.get(i).glucoseLevel = trend_bg_vals[i];
-                Log.e(TAG, "Adding bg val for trend at time " + trendList.get(i).sensorTime + " val =  " + trend_bg_vals[i]);
+                //Log.e(TAG, "Adding bg val for trend at time " + trendList.get(i).sensorTime + " val =  " + trend_bg_vals[i]);
             }
             for (int i = 0; i < history_bg_vals.length; i++) {
                 historyList.get(i).glucoseLevel = history_bg_vals[i];
-                Log.e(TAG, "Adding bg val for history at time " + historyList.get(i).sensorTime + " val =  " + history_bg_vals[i]);
+                //Log.e(TAG, "Adding bg val for history at time " + historyList.get(i).sensorTime + " val =  " + history_bg_vals[i]);
             }
         }
 

@@ -140,13 +140,16 @@ public class ReadingData {
         }
 
         // For the per minute data, we are also going to check that the data from the last 4 minutes did not have an error.
-        HashSet<Integer> errorHash = calculateErrorSet(libreTrendPoints, trend);
+        // Changed to avoid removal of OK points around points where raw = 0
+        //HashSet<Integer> errorHash = calculateErrorSet(libreTrendPoints, trend);
 
         it = trend.iterator();
         while (it.hasNext()) {
             GlucoseData glucoseData = it.next();
 
-            if (errorHash.contains(glucoseData.sensorTime) || libreTrendPoints.get(glucoseData.sensorTime).rawSensorValue == 0) {
+            // Changed to avoid removal of OK points around points where raw = 0
+            //if (errorHash.contains(glucoseData.sensorTime) || libreTrendPoints.get(glucoseData.sensorTime).rawSensorValue == 0) {
+            if (libreTrendPoints.get(glucoseData.sensorTime).rawSensorValue == 0) {
                 Log.e(TAG, "Removing point glucoseData =  " + glucoseData.toString());
                 it.remove();
             }

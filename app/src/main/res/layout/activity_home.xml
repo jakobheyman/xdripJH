@@ -100,7 +100,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="right"
-                        android:layout_marginBottom="1dp"
+                        android:layout_marginBottom="4dp"
                         android:layout_marginTop="-10dp"
                         android:layout_toStartOf="@+id/trendArrow"
                         android:layout_weight="1"
@@ -132,6 +132,38 @@
                         app:srcCompat="@drawable/ic_arrow_forward_color_24dp"
                         app:showIfTrue="@{safeUnbox(vs.included[`graphic_trend_arrow`])}" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/rawBgValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/layoutCurrentBgValueRealTime"
+                    android:layout_toStartOf="@+id/btnTreatment"
+                    android:paddingEnd="18dp"
+                    android:paddingTop="11dp"
+                    android:background="@android:color/transparent"
+                    android:text="raw"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:clickable="true"
+                    android:onClick="toggleRawDataPlot"
+                    android:textSize="12sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/oopBgValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/rawBgValue"
+                    android:layout_toStartOf="@+id/btnTreatment"
+                    android:paddingEnd="18dp"
+                    android:paddingTop="8dp"
+                    android:background="@android:color/transparent"
+                    android:text="OOP"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:clickable="true"
+                    android:onClick="toggleOopCalibratedDataPlot"
+                    android:textSize="12sp"
+                    android:textStyle="normal" />
 
                 <TextView
                     android:id="@+id/extraStatusLine"

@@ -118,6 +118,8 @@ public class ErrorsActivity extends ActivityWithMenu {
         }
     };
 
+    /*
+    Don't send logs as this is a modified version of xDrip
     public void uploadLogs(View v) {
         StringBuilder tmp = new StringBuilder(20000);
         tmp.append("The following logs will be sent to the developers: \n\nPlease also include your email address or we will not know who they are from!\n\n");
@@ -131,6 +133,7 @@ public class ErrorsActivity extends ActivityWithMenu {
         }
         startActivity(new Intent(getApplicationContext(), SendFeedBack.class).putExtra("generic_text", tmp.toString()));
     }
+    */
 
 
     private CheckBox.OnCheckedChangeListener switchChangeListener = new CompoundButton.OnCheckedChangeListener() {

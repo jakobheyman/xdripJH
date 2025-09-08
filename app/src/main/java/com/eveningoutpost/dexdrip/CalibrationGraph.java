@@ -2,6 +2,7 @@ package com.eveningoutpost.dexdrip;
 
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -28,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 
 import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
@@ -45,8 +47,11 @@ public class CalibrationGraph extends ActivityWithMenu {
     private final static String plugin_color = "#88CCFF00";
     private final boolean doMgdl = Pref.getString("units", "mgdl").equals("mgdl");
     private final boolean show_days_since = true; // could make this switchable if desired
-    private final double start_x = 50; // raw range
-    private double end_x = 300; //  raw range
+    private final double start_x = 2 * Constants.MMOLL_TO_MGDL; // raw range
+    private double end_x = 11 * Constants.MMOLL_TO_MGDL; //  raw range
+    private final float multY = (float) 1.65; // factor to make the graph match a typical rectangular screen
+    private final String[] POINT_COLOR = {"#A0A0A0", "#A7A790", "#AEAE80", "#B5B570", "#BCBC60", "#C3C350", "#CACA40", "#D1D130", "#D8D820", "#DFDF10", "#E7E700", "#E1CD00", "#DBB300", "#D69A00", "#D08000", "#CA6600", "#C54D00", "#BF3300", "#B91900", "#B40000"};
+    private final double[] MAX_WEIGHT = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1};
 
     TextView GraphHeader;
     TextView PluginHeader;
@@ -76,32 +81,55 @@ public class CalibrationGraph extends ActivityWithMenu {
         chart = (LineChartView) findViewById(R.id.chart);
         List<Line> lines = new ArrayList<Line>();
 
-        //calibration values
+        /* //calibration values
         List<Calibration> calibrations = Calibration.allForSensor();
         List<Line> greyLines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
         calibrations = Calibration.allForSensorInLastFourDays();
         List<Line> blueLines = getCalibrationsLine(calibrations, ChartUtils.COLOR_BLUE);
+        */
 
         Calibration calibration = Calibration.lastValid();
         if (calibration != null) {
+            // conversion_factor for mg-mmol
+            final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
+            
             //set header
             DecimalFormat df = new DecimalFormat("#");
             df.setMaximumFractionDigits(2);
             df.setMinimumFractionDigits(2);
-            String Header = getString(R.string.calibration_slope_intercept, df.format(calibration.slope), df.format(calibration.intercept));
+            String Header = getString(R.string.calibration_slope_intercept, df.format(calibration.slope), df.format((double) conversion_factor * calibration.intercept));
             GraphHeader.setText(Header);
+
+            // yellow 1:1 line
+            List<PointValue> lineoneone = new ArrayList<PointValue>();
+            lineoneone.add(new PointValue(conversion_factor * (float) start_x, conversion_factor * (float) start_x));
+            lineoneone.add(new PointValue(conversion_factor * (float) end_x, conversion_factor * (float) end_x));
+            Line lineoneones = new Line(lineoneone);
+            lineoneones.setColor(ChartUtils.COLOR_ORANGE);
+            lineoneones.setHasLines(true);
+            lineoneones.setHasPoints(false);
+            lineoneones.setStrokeWidth(1);
+            lineoneones.setPathEffect(new DashPathEffect(new float[]{5.0f, 10.0f}, 0));
+            lines.add(lineoneones);
 
             //red line
             List<PointValue> lineValues = new ArrayList<PointValue>();
-            final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
-
-            lineValues.add(new PointValue((float) start_x, (conversion_factor * (float) (start_x * calibration.slope + calibration.intercept))));
-            lineValues.add(new PointValue((float) end_x, (conversion_factor * (float) (end_x * calibration.slope + calibration.intercept))));
+            lineValues.add(new PointValue(conversion_factor * (float) start_x, (conversion_factor * (float) (start_x * calibration.slope + calibration.intercept))));
+            lineValues.add(new PointValue(conversion_factor * (float) end_x, (conversion_factor * (float) (end_x * calibration.slope + calibration.intercept))));
             Line calibrationLine = new Line(lineValues);
             calibrationLine.setColor(ChartUtils.COLOR_RED);
             calibrationLine.setHasLines(true);
             calibrationLine.setHasPoints(false);
             lines.add(calibrationLine);
+
+            // add invisible points to extend Y axis (made to make the X and Y scales match better in a typical rectangular smartphone graph)
+            List<PointValue> extendY = new ArrayList<PointValue>();
+            extendY.add(new PointValue(conversion_factor * (float) start_x, conversion_factor * (float) start_x));
+            extendY.add(new PointValue(conversion_factor * (float) end_x, conversion_factor * (float) end_x * multY));
+            Line extendY_disp = new Line(extendY);
+            extendY_disp.setHasLines(false);
+            extendY_disp.setHasPoints(false);
+            lines.add(extendY_disp);
 
             // calibration plugin
             final CalibrationAbstract plugin = getCalibrationPluginFromPreferences();
@@ -110,32 +138,73 @@ public class CalibrationGraph extends ActivityWithMenu {
 
                 final List<PointValue> plineValues = new ArrayList<PointValue>();
 
-                plineValues.add(new PointValue((float) start_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(start_x, pcalibration)))));
-                plineValues.add(new PointValue((float) end_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(end_x, pcalibration)))));
+                plineValues.add(new PointValue(conversion_factor * (float) start_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(start_x, pcalibration)))));
+                plineValues.add(new PointValue(conversion_factor * (float) end_x, (conversion_factor * (float) (plugin.getGlucoseFromSensorValue(end_x, pcalibration)))));
 
                 final Line pcalibrationLine = new Line(plineValues);
                 pcalibrationLine.setColor(Color.parseColor(plugin_color));
                 pcalibrationLine.setHasLines(true);
                 pcalibrationLine.setHasPoints(false);
                 lines.add(pcalibrationLine);
-                PluginHeader.setText("(" + plugin.getAlgorithmName() + ")  " + "s = " + df.format(pcalibration.slope) + "  i = " + df.format(pcalibration.intercept));
+                PluginHeader.setText("(" + plugin.getAlgorithmName() + ")  " + "s = " + df.format(pcalibration.slope) + "  i = " + df.format((double) conversion_factor * pcalibration.intercept));
                 PluginHeader.setTextColor(Color.parseColor(plugin_color));
             }
 
+            // colors based on weight values: grey - yellow - red
+            List<Calibration> calibrations = Calibration.allForSensorWithWeightX(-1, 0);
+            List<Line> col_Lines = getCalibrationsLine(calibrations, Color.parseColor("#66FFFFFF"));
+            for (Line col_Line : col_Lines) {
+                lines.add(col_Line);
+            }
+            Line leg_line = getLegendLine(0, Color.parseColor("#66FFFFFF"));
+            lines.add(leg_line);
+            
+            for (int i = 0; i < 20; i++) {
+                // add calibration points
+                calibrations = Calibration.allForSensorWithWeightX((MAX_WEIGHT[i] - 0.05), MAX_WEIGHT[i]);
+                col_Lines = getCalibrationsLine(calibrations, Color.parseColor(POINT_COLOR[i]));
+                for (Line col_Line : col_Lines) {
+                    lines.add(col_Line);
+                }
+                // add legend points
+                leg_line = getLegendLine(MAX_WEIGHT[i], Color.parseColor(POINT_COLOR[i]));
+                lines.add(leg_line);
+            }
+
             //add lines in order
+            /*
             for (Line greyLine : greyLines) {
                 lines.add(greyLine);
             }
             for (Line blueLine : blueLines) {
                 lines.add(blueLine);
             }
+            */
+        }
 
+        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+        for (int j = 1; j <= 11; j += 1) {
+            if (doMgdl) {
+                axisValues.add(new AxisValue(j * 50));
+            } else {
+                axisValues.add(new AxisValue(j * 2));
+            }
         }
         Axis axisX = new Axis();
-        Axis axisY = new Axis().setHasLines(true);
-        axisX.setName(getString(R.string.axis_x_raw_value));
-        axisY.setName(getString(R.string.axis_y_glucose_mgdl_mmol, (doMgdl ? "mg/dl" : "mmol/l")));
-
+        axisX.setAutoGenerated(false);
+        axisX.setValues(axisValues);
+        axisX.setHasLines(true);
+        axisX.setHasSeparationLine(false);
+        axisX.setName("Raw " + (doMgdl ? "mg/dl" : "mmol/l"));
+        Axis axisY = new Axis();
+        axisY.setAutoGenerated(false);
+        axisY.setValues(axisValues);
+        axisY.setHasLines(true);
+        axisY.setInside(true);
+        axisY.setName("Calibrated " + (doMgdl ? "mg/dl" : "mmol/l"));
+        //Axis axisY = new Axis().setHasLines(true);
+        //axisX.setName(getString(R.string.axis_x_raw_value));
+        //axisY.setName(getString(R.string.axis_y_glucose_mgdl_mmol, (doMgdl ? "mg/dl" : "mmol/l")));
 
         data = new LineChartData(lines);
         data.setAxisXBottom(axisX);
@@ -154,16 +223,15 @@ public class CalibrationGraph extends ActivityWithMenu {
         List<PointValue> values = new ArrayList<PointValue>();
         List<PointValue> valuesb = new ArrayList<PointValue>();
         List<PointValue> valuesc = new ArrayList<PointValue>();
+        // conversion_factor for mg-mmol
+        final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
         for (Calibration calibration : calibrations) {
             if (calibration.estimate_raw_at_time_of_calibration > end_x) {
                 end_x = calibration.estimate_raw_at_time_of_calibration;
             }
-            PointValue point = new PointValue((float) calibration.estimate_raw_at_time_of_calibration,
-                    doMgdl ? (float) calibration.bg : ((float) calibration.bg) * (float) Constants.MGDL_TO_MMOLL);
-            PointValue pointb = new PointValue((float) calibration.raw_value,
-                    doMgdl ? (float) calibration.bg : ((float) calibration.bg) * (float) Constants.MGDL_TO_MMOLL);
-            PointValue pointc = new PointValue((float) calibration.adjusted_raw_value,
-                    doMgdl ? (float) calibration.bg : ((float) calibration.bg) * (float) Constants.MGDL_TO_MMOLL);
+            PointValue point = new PointValue((conversion_factor * (float) calibration.estimate_raw_at_time_of_calibration), (conversion_factor * (float) calibration.bg));
+            PointValue pointb = new PointValue((conversion_factor * (float) calibration.raw_value), (conversion_factor * (float) calibration.bg));
+            PointValue pointc = new PointValue((conversion_factor * (float) calibration.adjusted_raw_value), (conversion_factor * (float) calibration.bg));
             String time;
             if (show_days_since) {
                 final int days_ago = daysAgo(calibration.raw_timestamp);
@@ -214,6 +282,29 @@ public class CalibrationGraph extends ActivityWithMenu {
             lines.add(linec);
         }
         return lines;
+    }
+
+    @NonNull
+    public Line getLegendLine(double max_weight, int color) {
+        // conversion_factor for mg-mmol
+        final float conversion_factor = (float) (doMgdl ? 1 : Constants.MGDL_TO_MMOLL);
+        final float start_x_legend = (float) (start_x + ((end_x - start_x) / 7));
+        final float end_x_legend = (float) (end_x - ((end_x - start_x) / 5));
+        PointValue point = new PointValue(conversion_factor * (start_x_legend + ((float) max_weight * (end_x_legend - start_x_legend))), conversion_factor * (float) (16 * Constants.MMOLL_TO_MGDL));
+        List<PointValue> values = new ArrayList<PointValue>();
+        values.add(point);
+        Line line = new Line(values);
+        line.setColor(color);
+        line.setHasLines(false);
+        line.setPointRadius(4);
+        line.setHasPoints(true);
+        if (max_weight == 0 || max_weight == 0.2 || max_weight == 0.4 || max_weight == 0.6 || max_weight == 0.8 || max_weight == 1) {
+            point.setLabel(JoH.qs0(max_weight,1));
+            line.setHasLabels(true);
+        } else {
+            line.setHasLabels(false);
+        }
+        return line;
     }
 
 

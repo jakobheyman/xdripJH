@@ -139,7 +139,7 @@ public class ExternalStatusService extends IntentService {
 
     public static String getAbsoluteBR(final String statusLine) {
         if (JoH.emptyString(statusLine)) return "";
-        val pattern = Pattern.compile(".*(^|[^0-9.,])([0-9.,]+U/h)", Pattern.DOTALL); // match last of any number followed by units per hour
+        val pattern = Pattern.compile(".*(^|[^0-9.,])([0-9.,]+ U/h)", Pattern.DOTALL); // match last of any number followed by units per hour
         val matcher = pattern.matcher(statusLine);
         val matches = matcher.find();       // was at least one found?
 

@@ -31,7 +31,7 @@ public class Profile {
     public static double minimum_shown_cob = 0.01;
     public static double minimum_insulin_recommendation = 0.1;
     public static double minimum_carb_recommendation = 1;
-    public static double scale_factor = 18;
+    public static double scale_factor = Constants.MMOLL_TO_MGDL;
     private static double the_carb_ratio = 10; // now defunct
     private static double stored_default_sensitivity = 54; // now defunct
     private static double stored_default_absorption_rate = 35;

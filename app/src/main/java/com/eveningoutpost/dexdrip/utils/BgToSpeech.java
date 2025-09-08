@@ -155,9 +155,9 @@ public class BgToSpeech implements NamedSliderProcessor {
 
         // TODO does some of this need unifying from best glucose etc?
         final DecimalFormat df = new DecimalFormat("#");
-        if (value >= 400) {
+        if (value >= 1000) {
             text = xdrip.getAppContext().getString(R.string.high);
-        } else if (value >= 40) {
+        } else if (value >= 6) {
             if (doMgdl) {
                 df.setMaximumFractionDigits(0);
                 text = df.format(value);

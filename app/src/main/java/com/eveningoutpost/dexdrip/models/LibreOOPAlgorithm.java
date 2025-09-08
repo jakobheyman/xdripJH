@@ -55,7 +55,8 @@ public class LibreOOPAlgorithm {
         Libre1New(1),
         LibreUS14Day(2),
         Libre2(3),
-        LibreProH(4);
+        LibreProH(4),
+        Libre2Plus(5);
 
         int value;
 
@@ -154,8 +155,11 @@ public class LibreOOPAlgorithm {
         if (ret == null) {
             Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) returning null");
         } else {
+            // changed to avoid long list in log
+            //Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) got data payload is " + JoH.bytesToHex(ret.btUnlockBuffer) + " " + JoH.bytesToHex(ret.nfcUnlockBuffer) +
+            //        " unlockBufferArray = " + ret.unlockBufferArray);
             Log.e(TAG, "waitForUnlockPayload (sendGetBluetoothEnablePayload) got data payload is " + JoH.bytesToHex(ret.btUnlockBuffer) + " " + JoH.bytesToHex(ret.nfcUnlockBuffer) +
-                    " unlockBufferArray = " + ret.unlockBufferArray);
+                    " (unlockBufferArray not shown here!)");
         }
         return ret;
     }
@@ -303,8 +307,10 @@ public class LibreOOPAlgorithm {
                 return SensorType.LibreUS14Day;
             case 0x9d0830:
             case 0xc50930:
-            case 0xc60931:
                 return SensorType.Libre2;
+            case 0xc60931:
+            case 0x7f0e31:
+                return SensorType.Libre2Plus;
             case 0x700010:
                 return SensorType.LibreProH;
         }
@@ -332,7 +338,7 @@ public class LibreOOPAlgorithm {
         lastRecievedData = JoH.tsl();
         int raw = LibreOOPAlgorithm.readBits(ble_data, 0, 0, 0xe);
         int sensorTime = 256 * (ble_data[41] & 0xFF) + (ble_data[40] & 0xFF);
-        Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
+        //Log.e(TAG, "Creating BG time =  " + sensorTime + " raw = " + raw);
 
         ReadingData readingData = new ReadingData();
         readingData.raw_data = ble_data;
@@ -363,6 +369,10 @@ public class LibreOOPAlgorithm {
             glucoseData.source = GlucoseData.DataSource.BLE;
 
             int relative_time = LIBRE2_SHIFT[i];
+            // only add data at least 5 min old from start of sensor
+            if((sensorTime - relative_time) < 5) {
+                break;
+            }
             glucoseData.realDate = captureDateTime - relative_time * Constants.MINUTE_IN_MS;
             glucoseData.sensorTime = sensorTime - relative_time;
             if (trend_bg_vals != null && trend_bg_vals.length == DATA_SIZE) {
@@ -396,7 +406,8 @@ public class LibreOOPAlgorithm {
 
             int relative_time = i * 15;
             int final_time = sensorTimeModulo - relative_time;
-            if (final_time < 0) {
+            // only add data at least 5 min old from start of sensor
+            if (final_time < 5) {
                 break;
             }
 
@@ -416,7 +427,7 @@ public class LibreOOPAlgorithm {
     // Functions that are used for an external decoder.
     static public boolean isDecodeableData(byte[] patchInfo) {
         SensorType sensorType = getSensorType(patchInfo);
-        return sensorType == SensorType.LibreUS14Day || sensorType == SensorType.Libre2;
+        return sensorType == SensorType.LibreUS14Day || sensorType == SensorType.Libre2 || sensorType == SensorType.Libre2Plus;
     }
 
     // Two variables that are used to see if oop2 is installed.

@@ -4,6 +4,7 @@ package com.eveningoutpost.dexdrip.utils;
 import static com.eveningoutpost.dexdrip.EditAlertActivity.unitsConvert2Disp;
 import static com.eveningoutpost.dexdrip.models.JoH.showNotification;
 import static com.eveningoutpost.dexdrip.models.JoH.tolerantParseDouble;
+import static com.eveningoutpost.dexdrip.services.Ob1G5CollectionService.clearDataWhenTransmitterIdEntered;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.OUT_OF_RANGE_GLUCOSE_ENTRY_ID;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.getBestCollectorHardwareName;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
@@ -544,7 +545,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
         UiBasedCollector.onEnableCheckPermission(this);
     }
 
-    @Override
+/*    @Override
     public void onStop() { // Everything here runs when xDrip is minimized or stopped.
         super.onStop();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -559,7 +560,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             //
         }
     }
-
+*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -1134,6 +1135,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("other_alerts_sound"));
             bindPreferenceSummaryToValue(findPreference("bridge_battery_alert_level"));
             bindPreferenceSummaryToUnitizedValueAndEnsureNumeric(findPreference("persistent_high_threshold"));
+            bindPreferenceSummaryToUnitizedValueAndEnsureNumeric(findPreference("forecast_low_threshold"));
 
             addPreferencesFromResource(R.xml.pref_data_source);
 
@@ -1354,11 +1356,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
             final Preference tidepoolTestLogin = findPreference("tidepool_test_login");
             tidepoolTestLogin.setOnPreferenceClickListener(preference -> {
-                if (Pref.getBooleanDefaultFalse("tidepool_new_auth")) {
-                    Inevitable.task("tidepool-upload", 200, AuthFlowOut::doTidePoolInitialLogin);
-                } else {
-                    Inevitable.task("tidepool-upload", 200, TidepoolUploader::doLoginFromUi);
-                }
+                Inevitable.task("tidepool-upload", 200, AuthFlowOut::doTidePoolInitialLogin);
                 return false;
             });
 
@@ -1433,6 +1431,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     //
                 }
             }
+
+            final Preference xSyncFollowChime = findPreference("follower_chime");
 
 
             if (collectionType != DexCollectionType.WebFollow) {
@@ -1813,6 +1813,16 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             bindPreferenceSummaryToValue(findPreference("low_predict_alarm_level"));
             Profile.validateTargetRange();
             bindPreferenceSummaryToValue(findPreference("plus_target_range"));
+            bindPreferenceSummaryToValue(findPreference("graph_min_y"));
+            bindPreferenceSummaryToValue(findPreference("graph_max_y"));
+            bindPreferenceSummaryToValue(findPreference("y_landscape_mult"));
+            bindPreferenceSummaryToValue(findPreference("time_landscape_mult"));
+            bindPreferenceSummaryToValue(findPreference("absolute_basal_yscaling"));
+            bindPreferenceSummaryToValue(findPreference("raw_multiplier"));
+            bindPreferenceSummaryToValue(findPreference("raw_addition"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days_initial"));
+            bindPreferenceSummaryToValue(findPreference("calibration_weight_days_initial_transition"));
 
             useCustomSyncKey.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
@@ -1860,6 +1870,14 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     collectionCategory.removePreference(nsFollowUrl);
                     collectionCategory.removePreference(nsFollowDownload);
                     collectionCategory.removePreference(nsFollowLag);
+                } catch (Exception e) {
+                    //
+                }
+            }
+
+            if (collectionType != DexCollectionType.Follower) {
+                try {
+                    collectionCategory.removePreference(xSyncFollowChime);
                 } catch (Exception e) {
                     //
                 }
@@ -2462,6 +2480,14 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
 
             bindPreferenceSummaryToValue(transmitterId); // duplicated below but this sets initial value
             transmitterId.getEditText().setFilters(new InputFilter[]{new InputFilter.AllCaps()}); // TODO filter O ?
+            transmitterId.getEditText().post(() -> {
+                try {
+                    // position to end of input text
+                    transmitterId.getEditText().setSelection(transmitterId.getEditText().getText().length());
+                } catch (Exception e) {
+                    UserError.Log.d(TAG, "Could not set selection for transmitter id: " + e);
+                }
+            });
             transmitterId.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -2476,13 +2502,9 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                                 //
                             }
                             Log.d(TAG, "Trying to restart collector due to tx id change");
-                            Ob1G5StateMachine.emptyQueue();
-                            try {
-                                DexSyncKeeper.clear((String) newValue);
-                            } catch (Exception e) {
-                                //
-                            }
-                            Ob1G5CollectionService.clearPersist();
+
+                            clearDataWhenTransmitterIdEntered((String)newValue);
+
                             CollectionServiceStarter.restartCollectionService(xdrip.getAppContext());
                         }
                     }).start();
@@ -2576,6 +2598,10 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                         collectionCategory.addPreference(nsFollowUrl);
                         collectionCategory.addPreference(nsFollowDownload);
                         collectionCategory.addPreference(nsFollowLag);
+                    }
+
+                    if (collectionType == DexCollectionType.Follower) {
+                        collectionCategory.addPreference(xSyncFollowChime);
                     }
 
 
@@ -3116,6 +3142,10 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
             final Double default_insulin_sensitivity = Double.parseDouble(preferences.getString("profile_insulin_sensitivity_default", "54"));
             final Double default_target_glucose = Double.parseDouble(preferences.getString("plus_target_range", "100"));
             final Double persistent_high_Val = Double.parseDouble(preferences.getString("persistent_high_threshold", "0"));
+            final Double forecast_low_Val = Double.parseDouble(preferences.getString("forecast_low_threshold", "0"));
+            final Double graphminY = Double.parseDouble(preferences.getString("graph_min_y", "0"));
+            final Double graphmaxY = Double.parseDouble(preferences.getString("graph_max_y", "0"));
+            final Double rawaddition = Double.parseDouble(preferences.getString("raw_addition", "0"));
 
 
             static_units = newValue.toString();
@@ -3125,6 +3155,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("highValue", Long.toString(Math.round(highVal * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", Long.toString(Math.round(default_insulin_sensitivity * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("plus_target_range", Long.toString(Math.round(default_target_glucose * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("graph_max_y", Long.toString(Math.round(graphmaxY * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("raw_addition", Long.toString(Math.round(rawaddition * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
                 if (persistent_high_Val < 36) {
@@ -3132,11 +3164,17 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("persistent_high_threshold", Long.toString(Math.round(persistent_high_Val * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
+                if (forecast_low_Val < 36) {
+                    ProfileEditor.convertData(Constants.MMOLL_TO_MGDL);
+                    preferences.edit().putString("forecast_low_threshold", Long.toString(Math.round(forecast_low_Val * Constants.MMOLL_TO_MGDL))).apply();
+                    Profile.invalidateProfile();
+                }
                 if (lowVal < 36) {
                     ProfileEditor.convertData(Constants.MMOLL_TO_MGDL);
                     preferences.edit().putString("lowValue", Long.toString(Math.round(lowVal * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", Long.toString(Math.round(default_insulin_sensitivity * Constants.MMOLL_TO_MGDL))).apply();
                     preferences.edit().putString("plus_target_range", Long.toString(Math.round(default_target_glucose * Constants.MMOLL_TO_MGDL))).apply();
+                    preferences.edit().putString("graph_min_y", Long.toString(Math.round(graphminY * Constants.MMOLL_TO_MGDL))).apply();
                     Profile.invalidateProfile();
                 }
 
@@ -3146,6 +3184,8 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("highValue", JoH.qs(highVal * Constants.MGDL_TO_MMOLL, 1)).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", JoH.qs(default_insulin_sensitivity * Constants.MGDL_TO_MMOLL, 2)).apply();
                     preferences.edit().putString("plus_target_range", JoH.qs(default_target_glucose * Constants.MGDL_TO_MMOLL,1)).apply();
+                    preferences.edit().putString("graph_max_y", JoH.qs(graphmaxY * Constants.MGDL_TO_MMOLL, 1)).apply();
+                    preferences.edit().putString("raw_addition", JoH.qs(rawaddition * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
                 if (persistent_high_Val > 35) {
@@ -3153,11 +3193,17 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                     preferences.edit().putString("persistent_high_threshold", JoH.qs(persistent_high_Val * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
+                if (forecast_low_Val > 35) {
+                    ProfileEditor.convertData(Constants.MGDL_TO_MMOLL);
+                    preferences.edit().putString("forecast_low_threshold", JoH.qs(forecast_low_Val * Constants.MGDL_TO_MMOLL, 1)).apply();
+                    Profile.invalidateProfile();
+                }
                 if (lowVal > 35) {
                     ProfileEditor.convertData(Constants.MGDL_TO_MMOLL);
                     preferences.edit().putString("lowValue", JoH.qs(lowVal * Constants.MGDL_TO_MMOLL, 1)).apply();
                     preferences.edit().putString("profile_insulin_sensitivity_default", JoH.qs(default_insulin_sensitivity * Constants.MGDL_TO_MMOLL, 2)).apply();
                     preferences.edit().putString("plus_target_range", JoH.qs(default_target_glucose * Constants.MGDL_TO_MMOLL,1)).apply();
+                    preferences.edit().putString("graph_min_y", JoH.qs(graphminY * Constants.MGDL_TO_MMOLL, 1)).apply();
                     Profile.invalidateProfile();
                 }
             }
@@ -3166,6 +3212,7 @@ public class Preferences extends BasePreferenceActivity implements SearchPrefere
                 allPrefsFragment.setSummary("highValue");
                 allPrefsFragment.setSummary("lowValue");
                 allPrefsFragment.setSummary("persistent_high_threshold");
+                allPrefsFragment.setSummary("forecast_low_threshold");
             }
             if (profile_insulin_sensitivity_default != null) {
                 Log.d(TAG, "refreshing profile insulin sensitivity default display");
