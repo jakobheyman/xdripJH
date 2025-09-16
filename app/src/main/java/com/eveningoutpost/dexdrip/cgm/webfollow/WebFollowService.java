@@ -154,7 +154,8 @@ public class WebFollowService extends ForegroundService {
     static void scheduleWakeUp() {
         final BgReading lastBg = BgReading.lastNoSenssor();
         final long last = lastBg != null ? lastBg.timestamp : 0;
-        final long prop_delay = Constants.SECOND_IN_MS * 30;
+        //final long prop_delay = Constants.SECOND_IN_MS * 30;
+        final long prop_delay = Constants.SECOND_IN_MS * 5;
         final long next = Anticipate.next(JoH.tsl(), last, SAMPLE_PERIOD, 0) + prop_delay;
         wakeup_time = next;
         UserError.Log.d(TAG, "Anticipate next: " + JoH.dateTimeText(next) + "  last: " + JoH.dateTimeText(last));
@@ -209,7 +210,8 @@ public class WebFollowService extends ForegroundService {
     public static List<StatusItem> megaStatus() {
         final BgReading lastBg = BgReading.lastNoSenssor();
 
-        long hightlightGrace = Constants.SECOND_IN_MS * 30; // 30 seconds
+        //long hightlightGrace = Constants.SECOND_IN_MS * 30; // 30 seconds
+        long hightlightGrace = Constants.SECOND_IN_MS * 5; // 5 seconds
 
         String ageLastBg = "n/a";
         StatusItem.Highlight bgAgeHighlight = StatusItem.Highlight.NORMAL;
