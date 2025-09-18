@@ -103,7 +103,8 @@ public class WebFollowService extends ForegroundService {
                         context = MContext.revive();
                         if (context == null) {
                             UserError.Log.d(TAG, "Loading template from source");
-                            Inevitable.task("webfollow-template", 200, () -> {
+                            // Inevitable.task("webfollow-template", 200, () -> {
+                            Inevitable.task("webfollow-template", 40, () -> {
                                 context = Template.get();
                                 if (context != null) {
                                     context.save("template");
@@ -119,8 +120,10 @@ public class WebFollowService extends ForegroundService {
                     }
                 }
                 if (context != null) {
-                    if (JoH.pratelimit("last-web-follow-poll", 180)) {
-                        Inevitable.task("WebFollow-Work", 200, () -> {
+                    // if (JoH.pratelimit("last-web-follow-poll", 180)) {
+                    //     Inevitable.task("WebFollow-Work", 200, () -> {
+                    if (JoH.pratelimit("last-web-follow-poll", 30)) {
+                        Inevitable.task("WebFollow-Work", 40, () -> {
                             try {
                                 new Cmd(context).processAll();
                                 if (context.lastError != null) {
