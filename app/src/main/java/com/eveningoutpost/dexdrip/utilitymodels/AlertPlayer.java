@@ -588,7 +588,7 @@ public class AlertPlayer {
         if (profile != ALERT_PROFILE_SILENT && alert.vibrate) {
             if (notSilencedDueToCall()) {
                 // if using custom vibration...
-                if (alert.vibration_pattern.length() > 0) {
+                if (alert.vibration_pattern != null && alert.vibration_pattern.length() > 0) {
                     customVibration(context, alert.vibration_pattern);
                 } else {
                     builder.setVibrate(Notifications.vibratePattern);
