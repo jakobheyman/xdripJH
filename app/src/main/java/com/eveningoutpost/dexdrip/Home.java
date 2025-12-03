@@ -2704,7 +2704,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (!BgReading.doWeHaveRecentUsableData()) {
             long startedAt = Sensor.currentSensor().started_at;
             long computedStartedAt = SensorDays.get().getStart();
-            if (computedStartedAt > 0 && msSince(computedStartedAt) < HOUR_IN_MS * 3) {
+            if (computedStartedAt > 0) {
+                UserError.Log.d(TAG, "computedStartedAt " + JoH.dateTimeText(computedStartedAt));
                 startedAt = Math.min(computedStartedAt, startedAt);
             }
             final long warmUpMs = SensorDays.get().getWarmupMs();
