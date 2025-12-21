@@ -12,6 +12,9 @@ import static com.eveningoutpost.dexdrip.utilitymodels.Constants.DAY_IN_MS;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.HOUR_IN_MS;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.MINUTE_IN_MS;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.SECOND_IN_MS;
+import static com.eveningoutpost.dexdrip.utils.DexCollectionType.GluPro;
+import static com.eveningoutpost.dexdrip.utils.DexCollectionType.LibreAlarm;
+import static com.eveningoutpost.dexdrip.utils.DexCollectionType.Medtrum;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
 
 import android.Manifest;
@@ -2486,7 +2489,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         } else if (is_follower || collector.isPassive()) {
             displayCurrentInfo();
             Inevitable.task("home-notifications-start", 5000, Notifications::start);
-        } else if (!alreadyDisplayedBgInfoCommon && (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm || collector == DexCollectionType.Medtrum)) {
+            // TODO add dexcollectiontype set handling for these
+        } else if (!alreadyDisplayedBgInfoCommon && (collector == LibreAlarm || collector == Medtrum || collector == GluPro)) {
             updateCurrentBgInfoCommon(collector, notificationText);
         }
         if (collector.equals(DexCollectionType.Disabled)) {
@@ -2702,6 +2706,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         /*  // Don't display please wait info at the start of a new sensor
         if (!BgReading.doWeHaveRecentUsableData()) {
+            // TODO check null handling?
             long startedAt = Sensor.currentSensor().started_at;
             long computedStartedAt = SensorDays.get().getStart();
             if (computedStartedAt > 0) {
@@ -2733,8 +2738,17 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             // Don't use initial calibration
             displayCurrentInfo();
             if (screen_forced_on) dontKeepScreenOn();
+            return;
+        }
+
+        // we can't use the Dex related code below so we handle things here
+        if (DexCollectionType.getDexCollectionType() == GluPro) {
+            displayCurrentInfo();
+            return;
+        }
+
         // TODO this logic needed a rework even a year ago, now its a lot more confused with the additional complexity of native mode
-        } else if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
+        if (Ob1G5CollectionService.isG5ActiveButUnknownState() && Calibration.latestValid(2).size() < 2) {
             // TODO use format string
             notificationText.setText(String.format(gs(R.string.state_not_currently_known), (Ob1G5StateMachine.usingG6() ? (shortTxId() ? "G7" : "G6") : "G5")));
             showUncalibratedSlope();
@@ -3060,7 +3074,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
     // TODO consider moving this out of Home
     public static long stale_data_millis() {
-        if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm)
+        if (DexCollectionType.getDexCollectionType() == LibreAlarm)
             return (60000 * 13);
         return (60000 * 11);
     }

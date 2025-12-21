@@ -15,6 +15,7 @@ import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
+import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.importedlibraries.dexcom.records.CalRecord;
 import com.eveningoutpost.dexdrip.importedlibraries.dexcom.records.CalSubrecord;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
@@ -296,7 +297,7 @@ public class Calibration extends Model {
             if ((bgReadings == null) || (bgReadings.size() != 3) || !isDataSuitableForDoubleCalibration() ){
 
             if (Ob1G5CollectionService.usingNativeMode()) {
-                JoH.static_toast_long("Sending Blood Tests to Transmitter"); // TODO extract string
+                JoH.static_toast_long(context.getString(R.string.sending_blood_tests_to_transmitter));
                 BloodTest.create(JoH.tsl() - (Constants.SECOND_IN_MS * 30), bg1, "Initial Calibration");
                 BloodTest.create(JoH.tsl(), bg2, "Initial Calibration");
 
@@ -632,7 +633,7 @@ public class Calibration extends Model {
                         bgReading.save();
                     }
 
-                    if ((!is_follower) && (!note_only)) {
+                    if ((!DexCollectionType.isAlwaysNativeCal()) && (!note_only)) {
                         BgSendQueue.handleNewBgReading(bgReading, "update", context);
                         if (adjustPast) {
                             calculate_w_l_s_multiple(calibration.sensor_age_at_time_of_estimation);
@@ -657,7 +658,7 @@ public class Calibration extends Model {
                 }
             } else {
                 // we couldn't get a reading close enough to the calibration timestamp
-                if (!is_follower) {
+                if (!DexCollectionType.isAlwaysNativeCal()) {
                     JoH.static_toast(context, "No close enough reading for Calib (15 min)", Toast.LENGTH_LONG);
                 }
             }
