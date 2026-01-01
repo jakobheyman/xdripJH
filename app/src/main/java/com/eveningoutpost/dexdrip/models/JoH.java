@@ -72,6 +72,7 @@ import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.utilitymodels.XdripNotificationCompat;
 import com.eveningoutpost.dexdrip.utils.BestGZIPOutputStream;
 import com.eveningoutpost.dexdrip.utils.CipherUtils;
+import com.eveningoutpost.dexdrip.utils.Telemetry;
 import com.eveningoutpost.dexdrip.utils.framework.BuggySamsung;
 import com.eveningoutpost.dexdrip.xdrip;
 import com.google.common.primitives.Bytes;
@@ -117,6 +118,7 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
+import io.sentry.Sentry;
 import lombok.val;
 
 /**
@@ -559,6 +561,37 @@ public class JoH {
         }
     }
 
+    public static synchronized void logException(Exception e) {
+        if (ratelimit("joh-logException", 300)) {
+            if (Telemetry.isCrashReportingEnabled()) {
+                try {
+                    Sentry.captureException(e);
+                    UserError.Log.e(TAG, "Exception logged: " + e);
+                } catch (Exception ex) {
+                    //
+                }
+            }
+        }
+    }
+
+
+    static volatile String lastLoggedMessage = "";
+    public static synchronized void logMessage(final String message) {
+        if (message == null) return;
+        if (message.equals(lastLoggedMessage)) return;
+        if (ratelimit("joh-logMessage", 300)) {
+            if (Telemetry.isTelemetryEnabled()) {
+                try {
+                    Sentry.captureMessage(message);
+                    UserError.Log.e(TAG, "Message logged: " + message);
+                } catch (Exception ex) {
+                    //
+                }
+            }
+        }
+    }
+
+
 
     // compare stored byte array hashes
     public static synchronized boolean differentBytes(String name, byte[] bytes) {
@@ -580,7 +613,7 @@ public class JoH {
     }
 
     // return true if below rate limit (persistent version)
-    public static synchronized boolean pratelimit(String name, int seconds) {
+    public static synchronized boolean pratelimit(final String name, final int seconds) {
         // check if over limit
         final long time_now = JoH.tsl();
         final long rate_time;
@@ -589,6 +622,11 @@ public class JoH {
         } else {
             rate_time = rateLimits.get(name);
         }
+        if (rate_time > time_now) {
+            Log.wtf(TAG, "pratelimit cancelling as time has gone backwards: " + rate_time + " > " + time_now + " for " + name + " rate limited: " + seconds + " seconds");
+            PersistentStore.removeItem(name);
+        }
+
         if ((rate_time > 0) && (time_now - rate_time) < (seconds * 1000L)) {
             Log.d(TAG, name + " rate limited: " + seconds + " seconds");
             return false;

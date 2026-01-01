@@ -905,7 +905,7 @@ public class BgReading extends Model implements ShareUploadableBg {
     }
 
     public static List<BgReading> latestForGraph(int number, long startTime, long endTime) {
-        return new Select()
+        final List<BgReading> readings = new Select()
                 .from(BgReading.class)
                 .where("timestamp >= " + Math.max(startTime, 0))
                 .where("timestamp <= " + endTime)
@@ -914,6 +914,24 @@ public class BgReading extends Model implements ShareUploadableBg {
                 .orderBy("timestamp desc")
                 .limit(number)
                 .execute();
+
+       return filterInvalidReadings(readings);
+    }
+
+    private static List<BgReading> filterInvalidReadings(final List<BgReading> readings) {
+        // Filter out invalid values
+        if (readings != null) {
+            if (readings.removeIf(r -> {
+                final double v = r.calculated_value;
+                //noinspection ExpressionComparedToItself
+                return v <= 0.0 || v > 1000.0 || (v != v); // check out of range or NaN
+            })) {
+                if (JoH.ratelimit("bgreading-filtered-invalid", 120)) {
+                    Log.wtf(TAG, "Filtered out invalid BG readings");
+                }
+            }
+        }
+        return readings;
     }
 
     public static List<BgReading> latestForGraphSensor(int number, long startTime, long endTime) {
@@ -1176,6 +1194,22 @@ public class BgReading extends Model implements ShareUploadableBg {
             Log.w(TAG, "No sensor, ignoring this bg reading");
             return null;
         }
+
+        if (Double.isInfinite(calculated_value) || Double.isNaN(calculated_value)) {
+            Log.e(TAG, "Ignoring invalid bg reading: " + calculated_value);
+            return null;
+        }
+
+        if (calculated_value < 0) {
+            Log.e(TAG, "Ignoring negative bg reading: " + calculated_value);
+            return null;
+        }
+
+        if (calculated_value > 600) {
+            Log.e(TAG, "Ignoring too high bg reading: " + calculated_value);
+            return null;
+        }
+
         // TODO slope!!
         final BgReading existing = getForPreciseTimestamp(timestamp, Constants.MINUTE_IN_MS);
         if (existing == null) {

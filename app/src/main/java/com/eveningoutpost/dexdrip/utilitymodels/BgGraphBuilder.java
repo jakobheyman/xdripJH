@@ -67,6 +67,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lecho.lib.hellocharts.ILog;
 import lecho.lib.hellocharts.formatter.LineChartValueFormatter;
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
@@ -86,6 +87,7 @@ import lombok.val;
 import static com.eveningoutpost.dexdrip.models.JoH.tolerantParseDouble;
 import static com.eveningoutpost.dexdrip.utilitymodels.ColorCache.X;
 import static com.eveningoutpost.dexdrip.utilitymodels.ColorCache.getCol;
+import static lecho.lib.hellocharts.Log.setLogger;
 
 public class BgGraphBuilder {
     public static final int FUZZER = 1000; // 1 second
@@ -363,7 +365,7 @@ public class BgGraphBuilder {
 
             final List<APStatus> aplist = APStatus.latestForGraph(2000, loaded_start, loaded_end);
 
-            if (aplist.size() > 0) {
+            if (!aplist.isEmpty()) {
 
                 // divider line
                 if (!prefs.getBoolean("use_absolute_basal", false)) {
@@ -379,9 +381,9 @@ public class BgGraphBuilder {
 
                     final float one_hundred_percent = (100 * yscale) / 100f;
                     final List<PointValue> divider_points = new ArrayList<>(2);
-                    divider_points.add(new HPointValue(loaded_start / FUZZER, one_hundred_percent));
+                    divider_points.add(new HPointValue((double) loaded_start / FUZZER, one_hundred_percent));
                     dividerLine.setPointRadius(0);
-                    divider_points.add(new HPointValue(loaded_end / FUZZER, one_hundred_percent));
+                    divider_points.add(new HPointValue((double) loaded_end / FUZZER, one_hundred_percent));
                     dividerLine.setValues(divider_points);
                     basalLines.add(dividerLine);
                 }
@@ -2528,5 +2530,39 @@ public class BgGraphBuilder {
         public void onValueDeselected() {
             // do nothing
         }
+    }
+
+    public static void setLogging() {
+        setLogger(new ILog() {
+            @Override
+            public int d(String tag, String msg) {
+                UserError.Log.d(tag, msg);
+                return 1;
+            }
+
+            @Override
+            public int e(String tag, String msg) {
+                UserError.Log.e(tag, msg);
+                return 1;
+            }
+
+            @Override
+            public int i(String tag, String msg) {
+                UserError.Log.uel(tag, msg);
+                return 1;
+            }
+
+            @Override
+            public int wtf(String tag, String msg) {
+                UserError.Log.wtf(tag, msg);
+                return 1;
+            }
+            
+            @Override
+            public int wtf(String tag, Exception e) {
+                JoH.logException(e);
+                return 1;
+            }
+        });
     }
 }
