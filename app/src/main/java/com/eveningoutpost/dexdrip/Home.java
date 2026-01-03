@@ -1133,6 +1133,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         context.startActivity(intent);
     }
 
+    // private boolean isAutoYPanEnabled() {
+    //     // When true, xDrip auto-pans the Y-axis instead of extending the range for out-of-range readings.
+    //     return Pref.getBooleanDefaultFalse("auto_y_pan");
+    // }
+
     public void cloudBackup(MenuItem x) {
         JoH.startActivity(BackupActivity.class);
     }
@@ -2112,8 +2117,17 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             float tempwidth = (float) moveViewPort.width() / 4;
             holdViewport.left = moveViewPort.right - tempwidth;
             holdViewport.right = moveViewPort.right + (moveViewPort.width() / 24);
+            // xdripJH modified
             holdViewport.top = moveViewPort.top;
             holdViewport.bottom = moveViewPort.bottom;
+            // if (!isAutoYPanEnabled()) {
+            //     holdViewport.top = moveViewPort.top;
+            //     holdViewport.bottom = moveViewPort.bottom;
+            // } else {
+            //     Viewport v = bgGraphBuilder.computeYViewport();
+            //     holdViewport.top = v.top;
+            //     holdViewport.bottom = v.bottom;
+            // }
             chart.setCurrentViewport(holdViewport);
             previewChart.setCurrentViewport(holdViewport);
             UserError.Log.e(TAG, "SMALL HEIGHT VIEWPORT WARNING");
@@ -2309,8 +2323,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 if (msSince(lastViewPortPan) < 45 * SECOND_IN_MS) {
                     UserError.Log.d(TAG, "Skipping VIEWPORT adjustment as panning and data just arrived: " + holdViewport.toString());
                     // xdripJH: don't change top and bottom
-                    // holdViewport.top = maxViewPort.top;
-                    // holdViewport.bottom = maxViewPort.bottom;
+                    // if (!isAutoYPanEnabled()) {
+                    //     holdViewport.top = maxViewPort.top;
+                    //     holdViewport.bottom = maxViewPort.bottom;
+                    // }
                     chart.setCurrentViewport(holdViewport); // reuse existing
                     return;
                 }
@@ -2335,11 +2351,13 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         holdViewport.right = viewportfix.right;
         holdViewport.top = viewportfix.top;
         holdViewport.bottom = viewportfix.bottom;
-        //~ holdViewport.left = maxViewPort.right - hour_width * hours_to_show;
-        //~ holdViewport.right = maxViewPort.right;
-        //~ holdViewport.top = maxViewPort.top;
-        //~ holdViewport.bottom = maxViewPort.bottom;
-        //~ ========================================================================================
+        // holdViewport.left = maxViewPort.right - hour_width * hours_to_show;
+        // holdViewport.right = maxViewPort.right;
+        // if (!isAutoYPanEnabled()) {
+        //     holdViewport.top = maxViewPort.top;
+        //     holdViewport.bottom = maxViewPort.bottom;
+        // }
+        // =========================================================================================
 
         // if locked, center display on current bg values, not predictions
         if (homeShelf.get("time_locked_always")) {
@@ -2352,6 +2370,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             UserError.Log.d(TAG, "MAX VIEWPORT " + maxViewPort);
         }
 
+        // xdripJH modified
+        // if (isAutoYPanEnabled()) {
+        //     Viewport v = bgGraphBuilder.computeYViewport();
+        //     holdViewport.top = v.top;
+        //     holdViewport.bottom = v.bottom;
+        // }
         chart.setCurrentViewport(holdViewport);
 
     }
