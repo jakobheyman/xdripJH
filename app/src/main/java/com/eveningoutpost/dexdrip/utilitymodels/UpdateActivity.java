@@ -3,6 +3,7 @@ package com.eveningoutpost.dexdrip.utilitymodels;
 // jamorham
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -184,7 +186,17 @@ public class UpdateActivity extends BaseAppCompatActivity {
                                 } else {
                                     Log.i(TAG, "Our current version is the most recent: " + versionnumber + " vs " + newversion);
                                     if (fromUi) { // Only for manual update check
-                                        JoH.static_toast_long(xdrip.gs(R.string.current_version_is_up_to_date));
+                                        if (channel.equals("nightly")) {
+                                            JoH.static_toast_long(xdrip.gs(R.string.current_version_is_up_to_date));
+                                        } else {
+                                            ((Activity) context).runOnUiThread(() -> {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                                                builder.setTitle(context.getString(R.string.title_dialog_check_for_update, channel));
+                                                builder.setMessage(context.getString(R.string.message_dialog_check_for_update));
+                                                builder.setPositiveButton(R.string.close, null);
+                                                builder.show();
+                                            });
+                                        }
                                     }
                                 }
                             } catch (Exception e) {
@@ -283,16 +295,14 @@ public class UpdateActivity extends BaseAppCompatActivity {
     }
 
     private boolean checkPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
 
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_STORAGE_DOWNLOAD);
-                return false;
-            }
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_STORAGE_DOWNLOAD);
+            return false;
         }
         return true;
     }

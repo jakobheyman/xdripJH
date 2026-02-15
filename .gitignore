@@ -61,3 +61,4 @@ patches/
 *.dll
 *.exe
 *.iml
+.claude/
