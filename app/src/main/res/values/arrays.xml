@@ -63,12 +63,14 @@
     </string-array>
 
     <string-array name="libreFilterLengthMethods">
+        <item>@string/libre_filter_length_0</item>
         <item>@string/libre_filter_length_10</item>
         <item>@string/libre_filter_length_15</item>
         <item>@string/libre_filter_length_25</item>
     </string-array>
 
     <string-array name="libreFilterLengthValues">
+        <item>0</item>
         <item>10</item>
         <item>15</item>
         <item>25</item>

@@ -1752,6 +1752,7 @@
     <string name="enable_streaming_always_allow">Always connect to Libre2 sensors</string>
     <string name="enable_streaming_ask_each_time">Ask each time</string>
     <string name="enable_streaming_never">Never connect to Libre2 sensors</string>
+    <string name="libre_filter_length_0">No smoothing</string>
     <string name="libre_filter_length_10">10 minutes</string>
     <string name="libre_filter_length_15">15 minutes</string>
     <string name="libre_filter_length_25">25 minutes ></string>
