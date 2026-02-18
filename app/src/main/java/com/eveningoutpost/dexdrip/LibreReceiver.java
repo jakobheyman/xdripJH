@@ -206,8 +206,12 @@ public class LibreReceiver extends BroadcastReceiver {
 
         }
 
-        double value = calculateWeightedAverage(smoothingValues, currentValue.timestamp, TimeUnit.MINUTES.toMillis(smoothing_minutes));
-        BgReading.bgReadingInsertLibre2(value, currentValue.timestamp, currentValue.glucose);
+        if (smoothing_minutes > 0) {
+            double value = calculateWeightedAverage(smoothingValues, currentValue.timestamp, TimeUnit.MINUTES.toMillis(smoothing_minutes));
+            BgReading.bgReadingInsertLibre2(value, currentValue.timestamp, currentValue.glucose);
+        } else {
+            BgReading.bgReadingInsertLibre2(currentValue.glucose, currentValue.timestamp, currentValue.glucose);
+        }
     }
 
     private static void saveSensorStartTime(Bundle sensor, String serial) {
