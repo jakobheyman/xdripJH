@@ -691,6 +691,8 @@
     <string name="libre_use_smoothed_data_summary">Use average of 5 points to get smoother Libre data.</string>
     <string name="libre_use_smoothed_data_title">Smooth Libre data.</string>
     <string name="retrieve_blukon_history_title">Retrieve Libre history</string>
+    <string name="summary_libre_one_minute_interval">Accept data at one-minute intervals from Libre. Reboot your phone for changes to take effect.</string>
+    <string name="title_libre_one_minute_interval">Libre 1-minute</string>
     <string name="retrieve_blukon_history_summary">Retrieve missed history from BluCon device when reconnecting to sensor.</string>
     <string name="interpret_share_raw">If using Share, xDrip will show values when they are normally hidden on the receiver.</string>
     <string name="interpret_raw">Interpret Raw Values</string>
@@ -1123,7 +1125,7 @@
     <string name="title_Batterylog">Batterylog</string>
     <string name="summary_Choose_to_display_the_bridge_battery_level">Choose to display the bridge battery level</string>
     <string name="title_Glucose_Retention">Glucose Retention</string>
-    <string name="summary_Erase_data_older_than_this_many_days">Erase data older than this many days. 0 = don\'t erase anything</string>
+    <string name="summary_Erase_data_older_than_this_many_days">Erase data older than this many days. Setting 0 will keep all data, but xDrip should not be used as a repository — use Nightscout or Tidepool for long-term storage.</string>
     <string name="title_Other_misc_options">Other misc. options</string>
     <string name="summary_allow_testing_with_dead_sensor">allow testing with dead sensor</string>
     <string name="title_NOT_FOR_PRODUCTION_USE">NOT FOR PRODUCTION USE</string>

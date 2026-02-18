@@ -372,6 +372,8 @@ dependencies {
 
     implementation 'io.sentry:sentry-android:4.2.0'
 
+    implementation "no.nordicsemi.android:ble:2.6.1"
+
     testImplementation 'joda-time:joda-time:2.10.7'
 
     testImplementation 'junit:junit:4.13.2'
