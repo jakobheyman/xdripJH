@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -32,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.eveningoutpost.dexdrip.g5model.Extensions;
+import com.eveningoutpost.dexdrip.g5model.FirmwareCapability;
 import com.eveningoutpost.dexdrip.g5model.Transmitter;
 import com.eveningoutpost.dexdrip.importedlibraries.dexcom.Dex_Constants;
 import com.eveningoutpost.dexdrip.models.ActiveBluetoothDevice;
@@ -43,6 +46,7 @@ import com.eveningoutpost.dexdrip.models.UserError;
 import com.eveningoutpost.dexdrip.models.UserError.Log;
 import com.eveningoutpost.dexdrip.services.DexCollectionService;
 import com.eveningoutpost.dexdrip.services.G5CollectionService;
+import com.eveningoutpost.dexdrip.services.TransmitterRereadHelper;
 import com.eveningoutpost.dexdrip.utilitymodels.CollectionServiceStarter;
 import com.eveningoutpost.dexdrip.utilitymodels.SensorStatus;
 import com.eveningoutpost.dexdrip.databinding.ActivitySystemStatusBinding;
@@ -58,6 +62,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.eveningoutpost.dexdrip.Home.startWatchUpdaterService;
+import static com.eveningoutpost.dexdrip.services.Ob1G5CollectionService.getTransmitterID;
 import static com.eveningoutpost.dexdrip.utils.DatabaseUtil.getDataBaseSizeInBytes;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.DexcomG5;
 import static com.eveningoutpost.dexdrip.xdrip.gs;
@@ -74,6 +79,7 @@ public class SystemStatusFragment extends Fragment {
     private TextView notes;
     private Button restart_collection_service;
     private Button forget_device;
+    private Button reread_transmitter;
     private Button futureDataDeleteButton;
     private ImageButton refresh;
     private SharedPreferences prefs;
@@ -187,6 +193,7 @@ public class SystemStatusFragment extends Fragment {
 
         restart_collection_service = (Button) v.findViewById(R.id.restart_collection_service);
         forget_device = (Button) v.findViewById(R.id.forget_device);
+        reread_transmitter = (Button) v.findViewById(R.id.reread_transmitter);
         refresh = (ImageButton) v.findViewById(R.id.refresh_current_values);
         futureDataDeleteButton = (Button) v.findViewById(R.id.delete_future_data);
 
@@ -215,6 +222,7 @@ public class SystemStatusFragment extends Fragment {
         restartButtonListener();
         forgetDeviceListener();
         refreshButtonListener();
+        rereadTransmitterListener();
     }
 
     //@Override
@@ -225,9 +233,7 @@ public class SystemStatusFragment extends Fragment {
     private void set_current_values() {
         notes.setText("");
         activeBluetoothDevice = ActiveBluetoothDevice.first();
-        if (Build.VERSION.SDK_INT >= 18) {
-            mBluetoothManager = (BluetoothManager) safeGetContext().getSystemService(Context.BLUETOOTH_SERVICE);
-        }
+        mBluetoothManager = (BluetoothManager) safeGetContext().getSystemService(Context.BLUETOOTH_SERVICE);
         setVersionName();
         //setCollectionMethod();
         setCurrentDevice();
@@ -324,9 +330,7 @@ public class SystemStatusFragment extends Fragment {
         String collection_method = prefs.getString("dex_collection_method", "BluetoothWixel");
         if (collection_method.compareTo("DexcomG5") == 0) { // TODO dex collection type
             Transmitter defaultTransmitter = new Transmitter(prefs.getString("dex_txid", "ABCDEF"));
-            if (Build.VERSION.SDK_INT >= 18) {
-                mBluetoothAdapter = mBluetoothManager.getAdapter();
-            }
+            mBluetoothAdapter = mBluetoothManager.getAdapter();
             if (mBluetoothAdapter != null) {
                 try {
                     Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -383,7 +387,7 @@ public class SystemStatusFragment extends Fragment {
     private void setConnectionStatus() {
         boolean connected = false;
         try {
-            if (mBluetoothManager != null && activeBluetoothDevice != null && (Build.VERSION.SDK_INT >= 18)) {
+            if (mBluetoothManager != null && activeBluetoothDevice != null) {
                 for (BluetoothDevice bluetoothDevice : mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT)) {
                     if (bluetoothDevice.getAddress().compareTo(activeBluetoothDevice.address) == 0) {
                         connected = true;
@@ -408,7 +412,7 @@ public class SystemStatusFragment extends Fragment {
         String collection_method = prefs.getString("dex_collection_method", "BluetoothWixel");
         if (collection_method.compareTo("DexcomG5") == 0) {
             Transmitter defaultTransmitter = new Transmitter(prefs.getString("dex_txid", "ABCDEF"));
-            if (Build.VERSION.SDK_INT >= 18) mBluetoothAdapter = mBluetoothManager.getAdapter();
+            mBluetoothAdapter = mBluetoothManager.getAdapter();
             if (mBluetoothAdapter != null) {
                 Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
                 if (pairedDevices.size() > 0) {
@@ -436,16 +440,11 @@ public class SystemStatusFragment extends Fragment {
     private void setNotes() {
         try {
 
-            if ((mBluetoothManager == null) || ((android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) && (mBluetoothManager.getAdapter() == null))) {
+            if ((mBluetoothManager == null) || (mBluetoothManager.getAdapter() == null)) {
                 notes.append("\n- This device does not seem to support bluetooth");
             } else {
-                if ((android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2)
-                        && !mBluetoothManager.getAdapter().isEnabled()) {
+                if (!mBluetoothManager.getAdapter().isEnabled()) {
                     notes.append("\n- Bluetooth seems to be turned off");
-                } else {
-                    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        notes.append("\n- The android version of this device is not compatible with Bluetooth Low Energy");
-                    }
                 }
             }
         } catch (NullPointerException e) {
@@ -559,7 +558,7 @@ public class SystemStatusFragment extends Fragment {
                                     try {
                                         Method m = device.getClass().getMethod("removeBond", (Class[]) null);
                                         m.invoke(device, (Object[]) null);
-                                        notes.append("\nG5 Transmitter unbonded, switch device mode to prevent re-pairing to G5.");
+                                        notes.append("\n Transmitter unbonded; switch device mode to prevent re-pairing.");
                                     } catch (Exception e) {
                                         Log.e("SystemStatus", e.getMessage(), e);
                                     }
@@ -569,6 +568,27 @@ public class SystemStatusFragment extends Fragment {
                         }
                     }
                 }
+            }
+        });
+    }
+
+    private void rereadTransmitterListener() {
+        reread_transmitter.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (!FirmwareCapability.isTransmitterModified(getTransmitterID())) {
+                    // Ignore click for standard devices; running this would be pointless.
+                    return;
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(gs(R.string.tx_reread_confirmation_title));
+                builder.setMessage(gs(R.string.tx_reread_confirmation_message));
+                builder.setPositiveButton(gs(R.string.proceed), (dialog, which) -> {
+                    TransmitterRereadHelper.requestTxReread();
+                    dialog.dismiss();
+                });
+                builder.setNegativeButton(gs(R.string.cancel), (dialog, which) -> dialog.dismiss());
+                AlertDialog confirmation = builder.create();
+                confirmation.show();
             }
         });
     }

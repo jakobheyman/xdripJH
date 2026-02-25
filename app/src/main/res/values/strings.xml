@@ -583,7 +583,7 @@
     <string name="snooze_alert_before_it_fires">Snooze alert before it fires</string>
     <string name="create_low_alert">Create low alert</string>
     <string name="create_high_alert">Create high alert</string>
-    <string name="long_press_an_existing_alert_to_edit">(Long Press an existing alert to edit)</string>
+    <string name="long_press_an_existing_alert_to_edit">Long press an existing alert to edit</string>
     <string name="adding">Adding</string>
     <string name="high">high</string>
     <string name="alert">alert</string>
@@ -952,6 +952,9 @@
     <string name="only_stop_your_sensor_when_you_actually_plan">Only stop your sensor when you actually plan to remove it, otherwise leave it running! If resetting all calibrations with Rewrite History checked (Graph Settings) raw values will be used for all bg values of the present sensor</string>
     <string name="restart_collector">Restart Collector</string>
     <string name="forget_device">Forget Device</string>
+    <string name="re_read_transmitter">Reread transmitter</string>
+    <string name="tx_reread_confirmation_title">Refresh transmitter details</string>
+    <string name="tx_reread_confirmation_message">Forces xDrip to reread transmitter characteristics. No benefit if the transmitter has not changed; temporary status page changes may occur. Best used between sensor sessions.</string>
     <string name="other_notes">Other Notes:</string>
     <string name="delete_future_data">Delete Future Data</string>
     <string name="show_only_untranslated">Show only untranslated</string>

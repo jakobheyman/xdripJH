@@ -2336,7 +2336,7 @@ public class Ob1G5CollectionService extends G5BaseService {
                 if (vr1.version_code != 3 && get_engineering_mode()) {
                     l.add(new StatusItem("Compat Version", "" + vr1.version_code, NORMAL));
                 }
-                if (vr1.max_runtime_days != 110 && vr1.max_runtime_days != 112 && vr1.max_runtime_days != 0) {
+                if (vr1.max_runtime_days != 110 && vr1.max_runtime_days != 112 && vr1.max_runtime_days != 180 && vr1.max_runtime_days != 0) {
                     l.add(new StatusItem("Transmitter Life", "" + vr1.max_runtime_days + " " + gs(R.string.days)));
                 }
 
@@ -2351,7 +2351,7 @@ public class Ob1G5CollectionService extends G5BaseService {
 
         try {
             if (vr2 != null) {
-                if (vr2.typicalSensorDays != 10 && vr2.typicalSensorDays != 7 && vr2.typicalSensorDays != 15) {
+                if (vr2.typicalSensorDays != 10 && vr2.typicalSensorDays != 15 && vr2.typicalSensorDays != 60) {
                     l.add(new StatusItem("Sensor Period", niceTimeScalar(vr2.typicalSensorDays * DAY_IN_MS), Highlight.NOTICE));
                 }
 
@@ -2379,7 +2379,7 @@ public class Ob1G5CollectionService extends G5BaseService {
 
         try {
             if (vr3 != null) {
-                if (vr3.warmupSeconds != 7200 && vr3.warmupSeconds != 3600) {
+                if (vr3.warmupSeconds != 7200 && vr3.warmupSeconds != 3600 && !isTransmitterModified(getTransmitterID())) {
                     l.add(new StatusItem("Warm Up Time", niceTimeScalar(vr3.warmupSeconds * SECOND_IN_MS), Highlight.NOTICE));
                 }
             }
