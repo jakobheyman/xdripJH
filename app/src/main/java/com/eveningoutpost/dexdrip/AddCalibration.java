@@ -52,6 +52,7 @@ public class AddCalibration extends AppCompatActivity implements NavigationDrawe
             finish();
         }
         setContentView(R.layout.activity_add_calibration);
+        JoH.fixActionBar(this);
         addListenerOnButton();
         automatedCalibration();
     }

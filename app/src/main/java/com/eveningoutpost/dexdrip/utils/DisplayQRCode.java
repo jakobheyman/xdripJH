@@ -5,6 +5,7 @@ import static com.eveningoutpost.dexdrip.models.JoH.base64decodeBytes;
 import static com.eveningoutpost.dexdrip.ui.helpers.BitmapUtil.getScreenHeight;
 import static com.eveningoutpost.dexdrip.ui.helpers.BitmapUtil.getScreenWidth;
 import static com.eveningoutpost.dexdrip.utils.QRcodeUtils.createQRCodeBitmap;
+import static com.eveningoutpost.dexdrip.utils.QRcodeUtils.createQRCodeFromString;
 import static com.eveningoutpost.dexdrip.utils.QRcodeUtils.qrmarker;
 import static com.eveningoutpost.dexdrip.utils.QRcodeUtils.qrmarker2;
 import static com.eveningoutpost.dexdrip.utils.QRcodeUtils.serializeBinaryPrefsMap;
@@ -25,8 +26,11 @@ import android.view.View;
 
 import com.eveningoutpost.dexdrip.BaseAppCompatActivity;
 import com.eveningoutpost.dexdrip.GcmActivity;
+import com.eveningoutpost.dexdrip.cloud.nightlite.NightLiteEntry;
+import com.eveningoutpost.dexdrip.cloud.nightlite.NightLiteQR;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.R;
+import com.eveningoutpost.dexdrip.utilitymodels.NightscoutUploader;
 import com.eveningoutpost.dexdrip.utilitymodels.Pref;
 import com.eveningoutpost.dexdrip.utilitymodels.PrefsViewImpl;
 import com.eveningoutpost.dexdrip.utilitymodels.desertsync.RouteTools;
@@ -92,6 +96,12 @@ public class DisplayQRCode extends BaseAppCompatActivity {
                         break;
                     case "xdrip_plus_keks_qr":
                         showGKey(null);
+                        break;
+                    case "xdrip_nightlite_qr":
+                        showNsLiteQr();
+                        break;
+                    case "xdrip_nightscout_qr":
+                        showNsQr();
                         break;
                 }
             }
@@ -316,6 +326,29 @@ public class DisplayQRCode extends BaseAppCompatActivity {
             val bitmap = createQRCodeBitmap(bytesc, desiredPixels, desiredPixels, prefix);
             binding.getViewmodel().showQr.set(false);
             binding.getViewmodel().narrative.set(JoH.dateTimeText(JoH.tsl()) + "\n" + Build.MANUFACTURER + " " + Build.MODEL + "\n" + hint);
+            binding.getViewmodel().qrbitmap.set(new BitmapDrawable(xdrip.getAppContext().getResources(), bitmap));
+            binding.getViewmodel().showQr.set(true);
+        } catch (WriterException e) {
+            Log.e(TAG, "ERROR: " + e);
+        }
+    }
+
+    private void showNsQr() {
+        val ns = Pref.getString("cloud_storage_api_base", "");
+        showQRString(NightscoutUploader.getJsonFromSetting(ns),"Nightscout configuration");
+    }
+
+    private void showNsLiteQr() {
+        showQRString(NightLiteQR.getJsonFromSetting(NightLiteEntry.getApi()),"NightLite configuration");
+    }
+
+    private void showQRString(String str, String hint) {
+        val scale = (getScreenWidth() > getScreenHeight()) ? 0.8d : 1;
+        val desiredPixels = (int) (Math.min(getScreenWidth(), getScreenHeight()) * scale);
+        try {
+            val bitmap = createQRCodeFromString(str, desiredPixels, desiredPixels);
+            binding.getViewmodel().showQr.set(false);
+            binding.getViewmodel().narrative.set(JoH.dateTimeText(JoH.tsl()) + "\n" + hint);
             binding.getViewmodel().qrbitmap.set(new BitmapDrawable(xdrip.getAppContext().getResources(), bitmap));
             binding.getViewmodel().showQr.set(true);
         } catch (WriterException e) {

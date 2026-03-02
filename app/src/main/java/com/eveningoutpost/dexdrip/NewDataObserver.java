@@ -1,5 +1,6 @@
 package com.eveningoutpost.dexdrip;
 
+import com.eveningoutpost.dexdrip.cloud.nightlite.NightLiteEntry;
 import com.eveningoutpost.dexdrip.models.BgReading;
 import com.eveningoutpost.dexdrip.models.JoH;
 import com.eveningoutpost.dexdrip.models.LibreBlock;
@@ -70,6 +71,7 @@ public class NewDataObserver {
         textToSpeech(bgReading, null);
         LibreBlock.UpdateBgVal(bgReading.timestamp, bgReading.calculated_value);
         LockScreenWallPaper.setIfEnabled();
+        NightLiteEntry.uploadIfEnabled();
 
         try {
             sendToHealthConnect(bgReading);
@@ -87,9 +89,10 @@ public class NewDataObserver {
         if (till > 0) {
             if (till < ALLOWED_FUTURE_OFFSET) {
                 UserError.Log.d(TAG, "BgReading is in the future by " + (till / 1000) + "s - timestamp adjusted");
-                bgReading.timestamp = JoH.tsl();
+                bgReading.timestamp = JoH.tsl(); // TODO save??
             } else {
                 UserError.Log.wtf(TAG, "BgReading is too far in the future the future by " + (till / 1000) + "s - skipping");
+                // TODO actually skip??
             }
         }
     }
