@@ -4,6 +4,7 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.eveningoutpost.dexdrip.g5model.Ob1G5StateMachine.shortTxId;
 import static com.eveningoutpost.dexdrip.models.JoH.msSince;
 import static com.eveningoutpost.dexdrip.models.JoH.quietratelimit;
+import static com.eveningoutpost.dexdrip.models.JoH.static_toast_long;
 import static com.eveningoutpost.dexdrip.models.JoH.tsl;
 import static com.eveningoutpost.dexdrip.services.Ob1G5CollectionService.getTransmitterID;
 import static com.eveningoutpost.dexdrip.utilitymodels.ColorCache.X;
@@ -1143,8 +1144,13 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     }
 
     public void crowdTranslate(MenuItem x) {
-        // startActivity(new Intent(this, LanguageEditor.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://crowdin.com/project/xdrip")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        val url = "https://crowdin.com/project/xdrip";
+        try {
+            // startActivity(new Intent(this, LanguageEditor.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (Exception e) {
+            static_toast_long("Unable to open web browser for " + url);
+        }
     }
 
     public void testFeature(MenuItem x) {
@@ -2533,10 +2539,10 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             }
         } else if (collector.equals(DexCollectionType.Mock)) {
             notificationText.append("\n USING FAKE DATA SOURCE !!!");
-            if (MockDataSource.divisor_scale == 1500000) {
+            if (MockDataSource.getDivisorScale() == 1500000) {
                 notificationText.append(" F");
             }
-            if (MockDataSource.amplify_cnst == 330000) {
+            if (MockDataSource.getAmplifyConst() == 330000) {
                 notificationText.append(" Amp");
             }
         }
@@ -2691,6 +2697,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             } else { // Only if G6 is not selected or G6 transmitter is synced.
                 notificationText.setText(R.string.now_start_your_sensor);
             }
+
+            displayCurrentInfo(); // update the display even with no sensor to clear old data
 
             if ((dialog == null) || (!dialog.isShowing())) {
                 if (!Experience.gotData() && Experience.backupAvailable() && JoH.ratelimit("restore-backup-prompt", 10)) {
@@ -3082,8 +3090,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                 }
             }
 
-            displayCurrentInfoFromReading(lastBgReading, predictive);
+            if (!displayCurrentInfoFromReading(lastBgReading, predictive)) {
+                currentBgValueText.setText("");
+                display_delta = "";
+                if (itr != null) {
+                    itr.update(null); // hide graphical arrow
+                }
+            }
         } else {
+            currentBgValueText.setText(""); // clear value if no reading
             display_delta = "";
         }
 
@@ -3103,18 +3118,18 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         return (60000 * 11);
     }
 
-    private void displayCurrentInfoFromReading(BgReading lastBgReading, boolean predictive) {
+    private boolean displayCurrentInfoFromReading(BgReading lastBgReading, boolean predictive) {
         double estimate = 0;
         double estimated_delta = 0;
-        if (lastBgReading == null) return;
+        if (lastBgReading == null) return false;
         final BestGlucose.DisplayGlucose dg = BestGlucose.getDisplayGlucose();
-        if (dg == null) return;
+        if (dg == null) return false;
         //String slope_arrow = lastBgReading.slopeArrow();
         String slope_arrow = dg.delta_arrow;
         String extrastring = "";
         boolean hide_slope = false;
         // when stale
-        if ((new Date().getTime()) - stale_data_millis() - lastBgReading.timestamp > 0) {
+        if ((new Date().getTime()) - stale_data_millis() - lastBgReading.timestamp > 0) { // TODO fix
             notificationText.setText(R.string.signal_missed);
             if (!predictive) {
                 //  estimate = lastBgReading.calculated_value;
@@ -3239,6 +3254,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         if (Pref.getBooleanDefaultFalse("display_glucose_from_plugin") && (PluggableCalibration.getCalibrationPluginFromPreferences() != null)) {
             currentBgValueText.setText(getString(R.string.p_in_circle) + currentBgValueText.getText()); // adds warning P in circle icon
         }
+
+        return true;
     }
 
     // This function is needed in hebrew in order to allow printing the text (for exapmle) -3 mg/dl

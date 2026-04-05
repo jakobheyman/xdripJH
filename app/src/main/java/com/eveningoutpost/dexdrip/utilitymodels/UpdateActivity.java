@@ -56,7 +56,6 @@ import okhttp3.Response;
 
 import static com.eveningoutpost.dexdrip.alert.UpdateAvailable.XDRIP_UPDATE_NOTIFICATION_PENDING;
 import static com.eveningoutpost.dexdrip.utilitymodels.Constants.XDRIP_UPDATE_NOTIFICATION_ID;
-import static com.eveningoutpost.dexdrip.utilitymodels.OkHttpWrapper.enableTls12OnPreLollipop;
 import static com.eveningoutpost.dexdrip.utilitymodels.PersistentStore.incrementLong;
 
 public class UpdateActivity extends BaseAppCompatActivity {
@@ -115,10 +114,10 @@ public class UpdateActivity extends BaseAppCompatActivity {
             new Thread(() -> {
                 try {
                     if (httpClient == null) {
-                        httpClient = enableTls12OnPreLollipop(new OkHttpClient.Builder()
+                        httpClient = OkHttpWrapper.getClient().newBuilder()
                                 .connectTimeout(30, TimeUnit.SECONDS)
                                 .readTimeout(60, TimeUnit.SECONDS)
-                                .writeTimeout(20, TimeUnit.SECONDS))
+                                .writeTimeout(20, TimeUnit.SECONDS)
                                 .build();
                     }
                     getVersionInformation(context);
@@ -362,14 +361,13 @@ public class UpdateActivity extends BaseAppCompatActivity {
     private class AsyncDownloader extends AsyncTask<Void, Long, Boolean> {
         private final String URL = DOWNLOAD_URL + "&rr=" + JoH.tsl();
 
-        private final OkHttpClient.Builder okbuilder = new OkHttpClient.Builder()
+        private final OkHttpClient client = OkHttpWrapper.getClient().newBuilder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .followRedirects(true)
-                .followSslRedirects(true);
-
-        private final OkHttpClient client = enableTls12OnPreLollipop(okbuilder).build();
+                .followSslRedirects(true)
+                .build();
         private String filename;
 
         @Override
