@@ -1,7 +1,7 @@
 # xdripJH
-> Modified version of xDrip+
+> Modified version of xDrip
 
- xDrip+ source: https://github.com/NightscoutFoundation/xDrip
+ xDrip source: https://github.com/NightscoutFoundation/xDrip
 
 ## Major notes
 * Modifications done primarily for Libre-2 OOP2 setup

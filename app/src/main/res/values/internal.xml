@@ -4,7 +4,7 @@
     <string name="pref_I_understand_title"> OK</string>
     <string name="pref_I_understand_summery" translatable="false">
         USE AS YOU WISH! (at your own risk)\n\n
-        This is a modified version of xDrip+\n\n
+        This is a modified version of xDrip\n\n
         Major changes (Libre-2 OOP2 setup):\n
         * Display 1 min data\n
         * Default calibration modified\n

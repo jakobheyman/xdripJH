@@ -3378,7 +3378,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                         size1=0;
                         size2=0;
                         title="G5 Firmware Warning";
-                        message="Transmitters containing updated firmware which started shipping around 20th Nov 2016 appear to be currently incompatible with xDrip+\n\nWork will continue to try to resolve this issue but at the time of writing there is not yet a solution.  For the latest updates you can select the Alpha or Nightly update channel.";
+                        message="Transmitters containing updated firmware which started shipping around 20th Nov 2016 appear to be currently incompatible with xDrip\n\nWork will continue to try to resolve this issue but at the time of writing there is not yet a solution.  For the latest updates you can select the Alpha or Nightly update channel.";
                         break;*/
 
                 case SHOWCASE_VARIANT:
